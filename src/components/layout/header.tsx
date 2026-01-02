@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { UserAvatar } from "./user-avatar";
+import { UserAvatar } from "@/components/shared/user-avatar";
 import { useAuth } from "@/lib/hooks/use-auth";
 
 export function Header() {
@@ -54,7 +54,7 @@ export function Header() {
               <DropdownMenuContent className="w-56" align="end" forceMount>
                 <div className="flex items-center justify-start gap-2 p-2">
                   <div className="flex flex-col space-y-1 leading-none">
-                    <p className="font-medium">{user?.display_name}</p>
+                    <p className="font-medium">{user?.name}</p>
                     <p className="text-xs text-muted-foreground">
                       {user?.email}
                     </p>

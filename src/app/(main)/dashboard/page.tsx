@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { AuthGuard } from "./_components/auth-guard";
+import { AuthGuard } from "@/components/shared/auth-guard";
 import { useStrudels } from "@/lib/hooks/use-strudels";
 import { useUIStore } from "@/lib/stores/ui-store";
 

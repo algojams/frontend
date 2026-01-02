@@ -16,7 +16,7 @@ const sizeClasses = {
 };
 
 export function UserAvatar({ user, size = "md", className }: UserAvatarProps) {
-  const initials = user?.display_name
+  const initials = user?.name
     ?.split(" ")
     .map((n) => n[0])
     .join("")
@@ -25,7 +25,7 @@ export function UserAvatar({ user, size = "md", className }: UserAvatarProps) {
 
   return (
     <Avatar className={`${sizeClasses[size]} ${className || ""}`}>
-      <AvatarImage src={user?.avatar_url} alt={user?.display_name || "User"} />
+      <AvatarImage src={user?.avatar_url} alt={user?.name || "User"} />
       <AvatarFallback className="bg-primary text-primary-foreground text-xs">
         {initials}
       </AvatarFallback>

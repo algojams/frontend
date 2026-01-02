@@ -4,8 +4,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { sessionsApi } from "@/lib/api/sessions";
 import type {
   CreateSessionRequest,
-  InviteRequest,
+  CreateInviteTokenRequest,
   TransferSessionRequest,
+  SetDiscoverableRequest,
+  JoinSessionRequest,
 } from "@/lib/api/sessions.types";
 
 export const sessionKeys = {
@@ -13,12 +15,19 @@ export const sessionKeys = {
   lists: () => [...sessionKeys.all, "list"] as const,
   details: () => [...sessionKeys.all, "detail"] as const,
   detail: (id: string) => [...sessionKeys.details(), id] as const,
+  live: () => [...sessionKeys.all, "live"] as const,
+  invites: (sessionId: string) =>
+    [...sessionKeys.all, "invites", sessionId] as const,
+  participants: (sessionId: string) =>
+    [...sessionKeys.all, "participants", sessionId] as const,
+  messages: (sessionId: string) =>
+    [...sessionKeys.all, "messages", sessionId] as const,
 };
 
-export function useSessions() {
+export function useSessions(params?: { active_only?: boolean }) {
   return useQuery({
-    queryKey: sessionKeys.lists(),
-    queryFn: () => sessionsApi.list(),
+    queryKey: [...sessionKeys.lists(), params],
+    queryFn: () => sessionsApi.list(params),
   });
 }
 
@@ -34,7 +43,7 @@ export function useCreateSession() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data?: CreateSessionRequest) => sessionsApi.create(data),
+    mutationFn: (data: CreateSessionRequest) => sessionsApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: sessionKeys.lists() });
     },
@@ -52,15 +61,66 @@ export function useDeleteSession() {
   });
 }
 
+export function useLeaveSession() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => sessionsApi.leave(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: sessionKeys.lists() });
+    },
+  });
+}
+
 export function useCreateInvite() {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: ({
       sessionId,
       data,
     }: {
       sessionId: string;
-      data: InviteRequest;
+      data: CreateInviteTokenRequest;
     }) => sessionsApi.createInvite(sessionId, data),
+    onSuccess: (_, { sessionId }) => {
+      queryClient.invalidateQueries({
+        queryKey: sessionKeys.invites(sessionId),
+      });
+    },
+  });
+}
+
+export function useSessionInvites(sessionId: string) {
+  return useQuery({
+    queryKey: sessionKeys.invites(sessionId),
+    queryFn: () => sessionsApi.listInvites(sessionId),
+    enabled: !!sessionId,
+  });
+}
+
+export function useRevokeInvite() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      sessionId,
+      tokenId,
+    }: {
+      sessionId: string;
+      tokenId: string;
+    }) => sessionsApi.revokeInvite(sessionId, tokenId),
+    onSuccess: (_, { sessionId }) => {
+      queryClient.invalidateQueries({
+        queryKey: sessionKeys.invites(sessionId),
+      });
+    },
+  });
+}
+
+export function useJoinSession() {
+  return useMutation({
+    mutationFn: (data: JoinSessionRequest) => sessionsApi.join(data),
   });
 }
 
@@ -70,10 +130,77 @@ export function useTransferSession() {
   return useMutation({
     mutationFn: (data: TransferSessionRequest) => sessionsApi.transfer(data),
     onSuccess: () => {
-      // Invalidate strudels list since we created a new one
       queryClient.invalidateQueries({ queryKey: ["strudels"] });
-      // Clear the anonymous session from localStorage
       localStorage.removeItem("algorave_session_id");
     },
+  });
+}
+
+export function useLiveSessions(params?: { limit?: number }) {
+  return useQuery({
+    queryKey: [...sessionKeys.live(), params],
+    queryFn: () => sessionsApi.getLive(params),
+    refetchInterval: 30000,
+  });
+}
+
+export function useSetDiscoverable() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      sessionId,
+      data,
+    }: {
+      sessionId: string;
+      data: SetDiscoverableRequest;
+    }) => sessionsApi.setDiscoverable(sessionId, data),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: sessionKeys.live() });
+      queryClient.invalidateQueries({
+        queryKey: sessionKeys.detail(variables.sessionId),
+      });
+    },
+  });
+}
+
+export function useSessionParticipants(sessionId: string) {
+  return useQuery({
+    queryKey: sessionKeys.participants(sessionId),
+    queryFn: () => sessionsApi.getParticipants(sessionId),
+    enabled: !!sessionId,
+  });
+}
+
+export function useRemoveParticipant() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      sessionId,
+      participantId,
+    }: {
+      sessionId: string;
+      participantId: string;
+    }) => sessionsApi.removeParticipant(sessionId, participantId),
+    onSuccess: (_, { sessionId }) => {
+      queryClient.invalidateQueries({
+        queryKey: sessionKeys.participants(sessionId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: sessionKeys.detail(sessionId),
+      });
+    },
+  });
+}
+
+export function useSessionMessages(
+  sessionId: string,
+  params?: { limit?: number }
+) {
+  return useQuery({
+    queryKey: [...sessionKeys.messages(sessionId), params],
+    queryFn: () => sessionsApi.getMessages(sessionId, params),
+    enabled: !!sessionId,
   });
 }

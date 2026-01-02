@@ -37,7 +37,7 @@ export function useAuth() {
     localStorage.removeItem("algorave_session_id");
   };
 
-  const updateProfile = async (data: { display_name?: string }) => {
+  const updateProfile = async (data: { name: string; avatar_url?: string }) => {
     const { user: updatedUser } = await authApi.updateMe(data);
     setUser(updatedUser);
     return updatedUser;

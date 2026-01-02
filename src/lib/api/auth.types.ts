@@ -1,25 +1,28 @@
+// User type from swagger spec
 export interface User {
   id: string;
   email: string;
-  display_name: string;
+  name: string;
   avatar_url?: string;
-  github_username?: string;
-  google_id?: string;
-  tier: "free" | "pro" | "byok";
+  provider: string;
+  ai_features_enabled: boolean;
+  training_consent: boolean;
   created_at: string;
   updated_at: string;
 }
 
-export interface UpdateUserRequest {
-  display_name?: string;
-  avatar_url?: string;
-}
-
+// Auth responses
 export interface AuthResponse {
-  user: User;
   token: string;
+  user: User;
 }
 
-export interface MeResponse {
+export interface UserResponse {
   user: User;
+}
+
+// Profile update
+export interface UpdateProfileRequest {
+  name: string;
+  avatar_url?: string;
 }

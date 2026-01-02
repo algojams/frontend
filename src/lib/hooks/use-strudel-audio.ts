@@ -2,7 +2,7 @@
 
 import { useCallback } from "react";
 import { useAudioStore } from "@/lib/stores/audio-store";
-import { evaluateStrudel, stopStrudel } from "./strudel-editor";
+import { evaluateStrudel, stopStrudel } from "@/components/shared/strudel-editor";
 
 export function useStrudelAudio() {
   const { isPlaying, isInitialized } = useAudioStore();

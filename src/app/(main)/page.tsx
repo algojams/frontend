@@ -1,10 +1,10 @@
 "use client";
 
 import { useCallback } from "react";
-import { StrudelEditor } from "./_components/strudel-editor";
-import { EditorToolbar } from "./_components/editor-toolbar";
-import { ChatPanel } from "./_components/chat-panel";
-import { useStrudelAudio } from "./_components/use-strudel-audio";
+import { StrudelEditor } from "@/components/shared/strudel-editor";
+import { EditorToolbar } from "@/components/shared/editor-toolbar";
+import { ChatPanel } from "@/components/shared/chat-panel";
+import { useStrudelAudio } from "@/lib/hooks/use-strudel-audio";
 import { useWebSocket } from "@/lib/hooks/use-websocket";
 import { useUIStore } from "@/lib/stores/ui-store";
 import { useAuthStore } from "@/lib/stores/auth-store";

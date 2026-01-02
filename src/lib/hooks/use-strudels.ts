@@ -2,26 +2,23 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { strudelsApi } from "@/lib/api/strudels";
-import type { CreateStrudelRequest, UpdateStrudelRequest } from "@/lib/api/strudels.types";
+import type {
+  CreateStrudelRequest,
+  UpdateStrudelRequest,
+} from "@/lib/api/strudels.types";
 
 export const strudelKeys = {
   all: ["strudels"] as const,
   lists: () => [...strudelKeys.all, "list"] as const,
-  list: (filters: Record<string, unknown>) =>
-    [...strudelKeys.lists(), filters] as const,
   details: () => [...strudelKeys.all, "detail"] as const,
   detail: (id: string) => [...strudelKeys.details(), id] as const,
   public: () => [...strudelKeys.all, "public"] as const,
 };
 
-export function useStrudels(params?: {
-  page?: number;
-  page_size?: number;
-  search?: string;
-}) {
+export function useStrudels() {
   return useQuery({
-    queryKey: strudelKeys.list(params || {}),
-    queryFn: () => strudelsApi.list(params),
+    queryKey: strudelKeys.lists(),
+    queryFn: () => strudelsApi.list(),
   });
 }
 
@@ -68,20 +65,9 @@ export function useDeleteStrudel() {
   });
 }
 
-export function usePublicStrudels(params?: { limit?: number; offset?: number }) {
+export function usePublicStrudels(params?: { limit?: number }) {
   return useQuery({
     queryKey: [...strudelKeys.public(), params],
     queryFn: () => strudelsApi.listPublic(params),
-  });
-}
-
-export function useForkStrudel() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (id: string) => strudelsApi.fork(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: strudelKeys.lists() });
-    },
   });
 }

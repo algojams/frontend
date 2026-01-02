@@ -1,49 +1,131 @@
 import { apiClient } from "./client";
 import type {
   CreateSessionRequest,
-  InviteRequest,
+  CreateSessionResponse,
+  CreateInviteTokenRequest,
+  InviteToken,
+  InviteTokensListResponse,
   TransferSessionRequest,
+  TransferSessionResponse,
   JoinSessionRequest,
-  SessionsResponse,
-  SessionResponse,
-  InviteResponse,
-  TransferResponse,
+  JoinSessionResponse,
+  SetDiscoverableRequest,
+  Session,
+  SessionsListResponse,
+  LiveSessionsListResponse,
+  UpdateSessionCodeRequest,
+  UpdateSessionCodeResponse,
+  ParticipantsListResponse,
+  MessagesResponse,
+  MessageResponse,
 } from "./sessions.types";
 
 export const sessionsApi = {
-  list: () =>
-    apiClient.get<SessionsResponse>("/api/v1/sessions", { requireAuth: true }),
+  // Session CRUD
+  list: (params?: { active_only?: boolean }) => {
+    const searchParams = new URLSearchParams();
+    if (params?.active_only) searchParams.set("active_only", "true");
+
+    const query = searchParams.toString();
+    return apiClient.get<SessionsListResponse>(
+      `/api/v1/sessions${query ? `?${query}` : ""}`,
+      { requireAuth: true }
+    );
+  },
 
   get: (id: string) =>
-    apiClient.get<SessionResponse>(`/api/v1/sessions/${id}`, {
+    apiClient.get<Session>(`/api/v1/sessions/${id}`, {
       requireAuth: true,
     }),
 
-  create: (data?: CreateSessionRequest) =>
-    apiClient.post<SessionResponse>("/api/v1/sessions", data, {
+  create: (data: CreateSessionRequest) =>
+    apiClient.post<CreateSessionResponse>("/api/v1/sessions", data, {
       requireAuth: true,
     }),
 
-  update: (id: string, data: { code: string }) =>
-    apiClient.put<SessionResponse>(`/api/v1/sessions/${id}`, data, {
+  updateCode: (id: string, data: UpdateSessionCodeRequest) =>
+    apiClient.put<UpdateSessionCodeResponse>(`/api/v1/sessions/${id}`, data, {
       requireAuth: true,
     }),
 
   delete: (id: string) =>
-    apiClient.delete<void>(`/api/v1/sessions/${id}`, { requireAuth: true }),
-
-  createInvite: (sessionId: string, data: InviteRequest) =>
-    apiClient.post<InviteResponse>(
-      `/api/v1/sessions/${sessionId}/invite`,
-      data,
-      { requireAuth: true }
-    ),
-
-  transfer: (data: TransferSessionRequest) =>
-    apiClient.post<TransferResponse>("/api/v1/sessions/transfer", data, {
+    apiClient.delete<MessageResponse>(`/api/v1/sessions/${id}`, {
       requireAuth: true,
     }),
 
+  leave: (id: string) =>
+    apiClient.post<MessageResponse>(
+      `/api/v1/sessions/${id}/leave`,
+      undefined,
+      { requireAuth: true }
+    ),
+
+  // Invite tokens
+  createInvite: (sessionId: string, data: CreateInviteTokenRequest) =>
+    apiClient.post<InviteToken>(`/api/v1/sessions/${sessionId}/invite`, data, {
+      requireAuth: true,
+    }),
+
+  listInvites: (sessionId: string) =>
+    apiClient.get<InviteTokensListResponse>(
+      `/api/v1/sessions/${sessionId}/invite`,
+      { requireAuth: true }
+    ),
+
+  revokeInvite: (sessionId: string, tokenId: string) =>
+    apiClient.delete<MessageResponse>(
+      `/api/v1/sessions/${sessionId}/invite/${tokenId}`,
+      { requireAuth: true }
+    ),
+
+  // Join session
   join: (data: JoinSessionRequest) =>
-    apiClient.post<SessionResponse>("/api/v1/sessions/join", data),
+    apiClient.post<JoinSessionResponse>("/api/v1/sessions/join", data),
+
+  // Transfer to strudel
+  transfer: (data: TransferSessionRequest) =>
+    apiClient.post<TransferSessionResponse>("/api/v1/sessions/transfer", data, {
+      requireAuth: true,
+    }),
+
+  // Live/discoverable sessions
+  getLive: (params?: { limit?: number }) => {
+    const searchParams = new URLSearchParams();
+    if (params?.limit) searchParams.set("limit", params.limit.toString());
+
+    const query = searchParams.toString();
+    return apiClient.get<LiveSessionsListResponse>(
+      `/api/v1/sessions/live${query ? `?${query}` : ""}`
+    );
+  },
+
+  setDiscoverable: (sessionId: string, data: SetDiscoverableRequest) =>
+    apiClient.put<Session>(`/api/v1/sessions/${sessionId}/discoverable`, data, {
+      requireAuth: true,
+    }),
+
+  // Participants
+  getParticipants: (sessionId: string) =>
+    apiClient.get<ParticipantsListResponse>(
+      `/api/v1/sessions/${sessionId}/participants`,
+      { requireAuth: true }
+    ),
+
+  removeParticipant: (sessionId: string, participantId: string) =>
+    apiClient.delete<MessageResponse>(
+      `/api/v1/sessions/${sessionId}/participants/${participantId}`,
+      { requireAuth: true }
+    ),
+
+  // Messages
+  getMessages: (sessionId: string, params?: { limit?: number }) => {
+    const searchParams = new URLSearchParams();
+    if (params?.limit) searchParams.set("limit", params.limit.toString());
+
+    const query = searchParams.toString();
+    return apiClient.get<MessagesResponse>(
+      `/api/v1/sessions/${sessionId}/messages${query ? `?${query}` : ""}`,
+      { requireAuth: true }
+    );
+  },
 };

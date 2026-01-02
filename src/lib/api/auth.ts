@@ -1,22 +1,21 @@
 import { apiClient } from "./client";
 import { API_BASE_URL } from "@/lib/constants";
-import type { MeResponse, UpdateUserRequest, User } from "./auth.types";
+import type { UserResponse, UpdateProfileRequest } from "./auth.types";
+import type { MessageResponse } from "./sessions.types";
 
 export const authApi = {
   getMe: () =>
-    apiClient.get<MeResponse>("/api/v1/auth/me", { requireAuth: true }),
+    apiClient.get<UserResponse>("/api/v1/auth/me", { requireAuth: true }),
 
-  updateMe: (data: UpdateUserRequest) =>
-    apiClient.put<{ user: User }>("/api/v1/auth/me", data, {
+  updateMe: (data: UpdateProfileRequest) =>
+    apiClient.put<UserResponse>("/api/v1/auth/me", data, {
       requireAuth: true,
     }),
 
-  getOAuthUrl: (provider: "github" | "google") => {
+  getOAuthUrl: (provider: "github" | "google" | "apple") => {
     return `${API_BASE_URL}/api/v1/auth/${provider}`;
   },
 
-  logout: () => {
-    // Client-side only - just clear the token
-    // Backend doesn't have a logout endpoint since JWTs are stateless
-  },
+  logout: () =>
+    apiClient.post<MessageResponse>("/api/v1/auth/logout", undefined),
 };
