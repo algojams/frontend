@@ -26,14 +26,14 @@ export function ChatPanel({
   }, [messages]);
 
   return (
-    <div className="flex flex-col h-full border-l bg-background">
+    <div className="flex flex-col h-full border-l border-t bg-background">
       <div className="p-3 border-b">
         <h2 className="font-medium">Chat & AI Assistant</h2>
       </div>
 
       <ParticipantsList />
 
-      <div className="flex-1 overflow-y-auto p-3">
+      <div className="flex-1 overflow-y-auto p-3 border-t">
         {messages.length === 0 ? (
           <div className="text-center text-muted-foreground text-sm py-8">
             <p>No messages yet.</p>

@@ -1,22 +1,28 @@
-"use client";
+'use client';
 
-import { useEffect, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { LoginButtons } from "./_components/login-buttons";
-import { useAuthStore } from "@/lib/stores/auth";
-import { storage } from "@/lib/utils/storage";
+import { useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { LoginButtons } from './_components/login-buttons';
+import { useAuthStore } from '@/lib/stores/auth';
+import { storage } from '@/lib/utils/storage';
+import Link from 'next/link';
 
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { token } = useAuthStore();
-  const error = searchParams.get("error");
+  const error = searchParams.get('error');
 
-  // Redirect if already logged in
   useEffect(() => {
     if (token) {
-      const redirectUrl = storage.getRedirectUrl() || "/dashboard";
+      const redirectUrl = storage.getRedirectUrl() || '/dashboard';
       storage.clearRedirectUrl();
       router.push(redirectUrl);
     }
@@ -38,10 +44,10 @@ function LoginContent() {
         )}
         <LoginButtons />
         <p className="mt-6 text-center text-sm text-muted-foreground">
-          Or{" "}
-          <a href="/" className="underline hover:text-primary">
+          Or{' '}
+          <Link href="/" className="underline hover:text-primary cursor-pointer">
             continue as guest
-          </a>{" "}
+          </Link>{' '}
           to try it out
         </p>
       </CardContent>
@@ -63,8 +69,7 @@ export default function LoginPage() {
             <div className="h-10 bg-muted rounded" />
           </CardContent>
         </Card>
-      }
-    >
+      }>
       <LoginContent />
     </Suspense>
   );

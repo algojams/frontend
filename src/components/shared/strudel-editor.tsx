@@ -176,7 +176,7 @@ export function StrudelEditor({
   return (
     <div
       ref={containerRef}
-      className="strudel-editor h-full w-full overflow-hidden rounded-md border"
+      className="strudel-editor h-full w-full overflow-hidden border-t rounded-none"
     />
   );
 }

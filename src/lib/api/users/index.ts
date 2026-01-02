@@ -1,22 +1,28 @@
-import { apiClient } from "../client";
-import type { User } from "../auth/types";
+import { apiClient } from '../client';
+import type { User } from '../auth/types';
 import type {
   UsageResponse,
   TrainingConsentRequest,
   AIFeaturesEnabledRequest,
-} from "./types";
+} from './types';
 
 export const usersApi = {
-  getUsage: () =>
-    apiClient.get<UsageResponse>("/api/v1/users/usage", { requireAuth: true }),
+  getUsage: () => {
+    const url = '/api/v1/users/usage';
+    return apiClient.get<UsageResponse>(url, { requireAuth: true });
+  },
 
-  updateTrainingConsent: (data: TrainingConsentRequest) =>
-    apiClient.put<User>("/api/v1/users/training-consent", data, {
+  updateTrainingConsent: (data: TrainingConsentRequest) => {
+    const url = '/api/v1/users/training-consent';
+    return apiClient.put<User>(url, data, {
       requireAuth: true,
-    }),
+    });
+  },
 
-  updateAIFeaturesEnabled: (data: AIFeaturesEnabledRequest) =>
-    apiClient.put<User>("/api/v1/users/ai-features-enabled", data, {
+  updateAIFeaturesEnabled: (data: AIFeaturesEnabledRequest) => {
+    const url = '/api/v1/users/ai-features-enabled';
+    return apiClient.put<User>(url, data, {
       requireAuth: true,
-    }),
+    });
+  },
 };

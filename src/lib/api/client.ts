@@ -1,7 +1,7 @@
-import { useAuthStore } from "@/lib/stores/auth";
-import { API_BASE_URL } from "@/lib/constants";
+import { useAuthStore } from '@/lib/stores/auth';
+import { API_BASE_URL } from '@/lib/constants';
 
-interface RequestOptions extends Omit<RequestInit, "body"> {
+interface RequestOptions extends Omit<RequestInit, 'body'> {
   requireAuth?: boolean;
   body?: unknown;
 }
@@ -13,22 +13,23 @@ class ApiClient {
     this.baseUrl = baseUrl;
   }
 
-  private async request<T>(
-    endpoint: string,
-    options: RequestOptions = {}
-  ): Promise<T> {
+  private async request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
     const { requireAuth = false, body, ...fetchOptions } = options;
     const token = useAuthStore.getState().token;
 
-    const headers: HeadersInit = {
-      "Content-Type": "application/json",
+    type Headers = HeadersInit & {
+      Authorization?: string;
+    };
+
+    const headers: Headers = {
+      'Content-Type': 'application/json',
       ...options.headers,
     };
 
     if (token) {
-      (headers as Record<string, string>)["Authorization"] = `Bearer ${token}`;
+      headers['Authorization'] = `Bearer ${token}`;
     } else if (requireAuth) {
-      throw new Error("Authentication required");
+      throw new Error('Authentication required');
     }
 
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
@@ -39,7 +40,8 @@ class ApiClient {
 
     if (response.status === 401) {
       useAuthStore.getState().clearAuth();
-      throw new Error("Unauthorized");
+      window.location.href = '/login?error=Session expired';
+      throw new Error('Unauthorized');
     }
 
     if (!response.ok) {
@@ -47,8 +49,9 @@ class ApiClient {
       throw new Error(error.message || `Request failed: ${response.status}`);
     }
 
-    // Handle empty responses
+    // handle empty responses
     const text = await response.text();
+    
     if (!text) {
       return {} as T;
     }
@@ -57,13 +60,13 @@ class ApiClient {
   }
 
   get<T>(endpoint: string, options?: RequestOptions) {
-    return this.request<T>(endpoint, { ...options, method: "GET" });
+    return this.request<T>(endpoint, { ...options, method: 'GET' });
   }
 
   post<T>(endpoint: string, data?: unknown, options?: RequestOptions) {
     return this.request<T>(endpoint, {
       ...options,
-      method: "POST",
+      method: 'POST',
       body: data,
     });
   }
@@ -71,7 +74,7 @@ class ApiClient {
   put<T>(endpoint: string, data?: unknown, options?: RequestOptions) {
     return this.request<T>(endpoint, {
       ...options,
-      method: "PUT",
+      method: 'PUT',
       body: data,
     });
   }
@@ -79,13 +82,13 @@ class ApiClient {
   patch<T>(endpoint: string, data?: unknown, options?: RequestOptions) {
     return this.request<T>(endpoint, {
       ...options,
-      method: "PATCH",
+      method: 'PATCH',
       body: data,
     });
   }
 
   delete<T>(endpoint: string, options?: RequestOptions) {
-    return this.request<T>(endpoint, { ...options, method: "DELETE" });
+    return this.request<T>(endpoint, { ...options, method: 'DELETE' });
   }
 }
 

@@ -1,25 +1,27 @@
-"use client";
+'use client';
 
-import { useEffect, useRef, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useAuthStore } from "@/lib/stores/auth";
-import { authApi } from "@/lib/api/auth";
-import { storage } from "@/lib/utils/storage";
+import { useEffect, useRef, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useAuthStore } from '@/lib/stores/auth';
+import { authApi } from '@/lib/api/auth';
+import { storage } from '@/lib/utils/storage';
 
 function CallbackContent() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const { setAuth } = useAuthStore();
   const hasProcessed = useRef(false);
+  const searchParams = useSearchParams();
+
+  const { setAuth } = useAuthStore();
 
   useEffect(() => {
     async function handleCallback() {
-      // Prevent double processing
+      // prevent double processing
       if (hasProcessed.current) return;
+
       hasProcessed.current = true;
 
-      const token = searchParams.get("token");
-      const error = searchParams.get("error");
+      const token = searchParams.get('token');
+      const error = searchParams.get('error');
 
       if (error) {
         router.push(`/login?error=${encodeURIComponent(error)}`);
@@ -27,35 +29,36 @@ function CallbackContent() {
       }
 
       if (!token) {
-        router.push("/login?error=No token received");
+        router.push('/login?error=No token received');
         return;
       }
 
       try {
-        // Store token temporarily to make authenticated request
+        // store token temporarily to make authenticated request
         useAuthStore.setState({ token });
 
-        // Fetch user profile
+        // fetch user profile
         const { user } = await authApi.getMe();
 
-        // Update store
+        // update store
         setAuth(user, token);
 
-        // Check for pending session transfer
+        // check for pending session transfer
         const pendingSessionId = storage.getSessionId();
-        const redirectPath = storage.getRedirectUrl() || "/dashboard";
+        const redirectPath = storage.getRedirectUrl() || '/';
+
         storage.clearRedirectUrl();
 
         if (pendingSessionId) {
-          // Offer to transfer anonymous session
+          // offer to transfer anonymous session
           router.push(`/dashboard?transfer_session=${pendingSessionId}`);
         } else {
           router.push(redirectPath);
         }
       } catch (error) {
-        console.error("Auth callback error:", error);
+        console.error('auth callback error:', error);
         useAuthStore.getState().clearAuth();
-        router.push("/login?error=Failed to authenticate");
+        router.push('/login?error=failed to authenticate');
       }
     }
 
@@ -79,8 +82,7 @@ export default function OAuthCallbackPage() {
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-4" />
             <p className="text-muted-foreground">Loading...</p>
           </div>
-        }
-      >
+        }>
         <CallbackContent />
       </Suspense>
     </div>

@@ -1,4 +1,4 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 
 interface EditorState {
   code: string;
@@ -19,11 +19,11 @@ interface EditorState {
 }
 
 const initialState = {
-  code: "",
+  code: '',
   cursorLine: 1,
   cursorCol: 0,
   isDirty: false,
-  lastSyncedCode: "",
+  lastSyncedCode: '',
   isAIGenerating: false,
   conversationHistory: [] as Array<{ role: string; content: string }>,
 };
@@ -31,26 +31,26 @@ const initialState = {
 export const useEditorStore = create<EditorState>((set, get) => ({
   ...initialState,
 
-  setCode: (code, fromRemote = false) =>
-    set({
+  reset: () => set(initialState),
+  clearHistory: () => set({ conversationHistory: [] }),
+  setAIGenerating: isAIGenerating => set({ isAIGenerating }),
+  setCursor: (cursorLine, cursorCol) => set({ cursorLine, cursorCol }),
+
+  markSynced: () => {
+    return set(state => ({ lastSyncedCode: state.code, isDirty: false }));
+  },
+
+  setCode: (code, fromRemote = false) => {
+    return set({
       code,
       isDirty: !fromRemote && code !== get().lastSyncedCode,
       ...(fromRemote ? { lastSyncedCode: code } : {}),
-    }),
+    });
+  },
 
-  setCursor: (cursorLine, cursorCol) => set({ cursorLine, cursorCol }),
-
-  setAIGenerating: (isAIGenerating) => set({ isAIGenerating }),
-
-  markSynced: () =>
-    set((state) => ({ lastSyncedCode: state.code, isDirty: false })),
-
-  addToHistory: (role, content) =>
-    set((state) => ({
+  addToHistory: (role, content) => {
+    return set(state => ({
       conversationHistory: [...state.conversationHistory, { role, content }],
-    })),
-
-  clearHistory: () => set({ conversationHistory: [] }),
-
-  reset: () => set(initialState),
+    }));
+  },
 }));

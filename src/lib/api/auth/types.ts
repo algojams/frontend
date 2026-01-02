@@ -1,4 +1,3 @@
-// User type from swagger spec
 export interface User {
   id: string;
   email: string;
@@ -11,7 +10,6 @@ export interface User {
   updated_at: string;
 }
 
-// Auth responses
 export interface AuthResponse {
   token: string;
   user: User;
@@ -21,7 +19,6 @@ export interface UserResponse {
   user: User;
 }
 
-// Profile update
 export interface UpdateProfileRequest {
   name: string;
   avatar_url?: string;

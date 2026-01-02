@@ -1,4 +1,4 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 
 interface UIState {
   isChatPanelOpen: boolean;
@@ -14,18 +14,22 @@ interface UIState {
   toggleSidebar: () => void;
 }
 
-export const useUIStore = create<UIState>((set) => ({
+export const useUIStore = create<UIState>(set => ({
   isChatPanelOpen: true,
   isTransferDialogOpen: false,
   isInviteDialogOpen: false,
   isSidebarOpen: false,
 
-  toggleChatPanel: () =>
-    set((state) => ({ isChatPanelOpen: !state.isChatPanelOpen })),
-  setChatPanelOpen: (isChatPanelOpen) => set({ isChatPanelOpen }),
-  setTransferDialogOpen: (isTransferDialogOpen) =>
-    set({ isTransferDialogOpen }),
-  setInviteDialogOpen: (isInviteDialogOpen) => set({ isInviteDialogOpen }),
-  setSidebarOpen: (isSidebarOpen) => set({ isSidebarOpen }),
-  toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
+  setSidebarOpen: isSidebarOpen => set({ isSidebarOpen }),
+  setChatPanelOpen: isChatPanelOpen => set({ isChatPanelOpen }),
+  setInviteDialogOpen: isInviteDialogOpen => set({ isInviteDialogOpen }),
+  toggleSidebar: () => set(state => ({ isSidebarOpen: !state.isSidebarOpen })),
+
+  setTransferDialogOpen: isTransferDialogOpen => {
+    return set({ isTransferDialogOpen });
+  },
+
+  toggleChatPanel: () => {
+    return set(state => ({ isChatPanelOpen: !state.isChatPanelOpen }));
+  },
 }));

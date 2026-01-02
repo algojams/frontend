@@ -1,6 +1,6 @@
-import { create } from "zustand";
-import type { SessionRole } from "@/lib/api/sessions/types";
-import type { ConnectionStatus, ChatMessage } from "@/lib/websocket/types";
+import { create } from 'zustand';
+import type { SessionRole } from '@/lib/api/sessions/types';
+import type { ConnectionStatus, ChatMessage } from '@/lib/websocket/types';
 
 interface Participant {
   id: string;
@@ -30,7 +30,7 @@ interface WebSocketState {
 }
 
 const initialState = {
-  status: "disconnected" as ConnectionStatus,
+  status: 'disconnected' as ConnectionStatus,
   sessionId: null,
   error: null,
   participants: [],
@@ -38,26 +38,32 @@ const initialState = {
   myRole: null,
 };
 
-export const useWebSocketStore = create<WebSocketState>((set) => ({
+export const useWebSocketStore = create<WebSocketState>(set => ({
   ...initialState,
 
-  setStatus: (status) => set({ status }),
-  setSessionId: (sessionId) => set({ sessionId }),
-  setError: (error) => set({ error }),
-  setMyRole: (myRole) => set({ myRole }),
-  setParticipants: (participants) => set({ participants }),
-  addParticipant: (participant) =>
-    set((state) => ({
-      participants: [...state.participants, participant],
-    })),
-  removeParticipant: (id) =>
-    set((state) => ({
-      participants: state.participants.filter((p) => p.id !== id),
-    })),
-  addMessage: (message) =>
-    set((state) => ({
-      messages: [...state.messages, message],
-    })),
-  clearMessages: () => set({ messages: [] }),
   reset: () => set(initialState),
+  setError: error => set({ error }),
+  setMyRole: myRole => set({ myRole }),
+  setStatus: status => set({ status }),
+  clearMessages: () => set({ messages: [] }),
+  setSessionId: sessionId => set({ sessionId }),
+  setParticipants: participants => set({ participants }),
+
+  addParticipant: participant => {
+    return set(state => ({
+      participants: [...state.participants, participant],
+    }));
+  },
+
+  removeParticipant: id => {
+    return set(state => ({
+      participants: state.participants.filter(p => p.id !== id),
+    }));
+  },
+  
+  addMessage: message => {
+    return set(state => ({
+      messages: [...state.messages, message],
+    }));
+  },
 }));
