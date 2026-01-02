@@ -1,0 +1,142 @@
+"use client";
+
+import { useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { AuthGuard } from "./_components/auth-guard";
+import { useStrudels } from "@/lib/hooks/use-strudels";
+import { useUIStore } from "@/lib/stores/ui-store";
+
+function DashboardContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { data, isLoading } = useStrudels();
+  const { setTransferDialogOpen } = useUIStore();
+
+  // Check for pending session transfer
+  useEffect(() => {
+    const transferSession = searchParams.get("transfer_session");
+    if (transferSession) {
+      setTransferDialogOpen(true);
+    }
+  }, [searchParams, setTransferDialogOpen]);
+
+  return (
+    <AuthGuard>
+      <div className="container py-8">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold">Dashboard</h1>
+            <p className="text-muted-foreground">
+              Manage your strudels and sessions
+            </p>
+          </div>
+          <Button asChild>
+            <Link href="/">New Strudel</Link>
+          </Button>
+        </div>
+
+        {isLoading ? (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3].map((i) => (
+              <Card key={i} className="animate-pulse">
+                <CardHeader>
+                  <div className="h-4 bg-muted rounded w-3/4" />
+                  <div className="h-3 bg-muted rounded w-1/2 mt-2" />
+                </CardHeader>
+                <CardContent>
+                  <div className="h-20 bg-muted rounded" />
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : data?.strudels && data.strudels.length > 0 ? (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {data.strudels.map((strudel) => (
+              <Card
+                key={strudel.id}
+                className="cursor-pointer hover:border-primary transition-colors"
+                onClick={() => router.push(`/strudels/${strudel.id}`)}
+              >
+                <CardHeader>
+                  <CardTitle className="text-lg">{strudel.title}</CardTitle>
+                  <CardDescription>
+                    {new Date(strudel.updated_at).toLocaleDateString()}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <pre className="text-xs bg-muted p-2 rounded overflow-hidden text-ellipsis whitespace-nowrap">
+                    {strudel.code.slice(0, 100)}
+                    {strudel.code.length > 100 && "..."}
+                  </pre>
+                  {strudel.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {strudel.tags.slice(0, 3).map((tag) => (
+                        <span
+                          key={tag}
+                          className="text-xs bg-secondary px-2 py-0.5 rounded"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <MusicIcon className="h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-medium mb-2">No strudels yet</h3>
+              <p className="text-muted-foreground text-center mb-4">
+                Start creating music patterns with AI assistance
+              </p>
+              <Button asChild>
+                <Link href="/">Create your first strudel</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+      </div>
+    </AuthGuard>
+  );
+}
+
+function MusicIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M9 18V5l12-2v13" />
+      <circle cx="6" cy="18" r="3" />
+      <circle cx="18" cy="16" r="3" />
+    </svg>
+  );
+}
+
+export default function DashboardPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="container py-8">
+          <div className="animate-pulse">
+            <div className="h-8 bg-muted rounded w-48 mb-4" />
+            <div className="h-4 bg-muted rounded w-64" />
+          </div>
+        </div>
+      }
+    >
+      <DashboardContent />
+    </Suspense>
+  );
+}
