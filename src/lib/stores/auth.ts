@@ -3,7 +3,6 @@ import { persist } from "zustand/middleware";
 import type { User } from "@/lib/api/auth/types";
 import { wsClient } from "@/lib/websocket/client";
 import { storage } from "@/lib/utils/storage";
-import { useWebSocketStore } from "@/lib/stores/websocket";
 
 interface AuthState {
   user: User | null;
@@ -35,43 +34,30 @@ export const useAuthStore = create<AuthState>()(
       setHasHydrated: (hasHydrated) => set({ hasHydrated }),
 
       loginWithReconnect: (user, token) => {
-        // Get the current session ID from WebSocket store (not localStorage - anonymous sessions don't store there)
-        const sessionId = useWebSocketStore.getState().sessionId;
-        // Also get saved anonymous code as fallback (in case we navigated away and lost the WebSocket store)
-        const anonymousCode = storage.getAnonymousCode();
-        console.log("[Auth] loginWithReconnect - sessionId:", sessionId, "hasAnonymousCode:", !!anonymousCode);
+        // get the previous session ID from sessionStorage (saved before OAuth redirect)
+        const previousSessionId = storage.getPreviousSessionId();
 
-        // Disconnect current session (if any)
+        // disconnect current session (if any)
         wsClient.disconnect();
-        // Update auth state
+        // update auth state
         set({ user, token, isLoading: false });
 
-        if (sessionId) {
-          // We have a session ID - backend will associate session with user and return code
-          wsClient.connect({ sessionId });
-          storage.clearAnonymousCode();
-        } else if (anonymousCode) {
-          // No session ID (page navigated during OAuth), but we have saved code - restore it after connecting
-          wsClient.connect();
-          wsClient.onceConnected(() => {
-            console.log("[Auth] Restoring anonymous code after login (fallback)");
-            wsClient.sendCodeUpdate(anonymousCode);
-            storage.clearAnonymousCode();
-          });
-        } else {
-          // No session ID and no saved code - just connect fresh
-          wsClient.connect();
-        }
+        // connect with previousSessionId - backend will copy code from old session
+        wsClient.connect({ previousSessionId: previousSessionId || undefined });
+
+        // clean up
+        storage.clearPreviousSessionId();
+        storage.clearAnonymousCode();
       },
 
       logoutWithReconnect: () => {
-        // Clear session ID first so we get a fresh session
+        // clear session ID first so we get a fresh session
         storage.clearSessionId();
-        // Disconnect authenticated session
+        // disconnect authenticated session
         wsClient.disconnect();
-        // Clear auth state
+        // clear auth state
         set({ user: null, token: null, isLoading: false });
-        // Reconnect as anonymous - will get a fresh session (no session ID)
+        // reconnect as anonymous - will get a fresh session (no session ID)
         wsClient.connect();
       },
     }),

@@ -3,12 +3,14 @@
 import { useEffect } from "react";
 import { useAuthStore } from "@/lib/stores/auth";
 import { authApi } from "@/lib/api/auth";
+import { useWebSocketStore } from "@/lib/stores/websocket";
+import { storage } from "@/lib/utils/storage";
 
 export function useAuth() {
   const { user, token, isLoading, setAuth, clearAuth, setLoading, setUser } =
     useAuthStore();
 
-  // Hydrate user data from token on mount
+  // hydrate user data from token on mount
   useEffect(() => {
     async function hydrateAuth() {
       if (!token) {
@@ -28,6 +30,13 @@ export function useAuth() {
   }, []);
 
   const login = (provider: "github" | "google") => {
+    // save current session ID so backend can transfer code after login
+    const currentSessionId = useWebSocketStore.getState().sessionId;
+
+    if (currentSessionId) {
+      storage.setPreviousSessionId(currentSessionId);
+    }
+
     const url = authApi.getOAuthUrl(provider);
     window.location.href = url;
   };

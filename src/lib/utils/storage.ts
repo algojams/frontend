@@ -47,4 +47,21 @@ export const storage = {
     if (typeof window === "undefined") return;
     sessionStorage.removeItem(STORAGE_KEYS.REDIRECT_AFTER_LOGIN);
   },
+
+  // previous session ID - used for login transition to transfer code
+  // stored in sessionStorage so it survives OAuth redirect but is ephemeral
+  getPreviousSessionId: (): string | null => {
+    if (typeof window === "undefined") return null;
+    return sessionStorage.getItem("algorave_previous_session_id");
+  },
+
+  setPreviousSessionId: (sessionId: string): void => {
+    if (typeof window === "undefined") return;
+    sessionStorage.setItem("algorave_previous_session_id", sessionId);
+  },
+
+  clearPreviousSessionId: (): void => {
+    if (typeof window === "undefined") return;
+    sessionStorage.removeItem("algorave_previous_session_id");
+  },
 };
