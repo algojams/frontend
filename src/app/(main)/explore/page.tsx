@@ -1,11 +1,17 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { usePublicStrudels } from "@/lib/hooks/use-strudels";
 
 export default function ExplorePage() {
+  const router = useRouter();
   const { data, isLoading } = usePublicStrudels({ limit: 20 });
+
+  const handleFork = (strudelId: string) => {
+    router.push(`/?fork=${strudelId}`);
+  };
 
   return (
     <div className="container p-8 w-full max-w-full">
@@ -43,7 +49,7 @@ export default function ExplorePage() {
                   {strudel.code.slice(0, 100)}
                   {strudel.code.length > 100 && "..."}
                 </pre>
-                {strudel.tags.length > 0 && (
+                {strudel.tags?.length > 0 && (
                   <div className="flex flex-wrap gap-1 mb-3">
                     {strudel.tags.slice(0, 3).map((tag) => (
                       <span
@@ -59,7 +65,7 @@ export default function ExplorePage() {
                   <Button size="sm" variant="outline" className="flex-1">
                     Preview
                   </Button>
-                  <Button size="sm" className="flex-1">
+                  <Button size="sm" className="flex-1" onClick={() => handleFork(strudel.id)}>
                     Fork
                   </Button>
                 </div>

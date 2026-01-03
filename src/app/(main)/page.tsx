@@ -12,6 +12,7 @@ import { useEditor } from './hooks';
 function HomePageContent() {
   const searchParams = useSearchParams();
   const strudelId = searchParams.get('id');
+  const forkStrudelId = searchParams.get('fork');
 
   const {
     handleCodeChange,
@@ -28,7 +29,7 @@ function HomePageContent() {
     sessionId,
     saveStatus,
     isLoadingStrudel,
-  } = useEditor({ strudelId });
+  } = useEditor({ strudelId, forkStrudelId });
 
   return (
     <div className="flex h-[calc(100vh-3.5rem)]">

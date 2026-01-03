@@ -71,3 +71,11 @@ export function usePublicStrudels(params?: { limit?: number }) {
     queryFn: () => strudelsApi.listPublic(params),
   });
 }
+
+export function usePublicStrudel(id: string) {
+  return useQuery({
+    queryKey: [...strudelKeys.public(), "detail", id],
+    queryFn: () => strudelsApi.getPublic(id),
+    enabled: !!id,
+  });
+}

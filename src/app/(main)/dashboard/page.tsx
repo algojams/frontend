@@ -49,7 +49,7 @@ function DashboardContent() {
               <Card
                 key={strudel.id}
                 className="cursor-pointer hover:border-primary transition-colors"
-                onClick={() => router.push(`/strudels/${strudel.id}`)}>
+                onClick={() => router.push(`/?id=${strudel.id}`)}>
                 <CardHeader>
                   <CardTitle className="text-lg">{strudel.title}</CardTitle>
                   <CardDescription>
@@ -63,7 +63,7 @@ function DashboardContent() {
                     {strudel.code.length > 100 && '...'}
                   </pre>
 
-                  {strudel.tags.length > 0 && (
+                  {strudel.tags?.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-2">
                       {strudel.tags.slice(0, 3).map(tag => (
                         <span

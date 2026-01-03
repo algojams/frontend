@@ -55,4 +55,9 @@ export const strudelsApi = {
       `/api/v1/public/strudels${query ? `?${query}` : ''}`
     );
   },
+
+  getPublic: (id: string) => {
+    const url = `/api/v1/public/strudels/${id}`;
+    return apiClient.get<Strudel>(url);
+  },
 };
