@@ -1,4 +1,5 @@
 export { useAuth } from "./use-auth";
+export { useAutosave } from "./use-autosave";
 export { useWebSocket } from "./use-websocket";
 export { useStrudelAudio } from "./use-strudel-audio";
 export {
@@ -20,7 +21,6 @@ export {
   useSessionInvites,
   useRevokeInvite,
   useJoinSession,
-  useTransferSession,
   useLiveSessions,
   useSetDiscoverable,
   useSessionParticipants,

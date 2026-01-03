@@ -14,12 +14,14 @@ export default function HomePage() {
     handleStop,
     handleSendAIRequest,
     handleSendMessage,
+    handleSave,
+    handleNewStrudel,
     isChatPanelOpen,
     toggleChatPanel,
     isConnected,
     canEdit,
     sessionId,
-    token,
+    saveStatus,
   } = useEditor();
 
   return (
@@ -28,8 +30,12 @@ export default function HomePage() {
         <EditorToolbar
           onPlay={handlePlay}
           onStop={handleStop}
-          showSave={!!token}
-          showShare={!!sessionId && !!token}
+          onSave={handleSave}
+          onNew={handleNewStrudel}
+          showSave={true}
+          showNew={true}
+          showShare={!!sessionId}
+          saveStatus={saveStatus}
         />
         <div className="flex-1 overflow-hidden">
           <StrudelEditor

@@ -1,5 +1,3 @@
-import type { Strudel } from "../strudels/types";
-
 export type SessionRole = "host" | "co-author" | "viewer";
 export type ParticipantStatus = "active" | "left";
 
@@ -82,17 +80,6 @@ export interface JoinSessionResponse {
   session_id: string;
   role: SessionRole;
   display_name: string;
-}
-
-export interface TransferSessionRequest {
-  session_id: string;
-  title: string;
-}
-
-export interface TransferSessionResponse {
-  strudel_id: string;
-  strudel: Strudel;
-  message: string;
 }
 
 export interface SetDiscoverableRequest {

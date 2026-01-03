@@ -1,15 +1,14 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { Suspense } from "react";
 import { ThemeProvider } from "next-themes";
 import { QueryProvider } from "./query-provider";
 import { AuthHydration } from "./auth-hydration";
-import { TransferSessionHandler } from "./transfer-session-handler";
 import { Toaster } from "@/components/ui/sonner";
 import { LoginModal } from "@/components/shared/login-modal";
-import { TransferSessionDialog } from "@/components/shared/transfer-session-dialog";
 import { LogoutConfirmDialog } from "@/components/shared/logout-confirm-dialog";
+import { NewStrudelDialog } from "@/components/shared/new-strudel-dialog";
+import { SaveStrudelDialog } from "@/components/shared/save-strudel-dialog";
 
 export function Providers({ children }: { children: ReactNode }) {
   return (
@@ -23,11 +22,9 @@ export function Providers({ children }: { children: ReactNode }) {
         <AuthHydration>
           {children}
           <LoginModal />
-          <TransferSessionDialog />
           <LogoutConfirmDialog />
-          <Suspense fallback={null}>
-            <TransferSessionHandler />
-          </Suspense>
+          <NewStrudelDialog />
+          <SaveStrudelDialog />
           <Toaster />
         </AuthHydration>
       </QueryProvider>

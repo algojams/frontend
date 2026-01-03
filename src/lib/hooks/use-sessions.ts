@@ -5,7 +5,6 @@ import { sessionsApi } from "@/lib/api/sessions";
 import type {
   CreateSessionRequest,
   CreateInviteTokenRequest,
-  TransferSessionRequest,
   SetDiscoverableRequest,
   JoinSessionRequest,
 } from "@/lib/api/sessions/types";
@@ -124,17 +123,6 @@ export function useJoinSession() {
   });
 }
 
-export function useTransferSession() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (data: TransferSessionRequest) => sessionsApi.transfer(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["strudels"] });
-      localStorage.removeItem("algorave_session_id");
-    },
-  });
-}
 
 export function useLiveSessions(params?: { limit?: number }) {
   return useQuery({

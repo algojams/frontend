@@ -5,8 +5,6 @@ import type {
   CreateInviteTokenRequest,
   InviteToken,
   InviteTokensListResponse,
-  TransferSessionRequest,
-  TransferSessionResponse,
   JoinSessionRequest,
   JoinSessionResponse,
   SetDiscoverableRequest,
@@ -88,12 +86,6 @@ export const sessionsApi = {
 
   join: (data: JoinSessionRequest) => {
     return apiClient.post<JoinSessionResponse>('/api/v1/sessions/join', data);
-  },
-
-  transfer: (data: TransferSessionRequest) => {
-    return apiClient.post<TransferSessionResponse>('/api/v1/sessions/transfer', data, {
-      requireAuth: true,
-    });
   },
 
   getLive: (params?: { limit?: number }) => {
