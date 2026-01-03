@@ -25,12 +25,18 @@ class AlgoraveWebSocket {
   private ws: WebSocket | null = null;
   private pingInterval: ReturnType<typeof setInterval> | null = null;
   private reconnectTimeout: ReturnType<typeof setTimeout> | null = null;
+  private connectionTimeout: ReturnType<typeof setTimeout> | null = null;
   private reconnectAttempts = 0;
   private connectionOptions: ConnectionOptions = {};
   private shouldReconnect = true;
 
   connect(options: ConnectionOptions = {}) {
-    // Clean up any existing connection first
+    // Don't interrupt an existing connection
+    if (this.ws && (this.ws.readyState === WebSocket.CONNECTING || this.ws.readyState === WebSocket.OPEN)) {
+      return;
+    }
+
+    // Clean up any stale connection
     this.cleanup();
 
     this.connectionOptions = options;
@@ -53,6 +59,7 @@ class AlgoraveWebSocket {
     try {
       this.ws = new WebSocket(wsUrl);
       this.setupEventHandlers();
+      this.startConnectionTimeout();
     } catch (error) {
       console.error("[WS] Failed to create WebSocket:", error);
       setStatus("disconnected");
@@ -60,8 +67,25 @@ class AlgoraveWebSocket {
     }
   }
 
+  private startConnectionTimeout() {
+    this.connectionTimeout = setTimeout(() => {
+      if (this.ws?.readyState === WebSocket.CONNECTING) {
+        // Connection is still pending after timeout - close and retry
+        this.ws.close();
+      }
+    }, WEBSOCKET.CONNECTION_TIMEOUT_MS);
+  }
+
+  private clearConnectionTimeout() {
+    if (this.connectionTimeout) {
+      clearTimeout(this.connectionTimeout);
+      this.connectionTimeout = null;
+    }
+  }
+
   private cleanup() {
     this.stopPing();
+    this.clearConnectionTimeout();
     if (this.reconnectTimeout) {
       clearTimeout(this.reconnectTimeout);
       this.reconnectTimeout = null;
@@ -85,6 +109,7 @@ class AlgoraveWebSocket {
     const { setStatus, setError } = useWebSocketStore.getState();
 
     this.ws.onopen = () => {
+      this.clearConnectionTimeout();
       this.reconnectAttempts = 0;
       setStatus("connected");
       setError(null);
@@ -92,6 +117,7 @@ class AlgoraveWebSocket {
     };
 
     this.ws.onclose = (event) => {
+      this.clearConnectionTimeout();
       this.stopPing();
 
       if (this.shouldReconnect && event.code !== 1000) {

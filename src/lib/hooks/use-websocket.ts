@@ -42,7 +42,11 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
     });
 
     return () => {
-      wsClient.disconnect();
+      // Only disconnect if actually connected, not if still connecting
+      // This prevents StrictMode from closing the socket mid-handshake
+      if (wsClient.isConnected) {
+        wsClient.disconnect();
+      }
       hasConnected.current = false;
     };
   }, [hasHydrated, autoConnect, options.sessionId, options.inviteToken, options.displayName]);
