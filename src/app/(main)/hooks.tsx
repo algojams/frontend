@@ -33,6 +33,7 @@ export const useEditor = ({ strudelId, forkStrudelId }: UseEditorOptions = {}) =
   const loadedStrudelIdRef = useRef<string | null>(null);
   const forkedStrudelIdRef = useRef<string | null>(null);
 
+
   // Fetch strudel for edit mode (requires auth - user's own strudel)
   const {
     data: ownStrudel,

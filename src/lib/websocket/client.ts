@@ -211,12 +211,12 @@ class AlgoraveWebSocket {
         // this handles anonymous refresh (login transition is handled by backend via previous_session_id)
         if (savedAnonymousCode && !payload.code) {
           setCode(savedAnonymousCode, true);
-          // sendCodeUpdate will also save to localStorage, keeping it for future refreshes
+          // sendCodeUpdate also saves to localStorage, keeping it for future refreshes
           this.sendCodeUpdate(savedAnonymousCode);
         } else {
           const code = payload.code || EDITOR.DEFAULT_CODE;
           setCode(code, true);
-          
+
           // if we had to use default code, sync it with the server
           if (!payload.code) {
             this.sendCodeUpdate(code);
