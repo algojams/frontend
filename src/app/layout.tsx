@@ -9,9 +9,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Algorave - Live Code Music with AI",
-  description:
-    "Create live coding music patterns with AI assistance. Collaborate in real-time using Strudel.",
+  title: "Algorave - Strudel, community, collaboration and AI",
+  description: "Create live music with strudel with AI assistance and collaborate in real-time.",
   icons: {
     icon: "/favicon.ico",
   },
@@ -23,7 +22,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${geistMono.variable} font-mono antialiased`}>
         <Providers>{children}</Providers>
       </body>
