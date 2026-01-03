@@ -27,6 +27,7 @@ class AlgoraveWebSocket {
   private maxReconnectAttempts = WEBSOCKET.RECONNECT_MAX_ATTEMPTS;
   private reconnectDelay = WEBSOCKET.RECONNECT_DELAY_MS;
   private pingInterval: ReturnType<typeof setInterval> | null = null;
+  private connectionTimeout: ReturnType<typeof setTimeout> | null = null;
   private connectionOptions: ConnectionOptions = {};
 
   connect(options: ConnectionOptions = {}) {
@@ -54,10 +55,28 @@ class AlgoraveWebSocket {
     try {
       this.ws = new WebSocket(wsUrl);
       this.setupEventHandlers();
+      this.startConnectionTimeout();
     } catch (error) {
       console.error("Failed to create WebSocket:", error);
       setStatus("disconnected");
       setError("Failed to connect to WebSocket");
+    }
+  }
+
+  private startConnectionTimeout() {
+    this.clearConnectionTimeout();
+    this.connectionTimeout = setTimeout(() => {
+      if (this.ws && this.ws.readyState === WebSocket.CONNECTING) {
+        console.log("WebSocket connection timeout");
+        this.ws.close();
+      }
+    }, WEBSOCKET.CONNECTION_TIMEOUT_MS);
+  }
+
+  private clearConnectionTimeout() {
+    if (this.connectionTimeout) {
+      clearTimeout(this.connectionTimeout);
+      this.connectionTimeout = null;
     }
   }
 
@@ -68,13 +87,15 @@ class AlgoraveWebSocket {
 
     this.ws.onopen = () => {
       console.log("WebSocket connected");
+      this.clearConnectionTimeout();
       setStatus("connected");
       this.reconnectAttempts = 0;
       this.startPing();
     };
 
     this.ws.onclose = (event) => {
-      console.log("WebSocket closed:", event.code, event.reason);
+      console.log("WebSocket closed:", { code: event.code, reason: event.reason, wasClean: event.wasClean });
+      this.clearConnectionTimeout();
       this.stopPing();
       if (event.wasClean) {
         setStatus("disconnected");
@@ -306,6 +327,7 @@ class AlgoraveWebSocket {
   }
 
   disconnect() {
+    this.clearConnectionTimeout();
     this.stopPing();
     if (this.ws) {
       this.ws.close(1000, "Client disconnect");

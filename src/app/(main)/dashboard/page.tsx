@@ -1,7 +1,6 @@
 'use client';
 
-import { useEffect, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 import Link from 'next/link';
 import {
   Card,
@@ -12,22 +11,10 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AuthGuard } from '@/components/shared/auth-guard';
-import { useStrudels } from '@/lib/hooks/use-strudels';
-import { useUIStore } from '@/lib/stores/ui';
+import { useDashboard } from './hooks';
 
 function DashboardContent() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const { data, isLoading } = useStrudels();
-  const { setTransferDialogOpen } = useUIStore();
-
-  // Check for pending session transfer
-  useEffect(() => {
-    const transferSession = searchParams.get('transfer_session');
-    if (transferSession) {
-      setTransferDialogOpen(true);
-    }
-  }, [searchParams, setTransferDialogOpen]);
+  const { data, isLoading, router } = useDashboard();
 
   return (
     <AuthGuard>

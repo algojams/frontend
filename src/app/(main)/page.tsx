@@ -1,55 +1,26 @@
 'use client';
 
-import { useCallback } from 'react';
 import { StrudelEditor } from '@/components/shared/strudel-editor';
 import { EditorToolbar } from '@/components/shared/editor-toolbar';
 import { ChatPanel } from '@/components/shared/chat-panel';
-import { useStrudelAudio } from '@/lib/hooks/use-strudel-audio';
-import { useWebSocket } from '@/lib/hooks/use-websocket';
-import { useUIStore } from '@/lib/stores/ui';
-import { useAuthStore } from '@/lib/stores/auth';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useEditor } from './hooks';
 
 export default function HomePage() {
-  const { evaluate, stop } = useStrudelAudio();
-  const { token } = useAuthStore();
-  const { isChatPanelOpen, toggleChatPanel } = useUIStore();
-  const { sendCode, sendAgentRequest, sendChatMessage, isConnected, canEdit, sessionId } =
-    useWebSocket({
-      autoConnect: true,
-    });
-
-  const handleCodeChange = useCallback(
-    (newCode: string) => {
-      if (isConnected && canEdit) {
-        sendCode(newCode);
-      }
-    },
-    [isConnected, canEdit, sendCode]
-  );
-
-  const handlePlay = useCallback(() => {
-    evaluate();
-  }, [evaluate]);
-
-  const handleStop = useCallback(() => {
-    stop();
-  }, [stop]);
-
-  const handleSendAIRequest = useCallback(
-    (query: string) => {
-      sendAgentRequest(query);
-    },
-    [sendAgentRequest]
-  );
-
-  const handleSendMessage = useCallback(
-    (message: string) => {
-      sendChatMessage(message);
-    },
-    [sendChatMessage]
-  );
+  const {
+    handleCodeChange,
+    handlePlay,
+    handleStop,
+    handleSendAIRequest,
+    handleSendMessage,
+    isChatPanelOpen,
+    toggleChatPanel,
+    isConnected,
+    canEdit,
+    sessionId,
+    token,
+  } = useEditor();
 
   return (
     <div className="flex h-[calc(100vh-3.5rem)]">
