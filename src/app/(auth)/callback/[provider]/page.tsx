@@ -50,8 +50,9 @@ function CallbackContent() {
         storage.clearRedirectUrl();
 
         if (pendingSessionId) {
-          // offer to transfer anonymous session
-          router.push(`/dashboard?transfer_session=${pendingSessionId}`);
+          // offer to transfer anonymous session on the same page they were on
+          const separator = redirectPath.includes('?') ? '&' : '?';
+          router.push(`${redirectPath}${separator}transfer_session=${pendingSessionId}`);
         } else {
           router.push(redirectPath);
         }
