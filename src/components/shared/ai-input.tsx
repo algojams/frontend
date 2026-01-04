@@ -4,15 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useEditorStore } from '@/lib/stores/editor';
 import { useWebSocketStore } from '@/lib/stores/websocket';
-import {
-  Sparkles,
-  Send,
-  Loader2,
-  X,
-  ChevronUp,
-  ChevronDown,
-  Settings,
-} from 'lucide-react';
+import { ArrowUp, Loader2, X, ChevronUp, ChevronDown } from 'lucide-react';
 import { ChatMessage } from './chat-message';
 
 interface AIInputProps {
@@ -78,58 +70,39 @@ export function AIInput({ onSendAIRequest, disabled = false }: AIInputProps) {
         </div>
       )}
 
-      <div className="p-3">
-        {isAIGenerating ? (
-          <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
-            <Loader2 className="h-3 w-3 animate-spin" />
-            Processing...
-          </p>
-        ) : (
-          <a
-            href="https://algorave.ai/docs"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
-            <Settings className="h-3.5 w-3.5" />
-            configure
-          </a>
-        )}
-
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 px-3 py-2 flex-1 rounded-none border bg-muted/30">
-            <Sparkles className="h-4 w-4 text-primary shrink-0" />
-            <input
-              type="text"
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Ask AI to help with your music..."
-              disabled={disabled || isAIGenerating}
-              className="flex-1 bg-transparent text-sm focus:outline-none disabled:opacity-50"
-            />
-            {aiMessages.length > 0 && (
-              <Button
-                size="icon"
-                variant="ghost"
-                className="h-6 w-6 shrink-0"
-                onClick={() => setIsExpanded(!isExpanded)}>
-                {isExpanded ? (
-                  <ChevronDown className="h-3 w-3" />
-                ) : (
-                  <ChevronUp className="h-3 w-3" />
-                )}
-              </Button>
-            )}
-          </div>
+      <div className="p-3 h-footer flex items-center">
+        <div className="bg-muted/50 border border-muted rounded-lg px-3 py-2 flex items-center gap-2 w-full">
+          <input
+            type="text"
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Ask algorave agent for help or code snippets..."
+            disabled={disabled || isAIGenerating}
+            className="flex-1 bg-transparent text-sm focus:outline-none disabled:opacity-50"
+          />
+          {aiMessages.length > 0 && (
+            <button
+              type="button"
+              className="text-muted-foreground hover:text-foreground transition-colors shrink-0"
+              onClick={() => setIsExpanded(!isExpanded)}
+              title={isExpanded ? 'Collapse' : 'Expand'}>
+              {isExpanded ? (
+                <ChevronDown className="h-4 w-4" />
+              ) : (
+                <ChevronUp className="h-4 w-4" />
+              )}
+            </button>
+          )}
+          {isAIGenerating && (
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground shrink-0" />
+          )}
           <Button
             size="icon"
+            className="h-7 w-7 rounded-md bg-primary hover:bg-primary/90 shrink-0"
             onClick={handleSend}
             disabled={disabled || isAIGenerating || !input.trim()}>
-            {isAIGenerating ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Send className="h-4 w-4" />
-            )}
+            <ArrowUp className="h-4 w-4" />
           </Button>
         </div>
       </div>

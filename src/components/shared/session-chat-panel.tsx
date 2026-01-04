@@ -5,7 +5,7 @@ import { useWebSocketStore } from '@/lib/stores/websocket';
 import { ChatMessage } from './chat-message';
 import { ParticipantsList } from './participants-list';
 import { Button } from '@/components/ui/button';
-import { Send } from 'lucide-react';
+import { ArrowUp } from 'lucide-react';
 
 interface SessionChatPanelProps {
   onSendMessage: (message: string) => void;
@@ -54,7 +54,7 @@ export function SessionChatPanel({
         {chatMessages.length === 0 ? (
           <div className="text-center text-muted-foreground text-sm py-8">
             <p>No messages yet.</p>
-            <p className="mt-1">Chat with other participants!</p>
+            <p className="mt-1">Join the party!</p>
           </div>
         ) : (
           chatMessages.map(msg => <ChatMessage key={msg.id} message={msg} />)
@@ -62,8 +62,8 @@ export function SessionChatPanel({
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="p-3 border-t h-footer">
-        <div className="flex gap-2">
+      <div className="p-3 border-t h-footer flex items-center">
+        <div className="bg-muted/50 border border-muted rounded-lg px-3 py-2 flex items-center gap-2 w-full">
           <input
             type="text"
             value={input}
@@ -71,10 +71,14 @@ export function SessionChatPanel({
             onKeyDown={handleKeyDown}
             placeholder="Send a message..."
             disabled={disabled}
-            className="flex-1 px-3 py-2 text-sm rounded-none border bg-background focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
+            className="flex-1 bg-transparent text-sm focus:outline-none disabled:opacity-50"
           />
-          <Button size="icon" onClick={handleSend} disabled={disabled || !input.trim()}>
-            <Send className="h-4 w-4" />
+          <Button
+            size="icon"
+            className="h-7 w-7 rounded-md bg-primary hover:bg-primary/90 shrink-0"
+            onClick={handleSend}
+            disabled={disabled || !input.trim()}>
+            <ArrowUp className="h-4 w-4" />
           </Button>
         </div>
       </div>
