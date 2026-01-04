@@ -352,7 +352,7 @@ export function SamplesPanel() {
       <div className="px-3 py-2 border-t h-footer flex items-center justify-center">
         <div className="flex items-center gap-4 opacity-80">
           <a
-            href="https://strudel.cc"
+            href="https://github.com/algoraveai"
             target="_blank"
             rel="noopener noreferrer"
             className="text-xs text-muted-foreground hover:text-foreground transition-colors">
@@ -368,7 +368,7 @@ export function SamplesPanel() {
           </a>
 
           <a
-            href="https://strudel.cc"
+            href="https://strudel.cc/workshop/getting-started"
             target="_blank"
             rel="noopener noreferrer"
             className="text-xs text-muted-foreground hover:text-foreground transition-colors">

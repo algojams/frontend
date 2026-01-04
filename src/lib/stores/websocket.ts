@@ -24,7 +24,7 @@ interface WebSocketState {
   setMyRole: (role: SessionRole | null) => void;
   setParticipants: (participants: Participant[]) => void;
   addParticipant: (participant: Participant) => void;
-  removeParticipant: (id: string) => void;
+  removeParticipant: (id: string | undefined, displayName?: string) => void;
   addMessage: (message: ChatMessage) => void;
   clearMessages: () => void;
   setSessionStateReceived: (received: boolean) => void;
@@ -54,14 +54,38 @@ export const useWebSocketStore = create<WebSocketState>(set => ({
   setSessionStateReceived: sessionStateReceived => set({ sessionStateReceived }),
 
   addParticipant: participant => {
-    return set(state => ({
-      participants: [...state.participants, participant],
-    }));
+    return set(state => {
+      // Check for existing participant to prevent duplicates
+      const exists = state.participants.some(p =>
+        // Match by userId if both have it (registered users)
+        (participant.userId && p.userId && p.userId === participant.userId) ||
+        // Match by displayName for guests (no userId)
+        (!participant.userId && !p.userId && p.displayName === participant.displayName)
+      );
+
+      if (exists) {
+        return state; // Don't add duplicate
+      }
+
+      return {
+        participants: [...state.participants, participant],
+      };
+    });
   },
 
-  removeParticipant: id => {
+  removeParticipant: (id, displayName) => {
     return set(state => ({
-      participants: state.participants.filter(p => p.id !== id),
+      participants: state.participants.filter(p => {
+        // Try to match by id/userId first
+        if (id && (p.id === id || p.userId === id)) {
+          return false; // Remove this participant
+        }
+        // Fall back to displayName match for guests
+        if (!id && displayName && !p.userId && p.displayName === displayName) {
+          return false; // Remove this participant
+        }
+        return true; // Keep this participant
+      }),
     }));
   },
   

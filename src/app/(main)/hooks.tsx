@@ -7,6 +7,7 @@ import { useStrudelAudio } from '@/lib/hooks/use-strudel-audio';
 import { useWebSocket } from '@/lib/hooks/use-websocket';
 import { useAutosave } from '@/lib/hooks/use-autosave';
 import { useStrudel, usePublicStrudel } from '@/lib/hooks/use-strudels';
+import { useSessionInvites } from '@/lib/hooks/use-sessions';
 import { useUIStore } from '@/lib/stores/ui';
 import { useAuthStore } from '@/lib/stores/auth';
 import { useEditorStore } from '@/lib/stores/editor';
@@ -68,7 +69,11 @@ export const useEditor = ({ strudelId, forkStrudelId, urlSessionId, urlInviteTok
     displayName: urlDisplayName || undefined,
   });
 
-  const showChat = hasInviteContext || isViewer || isCoAuthor || participants.length > 1;
+  // Check if host has generated any invites (only for authenticated users)
+  const { data: invitesData } = useSessionInvites(token && sessionId ? sessionId : '');
+  const hasActiveInvites = (invitesData?.tokens?.length ?? 0) > 0;
+
+  const showChat = hasInviteContext || isViewer || isCoAuthor || participants.length > 1 || hasActiveInvites;
 
   const loadedStrudelIdRef = useRef<string | null>(null);
   const forkedStrudelIdRef = useRef<string | null>(null);

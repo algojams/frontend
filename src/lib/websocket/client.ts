@@ -410,7 +410,7 @@ class AlgoraveWebSocket {
 
       case "user_left": {
         const payload = message.payload as UserLeftPayload;
-        removeParticipant(payload.user_id);
+        removeParticipant(payload.user_id, payload.display_name);
 
         addMessage({
           id: crypto.randomUUID(),
