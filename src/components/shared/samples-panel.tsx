@@ -3,9 +3,13 @@
 import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Copy, Check, ChevronDown, Search, Play } from "lucide-react";
+import { Copy, Check, ChevronDown, Search, Play, Download, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SAMPLE_DATA, ALL_SAMPLES } from "@/lib/data/samples";
+import { previewSample } from "./strudel-editor";
+
+// Track which samples have been loaded (persists across renders)
+const loadedSamples = new Set<string>();
 
 interface SampleItemProps {
   name: string;
@@ -13,6 +17,8 @@ interface SampleItemProps {
 
 function SampleItem({ name }: SampleItemProps) {
   const [copied, setCopied] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(() => loadedSamples.has(name));
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(name);
@@ -20,9 +26,18 @@ function SampleItem({ name }: SampleItemProps) {
     setTimeout(() => setCopied(false), 1500);
   };
 
-  const handlePlay = () => {
-    // TODO: Implement sample preview playback
-    console.log(`Preview sample: ${name}`);
+  const handlePlay = async () => {
+    if (!isLoaded) {
+      setIsLoading(true);
+    }
+
+    const success = await previewSample(name);
+
+    if (success && !isLoaded) {
+      loadedSamples.add(name);
+      setIsLoaded(true);
+    }
+    setIsLoading(false);
   };
 
   return (
@@ -40,9 +55,16 @@ function SampleItem({ name }: SampleItemProps) {
             e.stopPropagation();
             handlePlay();
           }}
-          title="Preview sample"
+          title={isLoaded ? "Preview sample" : "Load and preview sample"}
+          disabled={isLoading}
         >
-          <Play className="h-3 w-3" />
+          {isLoading ? (
+            <Loader2 className="h-3 w-3 animate-spin" />
+          ) : isLoaded ? (
+            <Play className="h-3 w-3" />
+          ) : (
+            <Download className="h-3 w-3" />
+          )}
         </Button>
         <Button
           size="icon"

@@ -52,7 +52,7 @@ export function EditorToolbar({
   const { status } = useWebSocketStore();
 
   return (
-    <div className="flex items-center gap-2 p-2 border-b bg-background">
+    <div className="flex items-center gap-2 p-2 border-b bg-background h-12">
       <div className="flex items-center gap-1">
         <Button
           size="sm"

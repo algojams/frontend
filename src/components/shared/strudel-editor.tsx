@@ -74,6 +74,7 @@ interface StrudelMirrorInstance {
 let strudelMirrorInstance: StrudelMirrorInstance | null = null;
 let codePollingInterval: ReturnType<typeof setInterval> | null = null;
 let getAudioContextFn: (() => AudioContext) | null = null;
+let superdoughFn: ((value: Record<string, unknown>, time: number, duration?: number) => Promise<void>) | null = null;
 
 export function StrudelEditor({ initialCode = '', onCodeChange, readOnly = false }: StrudelEditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -135,8 +136,10 @@ export function StrudelEditor({ initialCode = '', onCodeChange, readOnly = false
 
         const { getAudioContext, webaudioOutput, initAudioOnFirstClick, registerSynthSounds, samples } = webaudioModule;
 
-        // store audio context for resume
+        // store audio context and superdough for sample preview
         getAudioContextFn = getAudioContext;
+        // superdough is re-exported from @strudel/webaudio but not in types
+        superdoughFn = (webaudioModule as Record<string, unknown>).superdough as typeof superdoughFn;
         const { evalScope, silence } = coreModule;
 
         if (!containerRef.current || !isMounted) return;
@@ -361,4 +364,27 @@ export async function evaluateStrudel() {
 
 export function stopStrudel() {
   strudelMirrorInstance?.stop();
+}
+
+export async function previewSample(sampleName: string): Promise<boolean> {
+  if (!superdoughFn || !getAudioContextFn) {
+    console.warn('[strudel] Audio not initialized yet');
+    return false;
+  }
+
+  try {
+    const ctx = getAudioContextFn();
+
+    // resume audio context if suspended (browser autoplay policy)
+    if (ctx.state === 'suspended') {
+      await ctx.resume();
+    }
+
+    // trigger the sample at current time
+    await superdoughFn({ s: sampleName }, ctx.currentTime + 0.01);
+    return true;
+  } catch (error) {
+    console.warn('[strudel] Failed to preview sample:', error);
+    return false;
+  }
 }

@@ -1,10 +1,11 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { SamplesPanel } from "./samples-panel";
-import { SessionChatPanel } from "./session-chat-panel";
-import { Music, MessageCircle } from "lucide-react";
+import { useState } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { SamplesPanel } from './samples-panel';
+import { SessionChatPanel } from './session-chat-panel';
+import { Music, MessageCircle } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface SidebarPanelProps {
   showChat: boolean;
@@ -25,54 +26,66 @@ export function SidebarPanel({
   const effectiveTab = (() => {
     // user hasn't selected anything yet - use default
     if (selectedTab === null) {
-      return isViewer && showChat ? "chat" : "samples";
+      return isViewer && showChat ? 'chat' : 'samples';
     }
-    
+
     // viewer can't see samples tab - force to chat
-    if (isViewer && selectedTab === "samples" && showChat) {
-      return "chat";
+    if (isViewer && selectedTab === 'samples' && showChat) {
+      return 'chat';
     }
-    
+
     return selectedTab;
   })();
 
   return (
-    <div className="flex flex-col h-full border-l border-t bg-background">
-      <Tabs value={effectiveTab} onValueChange={setSelectedTab} className="flex flex-col h-full">
-        <TabsList className="w-full justify-start rounded-none border-b bg-transparent h-12 px-2">
+    <div className="flex flex-col h-full border-l bg-background">
+      <Tabs
+        value={effectiveTab}
+        onValueChange={setSelectedTab}
+        className="flex flex-col h-full">
+        <TabsList
+          className={cn('w-full rounded-none border-b bg-transparent h-12', {
+            'flex items-center px-1.5 gap-1.5': !isViewer && showChat,
+            'p-0': isViewer || !showChat,
+          })}>
           {!isViewer && (
             <TabsTrigger
               value="samples"
-              className="flex-1 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
-            >
-              <Music className="h-4 w-4 mr-2" />
+              className={cn('flex-1 rounded-none border-none shadow-none', {
+                'data-[state=active]:bg-transparent data-[state=active]:h-9':
+                  !isViewer && showChat,
+              })}>
+              <Music className="h-4 w-4 mr-1" />
               Samples
             </TabsTrigger>
           )}
-          
+
           {showChat && (
             <TabsTrigger
               value="chat"
-              className="flex-1 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
-            >
-              <MessageCircle className="h-4 w-4 mr-2" />
+              className={cn('flex-1 rounded-none border-none shadow-none', {
+                'data-[state=active]:bg-transparent data-[state=active]:h-9':
+                  !isViewer && showChat,
+              })}>
+              <MessageCircle className="h-4 w-4 mr-1" />
               Chat
             </TabsTrigger>
           )}
         </TabsList>
 
         {!isViewer && (
-          <TabsContent value="samples" className="flex-1 overflow-hidden mt-0 data-[state=inactive]:hidden">
+          <TabsContent
+            value="samples"
+            className="flex-1 overflow-hidden mt-0 data-[state=inactive]:hidden">
             <SamplesPanel />
           </TabsContent>
         )}
 
         {showChat && (
-          <TabsContent value="chat" className="flex-1 overflow-hidden mt-0 data-[state=inactive]:hidden">
-            <SessionChatPanel
-              onSendMessage={onSendMessage}
-              disabled={disabled}
-            />
+          <TabsContent
+            value="chat"
+            className="flex-1 overflow-hidden mt-0 data-[state=inactive]:hidden">
+            <SessionChatPanel onSendMessage={onSendMessage} disabled={disabled} />
           </TabsContent>
         )}
       </Tabs>
