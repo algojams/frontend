@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { storage } from '@/lib/utils/storage';
 
 interface EditorState {
   code: string;
@@ -55,6 +56,13 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   },
 
   setCurrentStrudel: (currentStrudelId, currentStrudelTitle) => {
+    // persist to localStorage for navigation/refresh recovery
+    if (currentStrudelId) {
+      storage.setCurrentStrudelId(currentStrudelId);
+    } else {
+      storage.clearCurrentStrudelId();
+    }
+    
     return set({ currentStrudelId, currentStrudelTitle });
   },
 

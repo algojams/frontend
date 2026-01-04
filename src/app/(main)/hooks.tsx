@@ -42,7 +42,7 @@ export const useEditor = ({ strudelId, forkStrudelId, urlSessionId, urlInviteTok
   const { token } = useAuthStore();
   const { evaluate, stop } = useStrudelAudio();
   const { saveStatus, handleSave, isAuthenticated } = useAutosave();
-  const { setCode, setCurrentStrudel, currentStrudelId } = useEditorStore();
+  const { setCode, setCurrentStrudel, currentStrudelId, markSaved } = useEditorStore();
   const { isChatPanelOpen, toggleChatPanel, setNewStrudelDialogOpen } = useUIStore();
   
   // check if we have a stored viewer session (for refresh reconnection)
@@ -72,6 +72,20 @@ export const useEditor = ({ strudelId, forkStrudelId, urlSessionId, urlInviteTok
 
   const loadedStrudelIdRef = useRef<string | null>(null);
   const forkedStrudelIdRef = useRef<string | null>(null);
+
+  // Restore strudel ID from localStorage if navigating back to editor without URL param
+  useEffect(() => {
+    // Skip if we already have a strudel ID in URL or are forking/joining session
+    if (strudelId || forkStrudelId || urlSessionId || urlInviteToken) {
+      return;
+    }
+
+    const storedStrudelId = storage.getCurrentStrudelId();
+    if (storedStrudelId) {
+      // Redirect to include the strudel ID in URL
+      router.replace(`/?id=${storedStrudelId}`, { scroll: false });
+    }
+  }, [strudelId, forkStrudelId, urlSessionId, urlInviteToken, router]);
 
   // clear anonymous code when forking
   useEffect(() => {
@@ -126,13 +140,15 @@ export const useEditor = ({ strudelId, forkStrudelId, urlSessionId, urlInviteTok
       loadedStrudelIdRef.current = strudelId;
       setCurrentStrudel(ownStrudel.id, ownStrudel.title);
       setCode(ownStrudel.code, true);
+      // Mark as saved so lastSavedCode is set correctly for dirty state
+      markSaved();
 
       // sync to WebSocket session once connected
       wsClient.onceConnected(() => {
         wsClient.sendCodeUpdate(ownStrudel.code);
       });
     }
-  }, [strudelId, ownStrudel, ownStrudelError, router, setCode, setCurrentStrudel]);
+  }, [strudelId, ownStrudel, ownStrudelError, router, setCode, setCurrentStrudel, markSaved]);
 
   // handle fork loading (load code but don't set currentStrudelId)
   useEffect(() => {

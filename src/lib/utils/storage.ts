@@ -89,4 +89,20 @@ export const storage = {
     if (typeof window === "undefined") return;
     localStorage.removeItem("algorave_viewer_session");
   },
+
+  // Current strudel being edited - for preserving context across navigation/refresh
+  getCurrentStrudelId: (): string | null => {
+    if (typeof window === "undefined") return null;
+    return localStorage.getItem("algorave_current_strudel_id");
+  },
+
+  setCurrentStrudelId: (id: string): void => {
+    if (typeof window === "undefined") return;
+    localStorage.setItem("algorave_current_strudel_id", id);
+  },
+
+  clearCurrentStrudelId: (): void => {
+    if (typeof window === "undefined") return;
+    localStorage.removeItem("algorave_current_strudel_id");
+  },
 };
