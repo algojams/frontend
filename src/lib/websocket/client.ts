@@ -58,6 +58,9 @@ class AlgoraveWebSocket {
   // track current switch_strudel request to prevent race conditions
   private currentSwitchRequestId: string | null = null;
 
+  // track strudel ID from current switch_strudel (for draft saving before store updates)
+  private currentSwitchStrudelId: string | null = null;
+
   // track initial load to distinguish from reconnects for session_state
   private initialLoadComplete = false;
 
@@ -343,14 +346,14 @@ class AlgoraveWebSocket {
         // check for draft restoration on initial load
         // restore from localStorage when:
         // - anonymous users: always restore latest draft
-        // - auth users with unsaved work (has draftId, no strudelId): restore their draft
+        // - auth users with unsaved work (no strudelId): restore their draft or latest
         const storedDraftId = storage.getCurrentDraftId();
         const latestDraft = storage.getLatestDraft();
         const currentDraft = storedDraftId ? storage.getDraft(storedDraftId) : null;
 
         const isAnonymousWithDraft = !hasToken && latestDraft;
-        // auth users with a draft ID but no strudel ID have unsaved work - trust localStorage
-        const isAuthWithUnsavedDraft = hasToken && !currentStrudelId && currentDraft;
+        // auth users without a saved strudel open: restore current draft (same tab) or latest (new tab)
+        const isAuthWithUnsavedDraft = hasToken && !currentStrudelId && (currentDraft || latestDraft);
 
         const shouldRestoreFromDraft =
           !this.initialLoadComplete &&
@@ -361,8 +364,8 @@ class AlgoraveWebSocket {
         if (this.skipCodeRestoration) {
           this.skipCodeRestoration = false;
         } else if (shouldRestoreCode) {
-          // pick the right draft: anonymous uses latest, auth uses their current draft
-          const draftToRestore = isAnonymousWithDraft ? latestDraft : currentDraft;
+          // pick the right draft: anonymous uses latest, auth prefers current then latest
+          const draftToRestore = isAnonymousWithDraft ? latestDraft : (currentDraft || latestDraft);
 
           if (shouldRestoreFromDraft && draftToRestore) {
             // restore from localStorage draft
@@ -411,11 +414,11 @@ class AlgoraveWebSocket {
         // sync draft to localStorage (skip if we just restored from existing draft)
         if (!restoredFromDraft) {
           const finalCode = payload.code || EDITOR.DEFAULT_CODE;
-          // check store, then sessionStorage, then generate new
-          const draftId = currentStrudelId || currentDraftId || storedDraftId || storage.generateDraftId();
+          // use strudel ID from switch request (store may not be updated yet), then store, then sessionStorage
+          const draftId = this.currentSwitchStrudelId || currentStrudelId || currentDraftId || storedDraftId || storage.generateDraftId();
 
-          if (!currentDraftId) {
-            // restore draft ID to store from sessionStorage or new
+          if (!currentDraftId && !this.currentSwitchStrudelId && !currentStrudelId) {
+            // only set draft ID for actual drafts, not strudel backups
             setCurrentDraftId(draftId);
           }
 
@@ -428,6 +431,11 @@ class AlgoraveWebSocket {
             })) || [],
             updatedAt: Date.now(),
           });
+        }
+
+        // clear switch strudel tracking
+        if (isCurrentSwitchResponse) {
+          this.currentSwitchStrudelId = null;
         }
 
         setSessionStateReceived(true);
@@ -737,6 +745,7 @@ class AlgoraveWebSocket {
     // generate request ID and track as current
     const requestId = crypto.randomUUID();
     this.currentSwitchRequestId = requestId;
+    this.currentSwitchStrudelId = strudelId;
 
     const payload: Record<string, unknown> = {
       strudel_id: strudelId,
@@ -822,6 +831,7 @@ class AlgoraveWebSocket {
     // reset state for fresh start on next connect
     this.initialLoadComplete = false;
     this.currentSwitchRequestId = null;
+    this.currentSwitchStrudelId = null;
     useWebSocketStore.getState().reset();
   }
 
