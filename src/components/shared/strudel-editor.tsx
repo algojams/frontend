@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useEditorStore } from '@/lib/stores/editor';
 import { useAudioStore } from '@/lib/stores/audio';
 import { useWebSocketStore } from '@/lib/stores/websocket';
@@ -11,14 +11,28 @@ import { EDITOR } from '@/lib/constants';
 const SAMPLE_SOURCES = {
   doughSamples: 'https://raw.githubusercontent.com/felixroos/dough-samples/main',
   uzuDrumkit: 'https://raw.githubusercontent.com/tidalcycles/uzu-drumkit/main',
-  dirtSamples: 'https://raw.githubusercontent.com/tidalcycles/Dirt-Samples/master/strudel.json',
+  dirtSamples:
+    'https://raw.githubusercontent.com/tidalcycles/Dirt-Samples/master/strudel.json',
 } as const;
 
 // instrument shortcuts to add to Pattern prototype (maps to .s('instrument'))
 const INSTRUMENT_SHORTCUTS = [
-  'piano', 'guitar', 'bass', 'violin', 'cello', 'flute',
-  'clarinet', 'trumpet', 'organ', 'harp', 'vibraphone',
-  'marimba', 'xylophone', 'kalimba', 'banjo', 'sitar',
+  'piano',
+  'guitar',
+  'bass',
+  'violin',
+  'cello',
+  'flute',
+  'clarinet',
+  'trumpet',
+  'organ',
+  'harp',
+  'vibraphone',
+  'marimba',
+  'xylophone',
+  'kalimba',
+  'banjo',
+  'sitar',
 ] as const;
 
 // drum machine shorthand aliases (tr808 -> RolandTR808, etc.)
@@ -32,12 +46,12 @@ const DRUM_MACHINE_ALIASES: Record<string, string> = {
   tr808: 'RolandTR808',
   tr909: 'RolandTR909',
   cr78: 'RolandCompurhythm78',
-  
+
   // linn
   lm1: 'LinnLM1',
   lm2: 'LinnLM2',
   linndrum: 'LinnDrum',
-  
+
   // other classics
   dmx: 'OberheimDMX',
   sp12: 'EmuSP12',
@@ -47,7 +61,22 @@ const DRUM_MACHINE_ALIASES: Record<string, string> = {
 };
 
 // common drum hit types
-const DRUM_HIT_TYPES = ['bd', 'sd', 'hh', 'oh', 'cp', 'lt', 'mt', 'ht', 'rs', 'cb', 'cy', 'rim', 'cr', 'rd'];
+const DRUM_HIT_TYPES = [
+  'bd',
+  'sd',
+  'hh',
+  'oh',
+  'cp',
+  'lt',
+  'mt',
+  'ht',
+  'rs',
+  'cb',
+  'cy',
+  'rim',
+  'cr',
+  'rd',
+];
 
 // error patterns to suppress (missing samples, etc.)
 const SUPPRESSED_ERROR_PATTERNS = ['not found', 'duck target orbit'];
@@ -74,9 +103,15 @@ interface StrudelMirrorInstance {
 let strudelMirrorInstance: StrudelMirrorInstance | null = null;
 let codePollingInterval: ReturnType<typeof setInterval> | null = null;
 let getAudioContextFn: (() => AudioContext) | null = null;
-let superdoughFn: ((value: Record<string, unknown>, time: number, duration?: number) => Promise<void>) | null = null;
+let superdoughFn:
+  | ((value: Record<string, unknown>, time: number, duration?: number) => Promise<void>)
+  | null = null;
 
-export function StrudelEditor({ initialCode = '', onCodeChange, readOnly = false }: StrudelEditorProps) {
+export function StrudelEditor({
+  initialCode = '',
+  onCodeChange,
+  readOnly = false,
+}: StrudelEditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const initializedRef = useRef(false);
   const onCodeChangeRef = useRef(onCodeChange);
@@ -89,10 +124,17 @@ export function StrudelEditor({ initialCode = '', onCodeChange, readOnly = false
   const hasReceivedStrudelCode = useRef(false);
 
   // check URL for strudel ID to show overlay before auth hydrates
-  // this prevents flash of draft code when loading a saved strudel
-  const urlStrudelId = typeof window !== 'undefined'
-    ? new URLSearchParams(window.location.search).get('id')
-    : null;
+  // uses useState to avoid hydration mismatch (server renders null, client updates after mount)
+  const [urlStrudelId, setUrlStrudelId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get('id');
+    
+    if (id) {
+      setUrlStrudelId(id);
+    }
+  }, []);
+
   const effectiveStrudelId = currentStrudelId || urlStrudelId;
 
   // track when we've received the strudel's code (to hide overlay)
@@ -125,7 +167,8 @@ export function StrudelEditor({ initialCode = '', onCodeChange, readOnly = false
       }
     };
     window.addEventListener('unhandledrejection', handleUnhandledRejection);
-    return () => window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+    return () =>
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
   }, []);
 
   // initialize strudelMirror (runs once on mount)
@@ -151,12 +194,19 @@ export function StrudelEditor({ initialCode = '', onCodeChange, readOnly = false
           import('@strudel/core'),
         ]);
 
-        const { getAudioContext, webaudioOutput, initAudioOnFirstClick, registerSynthSounds, samples } = webaudioModule;
+        const {
+          getAudioContext,
+          webaudioOutput,
+          initAudioOnFirstClick,
+          registerSynthSounds,
+          samples,
+        } = webaudioModule;
 
         // store audio context and superdough for sample preview
         getAudioContextFn = getAudioContext;
         // superdough is re-exported from @strudel/webaudio but not in types
-        superdoughFn = (webaudioModule as Record<string, unknown>).superdough as typeof superdoughFn;
+        superdoughFn = (webaudioModule as Record<string, unknown>)
+          .superdough as typeof superdoughFn;
         const { evalScope, silence } = coreModule;
 
         if (!containerRef.current || !isMounted) return;
@@ -186,12 +236,12 @@ export function StrudelEditor({ initialCode = '', onCodeChange, readOnly = false
                 import('@strudel/webaudio'),
                 import('@strudel/draw'),
                 import('@strudel/mini'),
-                import('@strudel/tonal'),
+                import('@strudel/tonal')
               ),
-              
+
               registerSynthSounds(),
               registerSoundfonts(),
-              
+
               // dough-samples
               samples(`${ds}/tidal-drum-machines.json`),
               samples(`${ds}/piano.json`),
@@ -199,7 +249,7 @@ export function StrudelEditor({ initialCode = '', onCodeChange, readOnly = false
               samples(`${ds}/Dirt-Samples.json`),
               samples(`${ds}/EmuSP12.json`),
               samples(`${ds}/mridangam.json`),
-              
+
               // tidalcycles samples
               samples(`${dirtSamples}?v=${Date.now()}`),
               samples(`${tc}/strudel.json`),
@@ -288,10 +338,10 @@ export function StrudelEditor({ initialCode = '', onCodeChange, readOnly = false
         // poll for code changes (strudelMirror doesn't have onChange)
         codePollingInterval = setInterval(() => {
           if (!strudelMirrorInstance) return;
-          
+
           const currentCode = strudelMirrorInstance.code || '';
           const storeCode = useEditorStore.getState().code;
-          
+
           if (currentCode !== storeCode) {
             setCode(currentCode);
             onCodeChangeRef.current?.(currentCode);
@@ -334,7 +384,9 @@ export function StrudelEditor({ initialCode = '', onCodeChange, readOnly = false
 
   // show loading overlay only when loading a saved strudel (prevents flash from draft to strudel code)
   // uses effectiveStrudelId to catch URL param before auth hydrates
-  const isLoadingStrudel = effectiveStrudelId && !hasReceivedStrudelCode.current &&
+  const isLoadingStrudel =
+    effectiveStrudelId &&
+    !hasReceivedStrudelCode.current &&
     (wsStatus === 'connecting' || (wsStatus === 'connected' && !sessionStateReceived));
 
   return (
