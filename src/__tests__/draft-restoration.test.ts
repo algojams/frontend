@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { storage, Draft } from '@/lib/utils/storage';
+import { shouldRestoreFromDraft, pickDraftToRestore } from '@/lib/utils/draft-restoration';
 import { useEditorStore } from '@/lib/stores/editor';
 import { useAuthStore } from '@/lib/stores/auth';
 
@@ -440,43 +441,15 @@ describe('Draft Restoration Logic', () => {
   });
 
   /**
-   * these tests verify the session_state handler decision logic.
-   * the actual logic is in client.ts but we test the conditions here.
+   * Tests for the shared draft restoration logic (src/lib/utils/draft-restoration.ts).
+   * These functions are used by client.ts to decide whether to restore from localStorage.
    *
-   * decision matrix:
-   * - anonymous user: ALWAYS restore from localStorage draft (server code ignored)
-   * - auth user without strudelId: restore from localStorage draft (server code ignored)
-   * - auth user with strudelId: use server code (localStorage is just backup)
+   * Decision matrix:
+   * - Anonymous user: ALWAYS restore from localStorage draft (server code ignored)
+   * - Auth user without strudelId: restore from localStorage draft
+   * - Auth user with strudelId: use server code (localStorage is just backup)
    */
   describe('session_state conflict resolution (server vs localStorage)', () => {
-    // helper to simulate the decision logic from client.ts
-    function shouldRestoreFromDraft(params: {
-      hasToken: boolean;
-      currentStrudelId: string | null;
-      latestDraft: Draft | null;
-      currentDraft: Draft | null;
-      initialLoadComplete: boolean;
-    }): boolean {
-      const { hasToken, currentStrudelId, latestDraft, currentDraft, initialLoadComplete } = params;
-
-      const isAnonymousWithDraft = !hasToken && latestDraft !== null;
-      const isAuthWithUnsavedDraft =
-        hasToken && !currentStrudelId && (currentDraft !== null || latestDraft !== null);
-
-      return !initialLoadComplete && (isAnonymousWithDraft || isAuthWithUnsavedDraft);
-    }
-
-    // helper to pick the right draft (matches client.ts logic)
-    function pickDraftToRestore(params: {
-      hasToken: boolean;
-      latestDraft: Draft | null;
-      currentDraft: Draft | null;
-    }): Draft | null {
-      const { hasToken, latestDraft, currentDraft } = params;
-      const isAnonymousWithDraft = !hasToken && latestDraft !== null;
-      return isAnonymousWithDraft ? latestDraft : currentDraft || latestDraft;
-    }
-
     describe('anonymous user scenarios', () => {
       it('should prefer localStorage draft over server code on initial load', () => {
         const localDraft: Draft = {
@@ -618,12 +591,12 @@ describe('Draft Restoration Logic', () => {
       });
 
       it('should still backup server code to localStorage for safety', () => {
-        // This tests that even though we use server code,
+        // this tests that even though we use server code,
         // we still save it to localStorage as a backup
         const strudelId = 'strudel-abc';
         const serverCode = 's("bd", "sd", "hh*2")';
 
-        // Simulate backing up server code
+        // simulate backing up server code
         storage.setDraft({
           id: strudelId,
           code: serverCode,
@@ -650,7 +623,7 @@ describe('Draft Restoration Logic', () => {
 
         storage.setDraft(localDraft);
 
-        // Verify decision logic
+        // verify decision logic
         const shouldRestore = shouldRestoreFromDraft({
           hasToken: false,
           currentStrudelId: null,
@@ -661,7 +634,7 @@ describe('Draft Restoration Logic', () => {
 
         expect(shouldRestore).toBe(true);
 
-        // localStorage code should be what gets used
+        // localStorage code should be used
         const draftToUse = pickDraftToRestore({
           hasToken: false,
           latestDraft: localDraft,
@@ -724,7 +697,7 @@ describe('Draft Restoration Logic', () => {
           initialLoadComplete: false,
         });
 
-        // Should NOT restore from draft - server is authoritative for saved strudels
+        // should NOT restore from draft - server is authoritative for saved strudels
         expect(shouldRestore).toBe(false);
       });
     });
@@ -740,7 +713,7 @@ describe('Draft Restoration Logic', () => {
 
         storage.setDraft(emptyDraft);
 
-        // Empty code is still valid - user might have intentionally cleared it
+        // empty code is still valid - user might have intentionally cleared it
         const shouldRestore = shouldRestoreFromDraft({
           hasToken: false,
           currentStrudelId: null,
@@ -770,7 +743,7 @@ describe('Draft Restoration Logic', () => {
         expect(retrieved?.conversationHistory[0].role).toBe('user');
       });
 
-      it('should prefer more recent draft when multiple exist', () => {
+      it('should prefer the most recent draft when multiple exist', () => {
         const oldDraft: Draft = {
           id: 'old-work',
           code: 's("bd")',

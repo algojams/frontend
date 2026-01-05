@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom';
-import { vi } from 'vitest';
+import { vi, beforeEach } from 'vitest';
 
-// Mock localStorage
+// mock localStorage
 const localStorageMock = (() => {
   let store: Record<string, string> = {};
   return {
@@ -22,7 +22,7 @@ const localStorageMock = (() => {
   };
 })();
 
-// Mock sessionStorage
+// mock sessionStorage
 const sessionStorageMock = (() => {
   let store: Record<string, string> = {};
   return {
@@ -46,7 +46,7 @@ const sessionStorageMock = (() => {
 Object.defineProperty(window, 'localStorage', { value: localStorageMock });
 Object.defineProperty(window, 'sessionStorage', { value: sessionStorageMock });
 
-// Reset storage between tests
+// reset storage between tests
 beforeEach(() => {
   localStorageMock.clear();
   sessionStorageMock.clear();

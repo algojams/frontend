@@ -2,6 +2,7 @@ import { useAuthStore } from "@/lib/stores/auth";
 import { useWebSocketStore } from "@/lib/stores/websocket";
 import { useEditorStore } from "@/lib/stores/editor";
 import { storage } from "@/lib/utils/storage";
+import { shouldRestoreFromDraft, pickDraftToRestore } from "@/lib/utils/draft-restoration";
 import { WS_BASE_URL, WEBSOCKET, EDITOR } from "@/lib/constants";
 import type {
   WebSocketMessage,
@@ -344,30 +345,26 @@ class AlgoraveWebSocket {
           (!this.initialLoadComplete || isCurrentSwitchResponse);
 
         // check for draft restoration on initial load
-        // restore from localStorage when:
-        // - anonymous users: always restore latest draft
-        // - auth users with unsaved work (no strudelId): restore their draft or latest
         const storedDraftId = storage.getCurrentDraftId();
         const latestDraft = storage.getLatestDraft();
         const currentDraft = storedDraftId ? storage.getDraft(storedDraftId) : null;
 
-        const isAnonymousWithDraft = !hasToken && latestDraft;
-        // auth users without a saved strudel open: restore current draft (same tab) or latest (new tab)
-        const isAuthWithUnsavedDraft = hasToken && !currentStrudelId && (currentDraft || latestDraft);
-
-        const shouldRestoreFromDraft =
-          !this.initialLoadComplete &&
-          (isAnonymousWithDraft || isAuthWithUnsavedDraft);
+        const shouldRestore = shouldRestoreFromDraft({
+          hasToken,
+          currentStrudelId,
+          latestDraft,
+          currentDraft,
+          initialLoadComplete: this.initialLoadComplete,
+        });
 
         let restoredFromDraft = false;
 
         if (this.skipCodeRestoration) {
           this.skipCodeRestoration = false;
         } else if (shouldRestoreCode) {
-          // pick the right draft: anonymous uses latest, auth prefers current then latest
-          const draftToRestore = isAnonymousWithDraft ? latestDraft : (currentDraft || latestDraft);
+          const draftToRestore = pickDraftToRestore({ hasToken, latestDraft, currentDraft });
 
-          if (shouldRestoreFromDraft && draftToRestore) {
+          if (shouldRestore && draftToRestore) {
             // restore from localStorage draft
             restoredFromDraft = true;
             setCode(draftToRestore.code, true);
