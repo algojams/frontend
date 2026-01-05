@@ -18,6 +18,7 @@ import { Switch } from "@/components/ui/switch";
 import { useCreateStrudel, useUpdateStrudel } from "@/lib/hooks/use-strudels";
 import { useEditorStore } from "@/lib/stores/editor";
 import { useUIStore } from "@/lib/stores/ui";
+import { storage } from "@/lib/utils/storage";
 import type { Strudel } from "@/lib/api/strudels/types";
 
 interface StrudelFormDialogProps {
@@ -40,7 +41,7 @@ function StrudelForm({
   const router = useRouter();
   const createStrudel = useCreateStrudel();
   const updateStrudel = useUpdateStrudel();
-  const { code, conversationHistory, setCurrentStrudel, markSaved } = useEditorStore();
+  const { code, conversationHistory, currentDraftId, setCurrentStrudel, setCurrentDraftId, markSaved } = useEditorStore();
   const { pendingForkId, setPendingForkId, pendingOpenStrudelId, setPendingOpenStrudelId } = useUIStore();
 
   // initialize state from props (only runs on mount due to key pattern)
@@ -84,6 +85,12 @@ function StrudelForm({
             content: h.content,
           })),
         });
+
+        // clean up old draft now that it's saved as a strudel
+        if (currentDraftId) {
+          storage.deleteDraft(currentDraftId);
+          setCurrentDraftId(null);
+        }
 
         setCurrentStrudel(newStrudel.id, newStrudel.title);
         markSaved();

@@ -220,18 +220,19 @@ export const useEditor = ({
     if (publicStrudel && forkedStrudelIdRef.current !== forkStrudelId) {
       forkedStrudelIdRef.current = forkStrudelId;
 
-      // generate new draft ID for the fork
-      const newDraftId = storage.generateDraftId();
+      // use deterministic draft ID based on forked strudel
+      // this prevents duplicate drafts when re-forking the same strudel
+      const forkDraftId = `fork_${forkStrudelId}`;
 
       // set local state
       setCurrentStrudel(null, null);
-      setCurrentDraftId(newDraftId);
+      setCurrentDraftId(forkDraftId);
       setCode(publicStrudel.code, true);
       setConversationHistory([]);
 
-      // save fork to localStorage immediately (for anonymous users)
+      // save fork to localStorage (overwrites existing fork of same strudel)
       storage.setDraft({
-        id: newDraftId,
+        id: forkDraftId,
         code: publicStrudel.code,
         conversationHistory: [],
         updatedAt: Date.now(),

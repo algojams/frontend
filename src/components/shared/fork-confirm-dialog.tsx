@@ -27,11 +27,15 @@ export function ForkConfirmDialog() {
   } = useUIStore();
 
   const { token } = useAuthStore();
-  const { isDirty, code, currentStrudelId } = useEditorStore();
+  const { isDirty, code, currentStrudelId, currentDraftId } = useEditorStore();
 
   const isAuthenticated = !!token;
   const hasUnsavedChanges =
     isDirty || (!currentStrudelId && code !== EDITOR.DEFAULT_CODE);
+
+  // check if user is re-forking the same strudel they already have a fork of
+  const isReforkingSameStrudel =
+    pendingForkId && currentDraftId === `fork_${pendingForkId}`;
 
   // Clear pending fork if user navigates away from explore page
   useEffect(() => {
@@ -63,22 +67,25 @@ export function ForkConfirmDialog() {
 
   // Not authenticated - prompt to login or fork anyway
   if (!isAuthenticated) {
+    const description = isReforkingSameStrudel
+      ? 'Your changes to this fork will be overwritten with the original. Sign in to save first, or continue as a guest.'
+      : hasUnsavedChanges
+        ? 'Sign in to save your current work before forking, or continue as a guest. Your current unsaved work will be lost.'
+        : 'Sign in to save your current work before forking, or continue as a guest.';
+
     return (
       <Dialog open={!!pendingForkId} onOpenChange={(open) => !open && handleClose()}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Fork Strudel</DialogTitle>
-            <DialogDescription>
-              Sign in to save your current work before forking, or continue as a guest.
-              {hasUnsavedChanges && ' Your current unsaved work will be lost.'}
-            </DialogDescription>
+            <DialogTitle>{isReforkingSameStrudel ? 'Re-fork Strudel' : 'Fork Strudel'}</DialogTitle>
+            <DialogDescription>{description}</DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">
             <Button variant="ghost" onClick={handleClose}>
               Cancel
             </Button>
             <Button variant="outline" onClick={handleFork}>
-              {hasUnsavedChanges ? 'Fork Anyway' : 'Fork'}
+              {isReforkingSameStrudel ? 'Overwrite & Re-fork' : hasUnsavedChanges ? 'Fork Anyway' : 'Fork'}
             </Button>
             <Button onClick={handleLogin}>Sign In</Button>
           </DialogFooter>
@@ -89,23 +96,26 @@ export function ForkConfirmDialog() {
 
   // Authenticated with unsaved changes
   if (hasUnsavedChanges) {
+    const title = isReforkingSameStrudel ? 'Re-fork Strudel' : 'Unsaved Changes';
+    const description = isReforkingSameStrudel
+      ? 'Your changes to this fork will be overwritten with the original. Save first to keep your work.'
+      : currentStrudelId
+        ? "You have changes that haven't been autosaved yet. If you fork now, these changes will be lost."
+        : 'You have unsaved work that will be lost if you fork without saving first.';
+
     return (
       <Dialog open={!!pendingForkId} onOpenChange={(open) => !open && handleClose()}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Unsaved Changes</DialogTitle>
-            <DialogDescription>
-              {currentStrudelId
-                ? "You have changes that haven't been autosaved yet. If you fork now, these changes will be lost."
-                : 'You have unsaved work that will be lost if you fork without saving first.'}
-            </DialogDescription>
+            <DialogTitle>{title}</DialogTitle>
+            <DialogDescription>{description}</DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">
             <Button variant="ghost" onClick={handleClose}>
               Cancel
             </Button>
             <Button variant="outline" onClick={handleFork}>
-              Discard & Fork
+              {isReforkingSameStrudel ? 'Overwrite & Re-fork' : 'Discard & Fork'}
             </Button>
             {!currentStrudelId && (
               <Button onClick={handleSaveFirst}>Save First</Button>
