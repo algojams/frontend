@@ -390,6 +390,16 @@ class AlgoraveWebSocket {
 
           case 'USE_SERVER_CODE': {
             setCode(decision.codeAction.code, true);
+            // restore conversation history from server
+            if (payload.conversation_history?.length) {
+              setConversationHistory(payload.conversation_history.map((msg, i) => ({
+                id: `server-${i}`,
+                role: msg.role,
+                content: msg.content,
+                timestamp: Date.now(),
+                is_code_response: msg.role === 'assistant',
+              })));
+            }
             break;
           }
 

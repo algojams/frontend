@@ -106,8 +106,10 @@ export const useEditor = ({
     if (previousId === undefined) {
       previousStrudelIdRef.current = currentId;
 
-      // if mounting with a strudel ID, switch to it after connection
-      if (currentId && !urlInviteToken && !forkStrudelId) {
+      // only send switch_strudel on fresh sessions (no stored session ID)
+      // on refresh/reconnect, the session already has the strudel context from session_state
+      const hasStoredSession = !!storage.getSessionId();
+      if (currentId && !urlInviteToken && !forkStrudelId && !hasStoredSession) {
         wsClient.onceConnected(() => {
           wsClient.sendSwitchStrudel(currentId).catch(() => {});
         });
