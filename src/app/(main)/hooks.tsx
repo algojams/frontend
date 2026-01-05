@@ -47,8 +47,10 @@ export const useEditor = ({
   const router = useRouter();
 
   const { token } = useAuthStore();
+  const agentGenerate = useAgentGenerate();
   const { evaluate, stop } = useStrudelAudio();
   const { saveStatus, handleSave, isAuthenticated } = useAutosave();
+  const { isChatPanelOpen, toggleChatPanel, setNewStrudelDialogOpen } = useUIStore();
   const {
     setCode,
     setCurrentStrudel,
@@ -57,8 +59,6 @@ export const useEditor = ({
     markSaved,
     setConversationHistory,
   } = useEditorStore();
-  const { isChatPanelOpen, toggleChatPanel, setNewStrudelDialogOpen } = useUIStore();
-  const agentGenerate = useAgentGenerate();
 
   // check if we have a stored viewer session (for refresh reconnection)
   const storedViewerSession =
@@ -98,22 +98,24 @@ export const useEditor = ({
   const forkedStrudelIdRef = useRef<string | null>(null);
   const previousStrudelIdRef = useRef<string | null | undefined>(undefined);
 
-  // track strudel navigation for ref updates
+  // clear conversation when strudel changes to prevent bleed between strudels
   useEffect(() => {
     const currentId = strudelId || null;
     const previousId = previousStrudelIdRef.current;
 
-    // first render initialization
+    // first render - just initialize ref
     if (previousId === undefined) {
       previousStrudelIdRef.current = currentId;
       return;
     }
 
-    // update ref when strudel ID changes
+    // strudel changed - clear conversation immediately
+    // loading effect will set new conversation when data arrives
     if (currentId !== previousId) {
       previousStrudelIdRef.current = currentId;
+      setConversationHistory([]);
     }
-  }, [strudelId]);
+  }, [strudelId, setConversationHistory]);
 
   // restore strudel from localStorage if navigating back to editor without URL param
   useEffect(() => {
@@ -147,7 +149,7 @@ export const useEditor = ({
 
   const isLoadingStrudel = isLoadingOwnStrudel || isLoadingPublicStrudel;
 
-  // handle strudel metadata and errors (code comes from switch_strudel -> session_state)
+  // handle strudel loading from REST API
   useEffect(() => {
     if (!strudelId) {
       if (loadedStrudelIdRef.current) {
@@ -159,24 +161,50 @@ export const useEditor = ({
     // handle errors from API
     if (ownStrudelError) {
       const status = (ownStrudelError as { status?: number })?.status;
-      if (status === 404) {
-        toast.error('Strudel not found');
-      } else if (status === 403) {
-        toast.error("You don't have access to this strudel");
-      } else {
-        toast.error('Failed to load strudel');
+
+      switch (status) {
+        case 404:
+          toast.error('Strudel not found');
+          break;
+        case 403:
+          toast.error("You don't have access to this strudel");
+          break;
+        default:
+          toast.error('Failed to load strudel');
+          break;
       }
+      
       router.replace('/');
       return;
     }
 
-    // set strudel metadata (code + conversation come from session_state via switch_strudel)
+    // load strudel data from REST API
     if (ownStrudel && loadedStrudelIdRef.current !== strudelId) {
       loadedStrudelIdRef.current = strudelId;
+
+      // set code and conversation history from strudel
+      setCode(ownStrudel.code, true);
+      setConversationHistory(ownStrudel.conversation_history || []);
+
+      // set strudel metadata
       setCurrentStrudel(ownStrudel.id, ownStrudel.title);
       markSaved();
+
+      // sync code to WebSocket session
+      wsClient.onceConnected(() => {
+        wsClient.sendCodeUpdate(ownStrudel.code);
+      });
     }
-  }, [strudelId, ownStrudel, ownStrudelError, router, setCurrentStrudel, markSaved]);
+  }, [
+    strudelId,
+    ownStrudel,
+    ownStrudelError,
+    router,
+    setCode,
+    setConversationHistory,
+    setCurrentStrudel,
+    markSaved,
+  ]);
 
   // handle fork loading (load code but don't set currentStrudelId)
   useEffect(() => {
