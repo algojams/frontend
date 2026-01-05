@@ -229,6 +229,11 @@ class AlgoraveWebSocket {
 
     if (this.reconnectAttempts >= WEBSOCKET.RECONNECT_MAX_ATTEMPTS) {
       setStatus("disconnected");
+
+      // fallback to localStorage if we never got session_state
+      if (!this.initialLoadComplete) {
+        this.restoreFromLocalStorage();
+      }
       return;
     }
 
@@ -335,36 +340,46 @@ class AlgoraveWebSocket {
           !this.skipCodeRestoration &&
           (!this.initialLoadComplete || isCurrentSwitchResponse);
 
-        // check for draft restoration for anonymous users on initial load
-        // always restore the latest draft (works across tabs/new windows)
+        // check for draft restoration on initial load
+        // restore from localStorage when:
+        // - anonymous users: always restore latest draft
+        // - auth users with unsaved work (has draftId, no strudelId): restore their draft
+        const storedDraftId = storage.getCurrentDraftId();
         const latestDraft = storage.getLatestDraft();
+        const currentDraft = storedDraftId ? storage.getDraft(storedDraftId) : null;
+
+        const isAnonymousWithDraft = !hasToken && latestDraft;
+        // auth users with a draft ID but no strudel ID have unsaved work - trust localStorage
+        const isAuthWithUnsavedDraft = hasToken && !currentStrudelId && currentDraft;
+
         const shouldRestoreFromDraft =
-          !hasToken &&
           !this.initialLoadComplete &&
-          !payload.code &&
-          latestDraft;
+          (isAnonymousWithDraft || isAuthWithUnsavedDraft);
 
         let restoredFromDraft = false;
 
         if (this.skipCodeRestoration) {
           this.skipCodeRestoration = false;
         } else if (shouldRestoreCode) {
-          if (shouldRestoreFromDraft && latestDraft) {
-            // anonymous user - restore latest draft from localStorage
+          // pick the right draft: anonymous uses latest, auth uses their current draft
+          const draftToRestore = isAnonymousWithDraft ? latestDraft : currentDraft;
+
+          if (shouldRestoreFromDraft && draftToRestore) {
+            // restore from localStorage draft
             restoredFromDraft = true;
-            setCode(latestDraft.code, true);
-            setCurrentDraftId(latestDraft.id);
-            if (latestDraft.conversationHistory?.length) {
-              setConversationHistory(latestDraft.conversationHistory.map((msg, i) => ({
+            setCode(draftToRestore.code, true);
+            setCurrentDraftId(draftToRestore.id);
+            if (draftToRestore.conversationHistory?.length) {
+              setConversationHistory(draftToRestore.conversationHistory.map((msg, i) => ({
                 id: `restored-${i}`,
                 role: msg.role,
                 content: msg.content,
-                timestamp: latestDraft.updatedAt,
+                timestamp: draftToRestore.updatedAt,
                 is_code_response: msg.role === 'assistant',
               })));
             }
             // sync restored draft to server
-            this.sendCodeUpdate(latestDraft.code);
+            this.sendCodeUpdate(draftToRestore.code);
           } else {
             const code = payload.code || EDITOR.DEFAULT_CODE;
             setCode(code, true);
@@ -396,10 +411,11 @@ class AlgoraveWebSocket {
         // sync draft to localStorage (skip if we just restored from existing draft)
         if (!restoredFromDraft) {
           const finalCode = payload.code || EDITOR.DEFAULT_CODE;
-          const draftId = currentStrudelId || currentDraftId || storage.generateDraftId();
+          // check store, then sessionStorage, then generate new
+          const draftId = currentStrudelId || currentDraftId || storedDraftId || storage.generateDraftId();
 
-          if (!currentDraftId && !currentStrudelId) {
-            // new unsaved draft - set the draft ID
+          if (!currentDraftId) {
+            // restore draft ID to store from sessionStorage or new
             setCurrentDraftId(draftId);
           }
 
@@ -759,6 +775,29 @@ class AlgoraveWebSocket {
 
       this.send("switch_strudel", payload);
     });
+  }
+
+  /**
+   * Restore editor state from localStorage when WS connection fails.
+   * Used as fallback so user isn't blocked from working.
+   */
+  private restoreFromLocalStorage() {
+    const { setCode, setCurrentDraftId, setConversationHistory } = useEditorStore.getState();
+    const latestDraft = storage.getLatestDraft();
+
+    if (latestDraft) {
+      setCode(latestDraft.code, true);
+      setCurrentDraftId(latestDraft.id);
+      if (latestDraft.conversationHistory?.length) {
+        setConversationHistory(latestDraft.conversationHistory.map((msg, i) => ({
+          id: `restored-${i}`,
+          role: msg.role,
+          content: msg.content,
+          timestamp: latestDraft.updatedAt,
+          is_code_response: msg.role === 'assistant',
+        })));
+      }
+    }
   }
 
   private startPing() {

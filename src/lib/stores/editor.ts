@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { storage } from '@/lib/utils/storage';
-import { useAuthStore } from '@/lib/stores/auth';
 
 // debounce draft saves to avoid excessive writes
 let draftSaveTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -93,32 +92,30 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       ...(fromRemote ? { lastSyncedCode: code } : {}),
     });
 
-    // save draft for anonymous users on local code changes
+    // save draft to localStorage on local code changes (backup for all users)
     if (!fromRemote) {
-      const hasToken = !!useAuthStore.getState().token;
-      if (!hasToken) {
-        // debounce draft saves
-        if (draftSaveTimeout) {
-          clearTimeout(draftSaveTimeout);
-        }
-        draftSaveTimeout = setTimeout(() => {
-          const { currentDraftId, conversationHistory } = get();
-          const draftId = currentDraftId || storage.generateDraftId();
-
-          if (!currentDraftId) {
-            // store the new draft ID
-            storage.setCurrentDraftId(draftId);
-            set({ currentDraftId: draftId });
-          }
-
-          storage.setDraft({
-            id: draftId,
-            code,
-            conversationHistory,
-            updatedAt: Date.now(),
-          });
-        }, DRAFT_SAVE_DEBOUNCE_MS);
+      // debounce draft saves
+      if (draftSaveTimeout) {
+        clearTimeout(draftSaveTimeout);
       }
+      draftSaveTimeout = setTimeout(() => {
+        const { currentDraftId, currentStrudelId, conversationHistory } = get();
+        // use strudel ID as draft ID for saved strudels, otherwise generate/use draft ID
+        const draftId = currentStrudelId || currentDraftId || storage.generateDraftId();
+
+        if (!currentDraftId && !currentStrudelId) {
+          // store the new draft ID
+          storage.setCurrentDraftId(draftId);
+          set({ currentDraftId: draftId });
+        }
+
+        storage.setDraft({
+          id: draftId,
+          code,
+          conversationHistory,
+          updatedAt: Date.now(),
+        });
+      }, DRAFT_SAVE_DEBOUNCE_MS);
     }
 
     return result;
@@ -129,18 +126,16 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       conversationHistory: [...state.conversationHistory, { role, content }],
     }));
 
-    // save draft for anonymous users when conversation updates
-    const hasToken = !!useAuthStore.getState().token;
-    if (!hasToken) {
-      const { currentDraftId, code, conversationHistory } = get();
-      if (currentDraftId) {
-        storage.setDraft({
-          id: currentDraftId,
-          code,
-          conversationHistory,
-          updatedAt: Date.now(),
-        });
-      }
+    // save draft to localStorage when conversation updates (backup for all users)
+    const { currentDraftId, currentStrudelId, code, conversationHistory } = get();
+    const draftId = currentStrudelId || currentDraftId;
+    if (draftId) {
+      storage.setDraft({
+        id: draftId,
+        code,
+        conversationHistory,
+        updatedAt: Date.now(),
+      });
     }
 
     return result;

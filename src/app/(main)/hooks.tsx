@@ -99,14 +99,21 @@ export const useEditor = ({
 
   // switch strudel context when navigating between strudels
   useEffect(() => {
-    // skip on first render (undefined means not initialized yet)
-    if (previousStrudelIdRef.current === undefined) {
-      previousStrudelIdRef.current = strudelId || null;
-      return;
-    }
-
     const currentId = strudelId || null;
     const previousId = previousStrudelIdRef.current;
+
+    // first render initialization
+    if (previousId === undefined) {
+      previousStrudelIdRef.current = currentId;
+
+      // if mounting with a strudel ID, switch to it after connection
+      if (currentId && !urlInviteToken && !forkStrudelId) {
+        wsClient.onceConnected(() => {
+          wsClient.sendSwitchStrudel(currentId).catch(() => {});
+        });
+      }
+      return;
+    }
 
     // if strudel ID changed (including from null to something or vice versa)
     if (currentId !== previousId) {
@@ -119,7 +126,9 @@ export const useEditor = ({
 
       // switch strudel context within same session
       if (currentId) {
-        wsClient.sendSwitchStrudel(currentId).catch(() => {});
+        wsClient.onceConnected(() => {
+          wsClient.sendSwitchStrudel(currentId).catch(() => {});
+        });
       }
       // note: switching to null (fresh scratch) is handled by new-strudel-dialog
     }
