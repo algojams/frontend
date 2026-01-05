@@ -12,6 +12,7 @@ interface EditorState {
   conversationHistory: Array<{ role: string; content: string }>;
   currentStrudelId: string | null;
   currentStrudelTitle: string | null;
+  currentDraftId: string | null;
 
   setCode: (code: string, fromRemote?: boolean) => void;
   setCursor: (line: number, col: number) => void;
@@ -19,6 +20,7 @@ interface EditorState {
   markSynced: () => void;
   markSaved: () => void;
   setCurrentStrudel: (id: string | null, title: string | null) => void;
+  setCurrentDraftId: (id: string | null) => void;
   addToHistory: (role: string, content: string) => void;
   setConversationHistory: (history: Array<{ role: string; content: string }>) => void;
   clearHistory: () => void;
@@ -36,6 +38,7 @@ const initialState = {
   conversationHistory: [] as Array<{ role: string; content: string }>,
   currentStrudelId: null as string | null,
   currentStrudelTitle: null as string | null,
+  currentDraftId: null as string | null,
 };
 
 export const useEditorStore = create<EditorState>((set, get) => ({
@@ -62,8 +65,19 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     } else {
       storage.clearCurrentStrudelId();
     }
-    
+
     return set({ currentStrudelId, currentStrudelTitle });
+  },
+
+  setCurrentDraftId: (currentDraftId) => {
+    // persist to localStorage for navigation/refresh recovery
+    if (currentDraftId) {
+      storage.setCurrentDraftId(currentDraftId);
+    } else {
+      storage.clearCurrentDraftId();
+    }
+
+    return set({ currentDraftId });
   },
 
   setCode: (code, fromRemote = false) => {

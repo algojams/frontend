@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { wsClient } from "@/lib/websocket/client";
 import { useWebSocketStore } from "@/lib/stores/websocket";
+import { storage } from "@/lib/utils/storage";
 import Link from "next/link";
 
 function JoinContent() {
@@ -20,19 +21,15 @@ function JoinContent() {
   const sessionId = searchParams.get("session_id");
 
   useEffect(() => {
-    // redirect to editor once connected, preserving session info in URL
+    // redirect to editor once connected, storing session info in localStorage
     if (status === "connected" && sessionId && inviteToken) {
-      const name = displayName.trim();
-      const params = new URLSearchParams({
-        session_id: sessionId,
-        invite: inviteToken,
-      });
+      const name = displayName.trim() || undefined;
 
-      if (name) {
-        params.set("name", name);
-      }
+      // store viewer session for reconnection (survives refresh)
+      storage.setViewerSession(sessionId, inviteToken, name);
 
-      router.push(`/?${params.toString()}`);
+      // redirect without URL params (cleaner URL, session persisted in storage)
+      router.push("/");
     }
   }, [status, router, sessionId, inviteToken, displayName]);
 

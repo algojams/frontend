@@ -14,6 +14,7 @@ import { useUIStore } from '@/lib/stores/ui';
 import { useAuthStore } from '@/lib/stores/auth';
 import { useEditorStore } from '@/lib/stores/editor';
 import { wsClient } from '@/lib/websocket/client';
+import { storage } from '@/lib/utils/storage';
 import { EDITOR } from '@/lib/constants';
 
 export function NewStrudelDialog() {
@@ -26,7 +27,7 @@ export function NewStrudelDialog() {
   } = useUIStore();
   
   const { token } = useAuthStore();
-  const { isDirty, code, currentStrudelId, setCode, setCurrentStrudel, clearHistory } =
+  const { isDirty, code, currentStrudelId, setCode, setCurrentStrudel, setCurrentDraftId, clearHistory } =
     useEditorStore();
 
   const isAuthenticated = !!token;
@@ -43,10 +44,16 @@ export function NewStrudelDialog() {
   };
 
   const handleClearEditor = () => {
+    const newDraftId = storage.generateDraftId();
+
     setCode(EDITOR.DEFAULT_CODE, true);
     setCurrentStrudel(null, null);
+    setCurrentDraftId(newDraftId);
     clearHistory();
-    wsClient.sendCodeUpdate(EDITOR.DEFAULT_CODE);
+
+    wsClient.skipCodeRestoration = true;
+    wsClient.sendSwitchStrudel(null).catch(() => {});
+
     setNewStrudelDialogOpen(false);
   };
 
@@ -56,17 +63,17 @@ export function NewStrudelDialog() {
   };
 
   const handleStartNew = () => {
-    // reset editor state
+    const newDraftId = storage.generateDraftId();
+
     setCode(EDITOR.DEFAULT_CODE, true);
     setCurrentStrudel(null, null);
+    setCurrentDraftId(newDraftId);
     clearHistory();
 
-    // force new session so conversation history doesn't overlap
-    wsClient.reconnectWithNewSession();
+    wsClient.skipCodeRestoration = true;
+    wsClient.sendSwitchStrudel(null).catch(() => {});
 
-    // clear URL (remove strudel ID)
     router.replace('/', { scroll: false });
-
     setNewStrudelDialogOpen(false);
   };
 

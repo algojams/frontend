@@ -12,7 +12,8 @@ export type ClientMessageType =
   | "chat_message"
   | "play"
   | "stop"
-  | "ping";
+  | "ping"
+  | "switch_strudel";
 
 export type ServerMessageType =
   | "session_state"
@@ -45,6 +46,7 @@ export interface CodeUpdatePayload {
 
 export interface AgentRequestPayload {
   user_query: string;
+  request_id: string;
   editor_state?: string;
   conversation_history?: Array<{ role: string; content: string }>;
   provider?: "anthropic" | "openai";
@@ -53,6 +55,13 @@ export interface AgentRequestPayload {
 
 export interface ChatMessagePayload {
   message: string;
+}
+
+export interface SwitchStrudelPayload {
+  strudel_id: string | null;
+  request_id: string;
+  code?: string;
+  conversation_history?: Array<{ role: string; content: string }>;
 }
 
 // server payloads
@@ -82,6 +91,8 @@ export interface SessionStatePayload {
     display_name: string;
     role: SessionRole;
   }>;
+  // echoed from switch_strudel request for correlation
+  request_id?: string;
 }
 
 export interface CodeUpdateBroadcastPayload {
@@ -104,6 +115,8 @@ export interface AgentResponsePayload {
   docs_retrieved: number;
   examples_retrieved: number;
   model: string;
+  // echoed from agent_request for correlation
+  request_id?: string;
 }
 
 export interface ChatMessageBroadcastPayload {
@@ -126,6 +139,8 @@ export interface ErrorPayload {
   error: string;
   message: string;
   details?: string;
+  // included when error is response to a specific request
+  request_id?: string;
 }
 
 // chat message for UI

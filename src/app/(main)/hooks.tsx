@@ -28,10 +28,15 @@ interface UseEditorOptions {
   urlDisplayName?: string | null;
 }
 
-export const useEditor = ({ strudelId, forkStrudelId, urlSessionId, urlInviteToken, urlDisplayName }: UseEditorOptions = {}) => {
+export const useEditor = ({
+  strudelId,
+  forkStrudelId,
+  urlSessionId,
+  urlInviteToken,
+  urlDisplayName,
+}: UseEditorOptions = {}) => {
   // set skip flag before webSocket connects
   // this prevents session_state from restoring old code when forking
-
   useLayoutEffect(() => {
     if (forkStrudelId && !strudelId) {
       wsClient.skipCodeRestoration = true;
@@ -43,11 +48,19 @@ export const useEditor = ({ strudelId, forkStrudelId, urlSessionId, urlInviteTok
   const { token } = useAuthStore();
   const { evaluate, stop } = useStrudelAudio();
   const { saveStatus, handleSave, isAuthenticated } = useAutosave();
-  const { setCode, setCurrentStrudel, currentStrudelId, markSaved, setConversationHistory } = useEditorStore();
+  const {
+    setCode,
+    setCurrentStrudel,
+    setCurrentDraftId,
+    currentStrudelId,
+    markSaved,
+    setConversationHistory,
+  } = useEditorStore();
   const { isChatPanelOpen, toggleChatPanel, setNewStrudelDialogOpen } = useUIStore();
-  
+
   // check if we have a stored viewer session (for refresh reconnection)
-  const storedViewerSession = typeof window !== 'undefined' ? storage.getViewerSession() : null;
+  const storedViewerSession =
+    typeof window !== 'undefined' ? storage.getViewerSession() : null;
   const hasInviteContext = !!(urlInviteToken || storedViewerSession?.inviteToken);
 
   const {
@@ -69,19 +82,24 @@ export const useEditor = ({ strudelId, forkStrudelId, urlSessionId, urlInviteTok
     displayName: urlDisplayName || undefined,
   });
 
-  // Check if host has generated any invites (only for authenticated users)
+  // check if host has generated any invites (only for authenticated users)
   const { data: invitesData } = useSessionInvites(token && sessionId ? sessionId : '');
   const hasActiveInvites = (invitesData?.tokens?.length ?? 0) > 0;
 
-  const showChat = hasInviteContext || isViewer || isCoAuthor || participants.length > 1 || hasActiveInvites;
+  const showChat =
+    hasInviteContext ||
+    isViewer ||
+    isCoAuthor ||
+    participants.length > 1 ||
+    hasActiveInvites;
 
   const loadedStrudelIdRef = useRef<string | null>(null);
   const forkedStrudelIdRef = useRef<string | null>(null);
   const previousStrudelIdRef = useRef<string | null | undefined>(undefined);
 
-  // Create new session when switching between strudels to prevent conversation history overlap
+  // switch strudel context when navigating between strudels
   useEffect(() => {
-    // Skip on first render (undefined means not initialized yet)
+    // skip on first render (undefined means not initialized yet)
     if (previousStrudelIdRef.current === undefined) {
       previousStrudelIdRef.current = strudelId || null;
       return;
@@ -90,40 +108,38 @@ export const useEditor = ({ strudelId, forkStrudelId, urlSessionId, urlInviteTok
     const currentId = strudelId || null;
     const previousId = previousStrudelIdRef.current;
 
-    // If strudel ID changed (including from null to something or vice versa)
+    // if strudel ID changed (including from null to something or vice versa)
     if (currentId !== previousId) {
       previousStrudelIdRef.current = currentId;
 
-      // Don't create new session if joining via invite or forking
+      // don't switch context if joining via invite or forking
       if (urlInviteToken || forkStrudelId) {
         return;
       }
 
-      // Force new session so conversation history doesn't overlap
-      wsClient.reconnectWithNewSession();
+      // switch strudel context within same session
+      if (currentId) {
+        wsClient.sendSwitchStrudel(currentId).catch(() => {});
+      }
+      // note: switching to null (fresh scratch) is handled by new-strudel-dialog
     }
   }, [strudelId, urlInviteToken, forkStrudelId]);
 
-  // Restore strudel ID from localStorage if navigating back to editor without URL param
+  // restore strudel from localStorage if navigating back to editor without URL param
   useEffect(() => {
-    // Skip if we already have a strudel ID in URL or are forking/joining session
+    // skip if we already have a strudel ID in URL or are forking/joining session
     if (strudelId || forkStrudelId || urlSessionId || urlInviteToken) {
       return;
     }
 
+    // check for saved strudel
     const storedStrudelId = storage.getCurrentStrudelId();
     if (storedStrudelId) {
-      // Redirect to include the strudel ID in URL
+      // redirect to include the strudel ID in URL
       router.replace(`/?id=${storedStrudelId}`, { scroll: false });
     }
+    // note: unsaved drafts are accessed via /drafts page, not auto-restored
   }, [strudelId, forkStrudelId, urlSessionId, urlInviteToken, router]);
-
-  // clear anonymous code when forking
-  useEffect(() => {
-    if (forkStrudelId && !strudelId) {
-      storage.clearAnonymousCode();
-    }
-  }, [forkStrudelId, strudelId]);
 
   // fetch strudel for edit mode (requires auth - user's own strudel)
   const {
@@ -141,18 +157,16 @@ export const useEditor = ({ strudelId, forkStrudelId, urlSessionId, urlInviteTok
 
   const isLoadingStrudel = isLoadingOwnStrudel || isLoadingPublicStrudel;
 
-  // handle strudel loading (edit mode)
+  // handle strudel metadata and errors (code comes from switch_strudel -> session_state)
   useEffect(() => {
     if (!strudelId) {
-      // no strudel ID - reset if we had one before
       if (loadedStrudelIdRef.current) {
         loadedStrudelIdRef.current = null;
       }
-
       return;
     }
 
-    // handle errors
+    // handle errors from API
     if (ownStrudelError) {
       const status = (ownStrudelError as { status?: number })?.status;
       if (status === 404) {
@@ -166,57 +180,53 @@ export const useEditor = ({ strudelId, forkStrudelId, urlSessionId, urlInviteTok
       return;
     }
 
-    // load strudel data once fetched
+    // set strudel metadata (code + conversation come from session_state via switch_strudel)
     if (ownStrudel && loadedStrudelIdRef.current !== strudelId) {
       loadedStrudelIdRef.current = strudelId;
       setCurrentStrudel(ownStrudel.id, ownStrudel.title);
-      setCode(ownStrudel.code, true);
-      setConversationHistory(ownStrudel.conversation_history || []);
-      // Mark as saved so lastSavedCode is set correctly for dirty state
       markSaved();
-
-      // sync to WebSocket session once connected
-      wsClient.onceConnected(() => {
-        wsClient.sendCodeUpdate(ownStrudel.code);
-      });
     }
-  }, [strudelId, ownStrudel, ownStrudelError, router, setCode, setCurrentStrudel, markSaved]);
+  }, [strudelId, ownStrudel, ownStrudelError, router, setCurrentStrudel, markSaved]);
 
   // handle fork loading (load code but don't set currentStrudelId)
   useEffect(() => {
     if (!forkStrudelId || strudelId) {
-      // skip if no fork ID or if we're in edit mode
       return;
     }
 
     // handle errors
     if (publicStrudelError) {
       const status = (publicStrudelError as { status?: number })?.status;
-
       if (status === 404) {
         toast.error('Strudel not found');
       } else {
         toast.error('Failed to load strudel');
       }
-
       router.replace('/');
       return;
     }
 
-    // load code only (not as owner) - saving will create new strudel
+    // load forked code (no conversation history - forks start fresh)
     if (publicStrudel && forkedStrudelIdRef.current !== forkStrudelId) {
       forkedStrudelIdRef.current = forkStrudelId;
+
+      // generate new draft ID for the fork
+      const newDraftId = storage.generateDraftId();
+
+      // set local state
       setCurrentStrudel(null, null);
+      setCurrentDraftId(newDraftId);
       setCode(publicStrudel.code, true);
+      setConversationHistory([]);
 
       // clear fork param from URL
       router.replace('/', { scroll: false });
 
       toast.success(`Forked "${publicStrudel.title}" - save to create your own copy`);
 
-      // sync to WebSocket session once connected
+      // sync fork with backend
       wsClient.onceConnected(() => {
-        wsClient.sendCodeUpdate(publicStrudel.code);
+        wsClient.sendSwitchStrudel(null, publicStrudel.code, []).catch(() => {});
       });
     }
   }, [
@@ -227,6 +237,8 @@ export const useEditor = ({ strudelId, forkStrudelId, urlSessionId, urlInviteTok
     router,
     setCode,
     setCurrentStrudel,
+    setCurrentDraftId,
+    setConversationHistory,
   ]);
 
   // register WebSocket callbacks for remote play/stop
@@ -259,7 +271,7 @@ export const useEditor = ({ strudelId, forkStrudelId, urlSessionId, urlInviteTok
       }
     });
 
-    const cleanupSessionEnded = wsClient.onSessionEnded((reason) => {
+    const cleanupSessionEnded = wsClient.onSessionEnded(reason => {
       stopStrudel();
       setShowSyncOverlay(false);
       setPendingPlayback(null);
@@ -275,7 +287,7 @@ export const useEditor = ({ strudelId, forkStrudelId, urlSessionId, urlInviteTok
 
   const handlePlay = useCallback(() => {
     evaluate();
-    
+
     // if user can edit (host/co-author), broadcast play to other participants
     if (canEdit) {
       sendPlay();
@@ -284,7 +296,7 @@ export const useEditor = ({ strudelId, forkStrudelId, urlSessionId, urlInviteTok
 
   const handleStop = useCallback(() => {
     stop();
-    
+
     // if user can edit (host/co-author), broadcast stop to other participants
     if (canEdit) {
       sendStop();

@@ -38,31 +38,29 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
 
     hasConnected.current = true;
 
-    // Priority: URL params > stored viewer session > stored host session
-    // This handles: direct URL access, viewer/collaborator refresh, host reconnect
+    // priority: URL params > stored viewer session > stored host session
     let sessionId = options.sessionId;
     let inviteToken = options.inviteToken;
     let displayName = options.displayName;
 
-    // Check for stored viewer session if no URL params
+    // check for stored viewer session if no URL params
     if (!sessionId && !inviteToken) {
       const viewerSession = storage.getViewerSession();
       if (viewerSession) {
         sessionId = viewerSession.sessionId;
         inviteToken = viewerSession.inviteToken;
-        // Restore display name if not provided
         if (!displayName && viewerSession.displayName) {
           displayName = viewerSession.displayName;
         }
       }
     }
 
-    // Fall back to host session ID
+    // fall back to host session ID
     if (!sessionId) {
       sessionId = storage.getSessionId() || undefined;
     }
 
-    // Save viewer session for future reconnects (includes display name)
+    // save viewer session for future reconnects
     if (sessionId && inviteToken) {
       storage.setViewerSession(sessionId, inviteToken, displayName);
     }
@@ -103,7 +101,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
         conversationHistory,
         provider,
         providerApiKey
-      );
+      ).catch(() => {});
     },
     [code, conversationHistory]
   );

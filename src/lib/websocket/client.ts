@@ -25,6 +25,14 @@ interface ConnectionOptions {
   displayName?: string;
 }
 
+interface PendingRequest<T = unknown> {
+  resolve: (value: T) => void;
+  reject: (error: Error) => void;
+  timeoutId: ReturnType<typeof setTimeout>;
+}
+
+const REQUEST_TIMEOUT_MS = 30000;
+
 class AlgoraveWebSocket {
   private ws: WebSocket | null = null;
   private pingInterval: ReturnType<typeof setInterval> | null = null;
@@ -42,6 +50,13 @@ class AlgoraveWebSocket {
 
   // flag to skip code restoration in session_state when forking
   public skipCodeRestoration = false;
+
+  // generic request/reply correlation
+  // maps request_id -> pending request with resolve/reject/timeout
+  private pendingRequests = new Map<string, PendingRequest>();
+
+  // track initial load to distinguish from reconnects for session_state
+  private initialLoadComplete = false;
 
   // register callbacks for playback control events
   // returns cleanup function to unregister
@@ -240,13 +255,12 @@ class AlgoraveWebSocket {
       clearMessages,
     } = useWebSocketStore.getState();
     
-    const { setCode, setAIGenerating, addToHistory, setConversationHistory } = useEditorStore.getState();
+    const { setCode, setAIGenerating, addToHistory, setConversationHistory, currentStrudelId, currentDraftId, setCurrentDraftId } = useEditorStore.getState();
 
     switch (message.type) {
       case "session_state": {
         const payload = message.payload as SessionStatePayload;
         const hasToken = !!useAuthStore.getState().token;
-        const savedAnonymousCode = storage.getAnonymousCode();
 
         setSessionId(message.session_id);
         setMyRole(payload.your_role);
@@ -305,16 +319,20 @@ class AlgoraveWebSocket {
           }
         }
 
-        // if we have saved anonymous code and server sent empty code, restore the saved code
-        // this handles anonymous refresh (login transition is handled by backend via previous_session_id)
-        // skip if skipCodeRestoration flag is set (e.g., when forking)
+        // determine if we should restore code from this session_state
+        // - skipCodeRestoration: explicitly skip (e.g., forking)
+        // - initial load: always restore (first session_state after connect)
+        // - after switch_strudel: restore if request_id matches pending request
+        // - reconnect: don't restore (no matching request_id)
+        const requestId = payload.request_id;
+        const isMatchingResponse = requestId && this.pendingRequests.has(requestId);
+        const shouldRestoreCode =
+          !this.skipCodeRestoration &&
+          (!this.initialLoadComplete || isMatchingResponse);
+
         if (this.skipCodeRestoration) {
-          this.skipCodeRestoration = false; // Reset flag after use
-        } else if (savedAnonymousCode && !payload.code) {
-          setCode(savedAnonymousCode, true);
-          // sendCodeUpdate also saves to localStorage, keeping it for future refreshes
-          this.sendCodeUpdate(savedAnonymousCode);
-        } else {
+          this.skipCodeRestoration = false;
+        } else if (shouldRestoreCode) {
           const code = payload.code || EDITOR.DEFAULT_CODE;
           setCode(code, true);
 
@@ -324,11 +342,40 @@ class AlgoraveWebSocket {
           }
         }
 
+        // mark initial load complete
+        this.initialLoadComplete = true;
+
+        // resolve pending request if this is a response to switch_strudel
+        if (requestId) {
+          this.resolvePendingRequest(requestId, payload);
+        }
+
         // only store session ID for authenticated users
         // anonymous sessions are ephemeral - code is saved separately
         if (hasToken) {
           storage.setSessionId(message.session_id);
         }
+
+        // sync draft to localStorage
+        // for saved strudels: use strudel ID as draft ID
+        // for unsaved work: use existing draft ID or generate new one
+        const finalCode = payload.code || EDITOR.DEFAULT_CODE;
+        const draftId = currentStrudelId || currentDraftId || storage.generateDraftId();
+
+        if (!currentDraftId && !currentStrudelId) {
+          // new unsaved draft - set the draft ID
+          setCurrentDraftId(draftId);
+        }
+
+        storage.setDraft({
+          id: draftId,
+          code: finalCode,
+          conversationHistory: payload.conversation_history?.map(msg => ({
+            role: msg.role,
+            content: msg.content,
+          })) || [],
+          updatedAt: Date.now(),
+        });
 
         setSessionStateReceived(true);
         break;
@@ -376,6 +423,11 @@ class AlgoraveWebSocket {
           clarifyingQuestions: payload.clarifying_questions,
           timestamp: message.timestamp,
         });
+
+        // resolve pending request if this is a response to our agent_request
+        if (payload.request_id) {
+          this.resolvePendingRequest(payload.request_id, payload);
+        }
 
         break;
       }
@@ -431,9 +483,19 @@ class AlgoraveWebSocket {
       case "error": {
         const payload = message.payload as ErrorPayload;
         setError(payload.message);
-        
+
         if (payload.error === "too_many_requests") {
           setAIGenerating(false);
+        }
+
+        // reject pending request if error has matching request_id
+        if (payload.request_id) {
+          const pending = this.pendingRequests.get(payload.request_id);
+          if (pending) {
+            clearTimeout(pending.timeoutId);
+            this.pendingRequests.delete(payload.request_id);
+            pending.reject(new Error(payload.message));
+          }
         }
 
         break;
@@ -505,23 +567,77 @@ class AlgoraveWebSocket {
     this.ws.send(JSON.stringify(message));
   }
 
-  sendCodeUpdate(code: string, cursorLine?: number, cursorCol?: number) {
-    // save code for anonymous users so it can be restored after login
-    if (!useAuthStore.getState().token) {
-      storage.setAnonymousCode(code);
-    }
+  /**
+   * Send a message and wait for a response with matching request_id.
+   * Returns a Promise that resolves with the response payload.
+   * Rejects on timeout or disconnect.
+   */
+  sendWithReply<T>(type: string, payload: Record<string, unknown>): Promise<T> {
+    return new Promise((resolve, reject) => {
+      if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+        reject(new Error("WebSocket not connected"));
+        return;
+      }
 
+      const requestId = crypto.randomUUID();
+
+      const timeoutId = setTimeout(() => {
+        this.pendingRequests.delete(requestId);
+        reject(new Error(`Request timeout: ${type}`));
+      }, REQUEST_TIMEOUT_MS);
+
+      this.pendingRequests.set(requestId, {
+        resolve: resolve as (value: unknown) => void,
+        reject,
+        timeoutId,
+      });
+
+      this.send(type, { ...payload, request_id: requestId });
+    });
+  }
+
+  /**
+   * Resolve a pending request by its request_id.
+   * Called from handleMessage when a response contains a request_id.
+   */
+  private resolvePendingRequest(requestId: string, payload: unknown): boolean {
+    const pending = this.pendingRequests.get(requestId);
+    if (pending) {
+      clearTimeout(pending.timeoutId);
+      this.pendingRequests.delete(requestId);
+      pending.resolve(payload);
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Reject all pending requests (called on disconnect).
+   */
+  private rejectAllPendingRequests(error: Error) {
+    for (const [requestId, pending] of this.pendingRequests) {
+      clearTimeout(pending.timeoutId);
+      pending.reject(error);
+    }
+    this.pendingRequests.clear();
+  }
+
+  sendCodeUpdate(code: string, cursorLine?: number, cursorCol?: number) {
     this.send("code_update", { code, cursor_line: cursorLine, cursor_col: cursorCol });
   }
 
+  /**
+   * Send an AI agent request and wait for the response.
+   * Returns a Promise that resolves with the agent response.
+   */
   sendAgentRequest(
     query: string,
     editorState: string,
     conversationHistory?: Array<{ role: string; content: string }>,
     provider?: "anthropic" | "openai",
     providerApiKey?: string
-  ) {
-    this.send("agent_request", {
+  ): Promise<AgentResponsePayload> {
+    return this.sendWithReply<AgentResponsePayload>("agent_request", {
       user_query: query,
       editor_state: editorState,
       conversation_history: conversationHistory || [],
@@ -542,6 +658,33 @@ class AlgoraveWebSocket {
     this.send("stop", {});
   }
 
+  /**
+   * Switch strudel context within the same session.
+   * - Pass strudelId to load a saved strudel (auth users only)
+   * - Pass null for fresh scratch context
+   * - Pass null with code/conversationHistory to restore from localStorage
+   * Returns a Promise that resolves when session_state is received.
+   */
+  sendSwitchStrudel(
+    strudelId: string | null,
+    code?: string,
+    conversationHistory?: Array<{ role: string; content: string }>
+  ): Promise<SessionStatePayload> {
+    const payload: Record<string, unknown> = {
+      strudel_id: strudelId,
+    };
+
+    if (code !== undefined) {
+      payload.code = code;
+    }
+
+    if (conversationHistory !== undefined) {
+      payload.conversation_history = conversationHistory;
+    }
+
+    return this.sendWithReply<SessionStatePayload>("switch_strudel", payload);
+  }
+
   private startPing() {
     this.stopPing();
     this.pingInterval = setInterval(() => {
@@ -559,26 +702,11 @@ class AlgoraveWebSocket {
   disconnect() {
     this.shouldReconnect = false;
     this.cleanup();
+    // reject all pending requests
+    this.rejectAllPendingRequests(new Error("WebSocket disconnected"));
+    // reset state for fresh start on next connect
+    this.initialLoadComplete = false;
     useWebSocketStore.getState().reset();
-  }
-
-  /**
-   * Force a new session by disconnecting and reconnecting without a session ID.
-   * This ensures conversation history doesn't overlap between strudels.
-   */
-  reconnectWithNewSession() {
-    this.shouldReconnect = false;
-    this.cleanup();
-
-    // Clear stored session ID so we get a fresh session
-    storage.clearSessionId();
-
-    // Reset WebSocket store state
-    useWebSocketStore.getState().reset();
-
-    // Connect without session ID = backend creates new session
-    this.shouldReconnect = true;
-    this.connect({});
   }
 
   get isConnected() {

@@ -47,7 +47,6 @@ export const useAuthStore = create<AuthState>()(
 
         // clean up
         storage.clearPreviousSessionId();
-        storage.clearAnonymousCode();
       },
 
       logoutWithReconnect: () => {
