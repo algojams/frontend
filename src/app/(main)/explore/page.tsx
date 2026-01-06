@@ -249,10 +249,10 @@ export default function ExplorePage() {
                     {strudel.code.length > 100 && "..."}
                   </pre>
                   <div className="flex flex-wrap gap-1">
-                    {strudel.ai_contribution_score > 0.3 && (
+                    {strudel.ai_assist_count > 0 && (
                       <span className="text-xs bg-violet-500/15 text-violet-400 px-2 py-0.5 rounded flex items-center gap-1">
                         <Sparkles className="h-3 w-3" />
-                        AI Assisted ({Math.round(strudel.ai_contribution_score * 100)}%)
+                        AI Assisted ({strudel.ai_assist_count})
                       </span>
                     )}
                     {strudel.tags?.slice(0, 3).map((tag) => (

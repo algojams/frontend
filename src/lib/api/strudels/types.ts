@@ -42,7 +42,7 @@ export interface Strudel {
   categories: string[];
   is_public: boolean;
   allow_training: boolean;
-  ai_contribution_score: number;
+  ai_assist_count: number;
   forked_from?: string;
   conversation_history: AgentMessage[];
   created_at: string;
