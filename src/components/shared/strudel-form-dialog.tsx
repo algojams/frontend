@@ -22,7 +22,6 @@ import { useUIStore } from '@/lib/stores/ui';
 import { storage } from '@/lib/utils/storage';
 import type { Strudel, CCSignal } from '@/lib/api/strudels/types';
 import { CC_SIGNALS, SIGNAL_RESTRICTIVENESS } from '@/lib/api/strudels/types';
-import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 
 interface StrudelFormDialogProps {
   strudel?: Strudel | null;
@@ -44,15 +43,18 @@ function StrudelForm({
   const router = useRouter();
   const createStrudel = useCreateStrudel();
   const updateStrudel = useUpdateStrudel();
+
   const {
     code,
     conversationHistory,
     currentDraftId,
     forkedFromId,
+    parentCCSignal,
     setCurrentStrudel,
     setCurrentDraftId,
     markSaved,
   } = useEditorStore();
+
   const {
     pendingForkId,
     setPendingForkId,
@@ -60,27 +62,28 @@ function StrudelForm({
     setPendingOpenStrudelId,
   } = useUIStore();
 
-  // check if parent strudel has a CC signal restriction (for forks)
-  const draft = currentDraftId ? storage.getDraft(currentDraftId) : null;
-  const parentCCSignal = draft?.parentCCSignal ?? null;
-
   // initialize state from props (only runs on mount due to key pattern)
   const [title, setTitle] = useState(mode === 'edit' && strudel ? strudel.title : '');
   const [description, setDescription] = useState(
     mode === 'edit' && strudel ? strudel.description || '' : ''
   );
+
   const [tags, setTags] = useState(
     mode === 'edit' && strudel ? strudel.tags?.join(', ') || '' : ''
   );
+
   const [categories, setCategories] = useState(
     mode === 'edit' && strudel ? strudel.categories?.join(', ') || '' : ''
   );
+
   const [isPublic, setIsPublic] = useState(
     mode === 'edit' && strudel ? strudel.is_public : false
   );
+
   const [ccSignal, setCCSignal] = useState<CCSignal | null>(
     mode === 'edit' && strudel ? strudel.cc_signal ?? null : null
   );
+
   const [error, setError] = useState('');
 
   const isCreate = mode === 'create';
@@ -95,10 +98,12 @@ function StrudelForm({
     if (parentCCSignal) {
       const parentLevel = SIGNAL_RESTRICTIVENESS[parentCCSignal];
       const childLevel = SIGNAL_RESTRICTIVENESS[ccSignal];
+      
       if (childLevel < parentLevel) {
         return parentCCSignal; // enforce parent's minimum
       }
     }
+
     return ccSignal;
   };
 
@@ -164,7 +169,7 @@ function StrudelForm({
       onClose();
     } catch (err) {
       setError(`Failed to ${isCreate ? 'save' : 'update'} strudel. Please try again.`);
-      console.error(`Failed to ${isCreate ? 'save' : 'update'} strudel:`, err);
+      console.error(`failed to ${isCreate ? 'save' : 'update'} strudel:`, err);
     }
   };
 

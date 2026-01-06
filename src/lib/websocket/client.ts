@@ -345,7 +345,7 @@ class AlgoraveWebSocket {
             setCode(draft.code, true);
             setCurrentDraftId(draft.id);
             // conversation history loaded separately via editor store initial state
-            this.sendCodeUpdate(draft.code);
+            this.sendCodeUpdate(draft.code, undefined, undefined, 'loaded_strudel');
             break;
           }
 
@@ -358,7 +358,7 @@ class AlgoraveWebSocket {
           case 'USE_DEFAULT_CODE': {
             setCode(decision.codeAction.code, true);
             // sync default code to server
-            this.sendCodeUpdate(decision.codeAction.code);
+            this.sendCodeUpdate(decision.codeAction.code, undefined, undefined, 'loaded_strudel');
             break;
           }
 
@@ -590,8 +590,8 @@ class AlgoraveWebSocket {
     this.pendingRequests.clear();
   }
 
-  sendCodeUpdate(code: string, cursorLine?: number, cursorCol?: number) {
-    this.send("code_update", { code, cursor_line: cursorLine, cursor_col: cursorCol });
+  sendCodeUpdate(code: string, cursorLine?: number, cursorCol?: number, source?: 'typed' | 'loaded_strudel' | 'forked' | 'paste') {
+    this.send("code_update", { code, cursor_line: cursorLine, cursor_col: cursorCol, source: source || 'typed' });
   }
 
   sendChatMessage(message: string) {

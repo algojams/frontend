@@ -11,6 +11,7 @@ export interface GenerateRequest {
   provider_api_key?: string;
   strudel_id?: string;
   forked_from_id?: string;
+  session_id?: string;
 }
 
 export interface GenerateResponse {

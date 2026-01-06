@@ -33,11 +33,15 @@ export interface WebSocketMessage<T = unknown> {
   payload: T;
 }
 
+// code update source types
+export type CodeUpdateSource = 'typed' | 'loaded_strudel' | 'forked' | 'paste';
+
 // client payloads
 export interface CodeUpdatePayload {
   code: string;
   cursor_line?: number;
   cursor_col?: number;
+  source?: CodeUpdateSource;
 }
 
 export interface ChatMessagePayload {

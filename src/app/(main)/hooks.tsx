@@ -194,7 +194,7 @@ export const useEditor = ({
 
       // sync code to WebSocket session
       wsClient.onceConnected(() => {
-        wsClient.sendCodeUpdate(ownStrudel.code);
+        wsClient.sendCodeUpdate(ownStrudel.code, undefined, undefined, 'loaded_strudel');
       });
     }
   }, [
@@ -260,7 +260,7 @@ export const useEditor = ({
 
       // sync forked code with session
       wsClient.onceConnected(() => {
-        wsClient.sendCodeUpdate(publicStrudel.code);
+        wsClient.sendCodeUpdate(publicStrudel.code, undefined, undefined, 'forked');
       });
     }
   }, [

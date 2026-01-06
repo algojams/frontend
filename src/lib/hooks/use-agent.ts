@@ -3,6 +3,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { agentApi } from '@/lib/api/agent';
 import { useEditorStore } from '@/lib/stores/editor';
+import { useWebSocketStore } from '@/lib/stores/websocket';
 import { storage } from '@/lib/utils/storage';
 import type { GenerateRequest, GenerateResponse } from '@/lib/api/agent/types';
 
@@ -21,6 +22,7 @@ export function useAgentGenerate(options: UseAgentGenerateOptions = {}) {
     setAIGenerating,
     addToHistory,
   } = useEditorStore();
+  const { sessionId } = useWebSocketStore();
 
   return useMutation({
     mutationFn: async (query: string) => {
@@ -42,6 +44,7 @@ export function useAgentGenerate(options: UseAgentGenerateOptions = {}) {
         ...(options.providerApiKey && { provider_api_key: options.providerApiKey }),
         ...(currentStrudelId && { strudel_id: currentStrudelId }),
         ...(forkedFromId && { forked_from_id: forkedFromId }),
+        ...(sessionId && { session_id: sessionId }),
       };
 
       return agentApi.generate(request);
@@ -87,11 +90,27 @@ export function useAgentGenerate(options: UseAgentGenerateOptions = {}) {
     onError: (error: Error) => {
       setAIGenerating(false);
 
+      // check for AI-blocked errors (403 from server)
+      const isPasteLocked = error.message.includes('paste') || error.message.includes('pasted');
+      const isNoAIRestricted = error.message.includes('restricted AI use');
+      const isParentDeleted = error.message.includes('no longer exists');
+
+      let errorMessage: string;
+      if (isPasteLocked) {
+        errorMessage = 'AI assistant is temporarily disabled for pasted code. Please make significant edits to the code before using AI assistance.';
+      } else if (isNoAIRestricted) {
+        errorMessage = 'AI assistant is disabled - the original author has restricted AI use for this strudel.';
+      } else if (isParentDeleted) {
+        errorMessage = 'AI assistant is disabled - the original strudel this was forked from no longer exists.';
+      } else {
+        errorMessage = `Error: ${error.message}`;
+      }
+
       // add error message to conversation history
       addToHistory({
         id: crypto.randomUUID(),
         role: 'assistant',
-        content: `Error: ${error.message}`,
+        content: errorMessage,
         is_code_response: false,
         created_at: new Date().toISOString(),
       });
