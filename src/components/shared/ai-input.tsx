@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { useEditorStore } from '@/lib/stores/editor';
 import { ArrowUp, Loader2, X, ChevronUp, ChevronDown } from 'lucide-react';
 import { AIMessage } from './ai-message';
+import { toast } from 'sonner';
 
 interface AIInputProps {
   onSendAIRequest: (query: string) => void;
@@ -14,8 +15,13 @@ interface AIInputProps {
 export function AIInput({ onSendAIRequest, disabled = false }: AIInputProps) {
   const [input, setInput] = useState('');
   const [isExpanded, setIsExpanded] = useState(false);
-  const { isAIGenerating, conversationHistory } = useEditorStore();
+  const { isAIGenerating, conversationHistory, setCode } = useEditorStore();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const handleApplyCode = useCallback((code: string) => {
+    setCode(code, false);
+    toast.success('Code applied to editor');
+  }, [setCode]);
 
   // auto-scroll when expanded and new messages arrive
   useEffect(() => {
@@ -63,7 +69,11 @@ export function AIInput({ onSendAIRequest, disabled = false }: AIInputProps) {
           </div>
           <div className="max-h-96 overflow-y-auto p-3 space-y-2">
             {conversationHistory.map(msg => (
-              <AIMessage key={msg.id || msg.created_at} message={msg} />
+              <AIMessage
+                key={msg.id || msg.created_at}
+                message={msg}
+                onApplyCode={handleApplyCode}
+              />
             ))}
             <div ref={messagesEndRef} />
           </div>

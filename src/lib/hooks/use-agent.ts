@@ -62,10 +62,8 @@ export function useAgentGenerate(options: UseAgentGenerateOptions = {}) {
     onSuccess: (response: GenerateResponse) => {
       setAIGenerating(false);
 
-      // update editor if code response
-      if (response.code && response.is_code_response) {
-        setCode(response.code, false);
-      }
+      // NOTE: code is NOT auto-applied to editor
+      // user must click "Apply to Editor" button in AIMessage component
 
       // add assistant response to conversation history
       const hasContent = response.code || response.clarifying_questions?.length;
