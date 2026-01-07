@@ -48,10 +48,10 @@ export interface AgentMessage {
   created_at?: string;
 }
 
-// CC Signals types
+// cc signals types
 export type CCSignal = 'cc-cr' | 'cc-dc' | 'cc-ec' | 'cc-op' | 'no-ai';
 
-// Signal metadata for UI
+// signal metadata for UI
 export const CC_SIGNALS = [
   { id: 'cc-cr' as const, label: 'Credit', desc: 'Allow AI use with attribution' },
   { id: 'cc-dc' as const, label: 'Credit + Support', desc: 'Attribution + support creator' },
@@ -60,7 +60,7 @@ export const CC_SIGNALS = [
   { id: 'no-ai' as const, label: 'No AI', desc: 'Do not use for AI training' },
 ] as const;
 
-// Signal restrictiveness order (higher = more restrictive)
+// signal restrictiveness order (higher = more restrictive)
 export const SIGNAL_RESTRICTIVENESS: Record<CCSignal | '', number> = {
   '': 0,
   'cc-cr': 1,

@@ -18,7 +18,6 @@ export function useAgentGenerate(options: UseAgentGenerateOptions = {}) {
     conversationHistory,
     currentStrudelId,
     forkedFromId,
-    setCode,
     setAIGenerating,
     addToHistory,
   } = useEditorStore();
@@ -67,11 +66,12 @@ export function useAgentGenerate(options: UseAgentGenerateOptions = {}) {
     onSuccess: (response: GenerateResponse) => {
       setAIGenerating(false);
 
-      // NOTE: code is NOT auto-applied to editor
-      // user must click "Apply to Editor" button in AIMessage component
+      // code is NOT auto-applied to editor
+      // user must click "apply to editor" button in aiMessage component
 
       // add assistant response to conversation history
       const hasContent = response.code || response.clarifying_questions?.length;
+
       if (hasContent) {
         addToHistory({
           id: crypto.randomUUID(),
@@ -92,7 +92,7 @@ export function useAgentGenerate(options: UseAgentGenerateOptions = {}) {
     onError: (error: Error) => {
       setAIGenerating(false);
 
-      // check for AI-blocked errors (403 from server)
+      // check for ai-blocked errors (403 from server)
       const isPasteLocked = error.message.includes('paste') || error.message.includes('pasted');
       const isNoAIRestricted = error.message.includes('restricted AI use');
       const isParentDeleted = error.message.includes('no longer exists');
