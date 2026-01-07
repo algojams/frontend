@@ -22,6 +22,7 @@ export type ServerMessageType =
   | "play"
   | "stop"
   | "session_ended"
+  | "paste_lock_changed"
   | "error"
   | "pong";
 
@@ -122,4 +123,9 @@ export interface StopPayload {
 
 export interface SessionEndedPayload {
   reason?: string;
+}
+
+export interface PasteLockChangedPayload {
+  locked: boolean;
+  reason?: string; // "paste_detected", "edits_sufficient", "ttl_expired"
 }

@@ -134,8 +134,10 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     return set({
       currentStrudelId,
       currentStrudelTitle,
-      // clear draft ID, forked from, and parent restriction when switching to a saved strudel
-      ...(currentStrudelId ? { currentDraftId: null, forkedFromId: null, parentCCSignal: null } : {}),
+      // always clear fork restrictions when switching strudels or starting fresh
+      currentDraftId: null,
+      forkedFromId: null,
+      parentCCSignal: null,
     });
   },
 

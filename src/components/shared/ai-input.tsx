@@ -3,7 +3,8 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { useEditorStore } from '@/lib/stores/editor';
-import { ArrowUp, Loader2, X, ChevronUp, ChevronDown, ShieldAlert } from 'lucide-react';
+import { useWebSocketStore } from '@/lib/stores/websocket';
+import { ArrowUp, Loader2, X, ChevronUp, ChevronDown, ShieldAlert, ClipboardPaste } from 'lucide-react';
 import { AIMessage } from './ai-message';
 import { toast } from 'sonner';
 
@@ -16,8 +17,9 @@ export function AIInput({ onSendAIRequest, disabled = false }: AIInputProps) {
   const [input, setInput] = useState('');
   const [isExpanded, setIsExpanded] = useState(false);
   const { isAIGenerating, conversationHistory, setCode, parentCCSignal, forkedFromId } = useEditorStore();
+  const { pasteLocked } = useWebSocketStore();
 
-  // AI is blocked if this is a fork from a strudel with 'no-ai' signal
+  // agent chat is blocked if this is a fork from a strudel with 'no-ai' signal
   const isAIBlocked = forkedFromId && parentCCSignal === 'no-ai';
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -55,7 +57,23 @@ export function AIInput({ onSendAIRequest, disabled = false }: AIInputProps) {
           <div className="bg-muted/30 border border-muted rounded-lg px-3 py-2 flex items-center gap-2 w-full">
             <ShieldAlert className="h-4 w-4 text-muted-foreground shrink-0" />
             <span className="text-sm text-muted-foreground">
-              AI assistant disabled - original author restricted AI use for this strudel
+              AI assistant permanently disabled - original author restricted AI use for this strudel
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // show paste lock message if code was pasted and needs editing
+  if (pasteLocked) {
+    return (
+      <div className="border-t bg-background min-h-footer">
+        <div className="p-3 h-footer flex items-center">
+          <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-2 flex items-center gap-2 w-full">
+            <ClipboardPaste className="h-4 w-4 text-amber-500 shrink-0" />
+            <span className="text-sm text-amber-600 dark:text-amber-400">
+              AI paused - make some edits to the pasted code to unlock AI assistance
             </span>
           </div>
         </div>

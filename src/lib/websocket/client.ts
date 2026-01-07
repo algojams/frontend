@@ -15,6 +15,7 @@ import type {
   PlayPayload,
   StopPayload,
   SessionEndedPayload,
+  PasteLockChangedPayload,
 } from "./types";
 
 interface ConnectionOptions {
@@ -517,6 +518,13 @@ class AlgoraveWebSocket {
           timestamp: message.timestamp,
         });
 
+        break;
+      }
+
+      case "paste_lock_changed": {
+        const payload = message.payload as PasteLockChangedPayload;
+        const { setPasteLocked } = useWebSocketStore.getState();
+        setPasteLocked(payload.locked);
         break;
       }
 
