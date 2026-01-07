@@ -8,6 +8,7 @@ import type { AgentMessage } from '@/lib/api/strudels/types';
 import Link from 'next/link';
 
 // default strudel docs URL when no specific page URL is available
+const STRUDEL_BASE_URL = 'https://strudel.cc';
 const STRUDEL_DOCS_URL = 'https://strudel.cc/learn';
 
 interface AIMessageProps {
@@ -18,7 +19,15 @@ interface AIMessageProps {
 export function AIMessage({ message, onApplyCode }: AIMessageProps) {
   const [copied, setCopied] = useState(false);
   const [applied, setApplied] = useState(false);
-  const { role, content, is_code_response, clarifying_questions, strudel_references, doc_references, created_at } = message;
+  const {
+    role,
+    content,
+    is_code_response,
+    clarifying_questions,
+    strudel_references,
+    doc_references,
+    created_at,
+  } = message;
 
   const handleCopy = async () => {
     if (!content) return;
@@ -47,7 +56,7 @@ export function AIMessage({ message, onApplyCode }: AIMessageProps) {
         <div className="flex items-center gap-2 mb-1">
           <span className="font-medium text-rose-300/70 text-[12px]">You</span>
           {formattedTime && (
-            <span className="text-muted-foreground text-[10px]">{formattedTime}</span>
+            <span className="text-muted-foreground/60 text-[10px]">{formattedTime}</span>
           )}
         </div>
         <p className="text-foreground/70 text-[13px]">{content}</p>
@@ -55,13 +64,12 @@ export function AIMessage({ message, onApplyCode }: AIMessageProps) {
     );
   }
 
-  // assistant message
   return (
     <div className="rounded-sm bg-black/30 p-3">
       <div className="flex items-center gap-2 mb-2">
         <span className="font-medium text-teal-300/70 text-[12px]">Assistant</span>
         {formattedTime && (
-          <span className="text-muted-foreground text-[10px]">{formattedTime}</span>
+          <span className="text-muted-foreground/60 text-[10px]">{formattedTime}</span>
         )}
       </div>
 
@@ -135,7 +143,7 @@ export function AIMessage({ message, onApplyCode }: AIMessageProps) {
 
       {clarifying_questions && clarifying_questions.length > 0 && (
         <div className="space-y-1 mt-1">
-          <p className="text-muted-foreground text-[10px]">I need more information:</p>
+          <p className="text-muted-foreground text-sm">I need more information:</p>
           <ul className="list-disc list-inside space-y-1 text-foreground/70 text-xs">
             {clarifying_questions.map((q, i) => (
               <li key={i}>{q}</li>
@@ -144,30 +152,33 @@ export function AIMessage({ message, onApplyCode }: AIMessageProps) {
         </div>
       )}
 
-      {/* References section */}
       {(strudel_references?.length || doc_references?.length) && (
         <div className="mt-3 pt-2 border-t border-muted/30">
-          <p className="text-muted-foreground text-[10px] mb-1">Referenced:</p>
+          <p className="text-muted-foreground text-[12px] mb-1">Referenced:</p>
           <div className="flex flex-wrap gap-x-3 gap-y-1">
-            {strudel_references?.map((ref) => (
+            {strudel_references?.map(ref => (
               <Link
                 key={ref.id}
                 href={ref.url}
-                className="text-[11px] text-teal-400/70 hover:text-teal-300 hover:underline inline-flex items-center gap-1"
-              >
-                {ref.title} <span className="text-muted-foreground">by {ref.author_name}</span>
+                className="text-[11px] text-teal-400/70 hover:text-teal-300 hover:underline inline-flex items-center gap-1">
+                {ref.title}{' '}
+                <span className="text-muted-foreground">by {ref.author_name}</span>
               </Link>
             ))}
+
             {doc_references?.map((ref, i) => (
               <a
                 key={i}
-                href={ref.url || STRUDEL_DOCS_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[11px] text-orange-400/70 hover:text-orange-300 hover:underline inline-flex items-center gap-1"
-              >
+                className="text-[12px] text-orange-400/70 hover:text-orange-300 hover:underline inline-flex items-center gap-1"
+                href={
+                  `${STRUDEL_BASE_URL}/${ref.page_name
+                    .toLowerCase()
+                    .replace(/ /g, '-')
+                    .replace('.mdx', '')}` || STRUDEL_DOCS_URL
+                }>
                 {ref.page_name}
-                {ref.section_title && <span className="text-muted-foreground">({ref.section_title})</span>}
                 <ExternalLink className="h-2.5 w-2.5" />
               </a>
             ))}
