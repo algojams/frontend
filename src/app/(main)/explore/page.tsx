@@ -14,6 +14,7 @@ import {
 import { useInfinitePublicStrudels, usePublicTags } from "@/lib/hooks/use-strudels";
 import { Eye, GitFork, Loader2, Search, Filter, X, Sparkles, BarChart3 } from "lucide-react";
 import { StrudelStatsDialog } from "@/components/shared/strudel-stats-dialog";
+import { StrudelPreviewModal } from "@/components/shared/strudel-preview-modal";
 import type { Strudel } from "@/lib/api/strudels/types";
 import { useDebounce } from "@/lib/hooks/use-debounce";
 import { useEditorStore } from "@/lib/stores/editor";
@@ -28,6 +29,7 @@ export default function ExplorePage() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [statsStrudel, setStatsStrudel] = useState<Strudel | null>(null);
+  const [previewStrudel, setPreviewStrudel] = useState<Strudel | null>(null);
 
   const debouncedSearch = useDebounce(searchQuery, 500);
 
@@ -232,7 +234,12 @@ export default function ExplorePage() {
                     >
                       <BarChart3 className="h-4 w-4" />
                     </Button>
-                    <Button size="icon-round-sm" variant="outline" className="text-muted-foreground hover:text-foreground">
+                    <Button
+                      size="icon-round-sm"
+                      variant="outline"
+                      className="text-muted-foreground hover:text-foreground"
+                      onClick={() => setPreviewStrudel(strudel)}
+                    >
                       <Eye className="h-4 w-4" />
                     </Button>
                     <Button size="icon-round-sm" variant="outline" className="text-muted-foreground hover:text-foreground" onClick={() => handleFork(strudel.id)}>
@@ -305,6 +312,12 @@ export default function ExplorePage() {
         strudelTitle={statsStrudel?.title}
         open={!!statsStrudel}
         onOpenChange={(open) => !open && setStatsStrudel(null)}
+      />
+
+      <StrudelPreviewModal
+        strudel={previewStrudel}
+        open={!!previewStrudel}
+        onOpenChange={(open) => !open && setPreviewStrudel(null)}
       />
     </div>
   );
