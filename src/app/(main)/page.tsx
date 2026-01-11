@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { StrudelEditor } from '@/components/shared/strudel-editor';
 import { EditorToolbar } from '@/components/shared/editor-toolbar';
@@ -13,6 +13,8 @@ import { useEditor } from './hooks';
 import { useUIStore } from '@/lib/stores/ui';
 import { useAIFeaturesEnabled } from '@/lib/hooks/use-ai-features';
 
+const MD_BREAKPOINT = 768;
+
 function HomePageContent() {
   const searchParams = useSearchParams();
   const strudelId = searchParams.get('id');
@@ -21,7 +23,7 @@ function HomePageContent() {
   const urlInviteToken = searchParams.get('invite');
   const urlDisplayName = searchParams.get('name');
 
-  const { setInviteDialogOpen, setLoginModalOpen } = useUIStore();
+  const { setInviteDialogOpen, setLoginModalOpen, setChatPanelOpen } = useUIStore();
   const aiEnabled = useAIFeaturesEnabled();
 
   const {
@@ -45,6 +47,18 @@ function HomePageContent() {
     isLive,
     isEndingLive,
   } = useEditor({ strudelId, forkStrudelId, urlSessionId, urlInviteToken, urlDisplayName });
+
+  // re-open sidebar when switching from mobile to desktop
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= MD_BREAKPOINT && !isChatPanelOpen) {
+        setChatPanelOpen(true);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isChatPanelOpen, setChatPanelOpen]);
 
   const handleGoLive = () => {
     if (!isAuthenticated) {
@@ -91,7 +105,7 @@ function HomePageContent() {
       <Button
         variant="outline"
         size="icon"
-        className="fixed bottom-4 right-4 z-50 md:hidden rounded-full h-12 w-12 shadow-lg"
+        className="fixed bottom-20 right-3 z-50 md:hidden rounded-full h-12 w-12 shadow-lg !bg-background"
         onClick={toggleChatPanel}>
         <svg
           className="h-5 w-5"
