@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import { SAMPLE_DATA } from '@/lib/data/samples';
@@ -101,13 +102,11 @@ export function SamplesPanel() {
 
       <div className="px-3 py-2 border-t h-footer flex items-center justify-center">
         <div className="flex items-center gap-4 opacity-80">
-          <a
-            href="https://github.com/algoraveai"
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href="/about"
             className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-            GITHUB
-          </a>
+            ABOUT
+          </Link>
 
           <a
             href="https://github.com/algoraveai/server/blob/main/LICENSE"

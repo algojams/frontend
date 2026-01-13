@@ -423,11 +423,13 @@ export function useStrudelEditor(
               | ((fn: (msg: string) => void) => void)
               | undefined;
 
-            setLogger?.((msg: string) => {
-              if (!SUPPRESSED_ERROR_PATTERNS.some(pattern => msg.includes(pattern))) {
-                console.log('[strudel]', msg);
-              }
-            });
+            if (process.env.NODE_ENV === 'development') {
+              setLogger?.((msg: string) => {
+                if (!SUPPRESSED_ERROR_PATTERNS.some(pattern => msg.includes(pattern))) {
+                  console.log('[strudel]', msg);
+                }
+              });
+            }
 
             const { Pattern } = await import('@strudel/core');
             const proto = Pattern.prototype as Record<string, (name: string) => unknown>;

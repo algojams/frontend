@@ -114,11 +114,13 @@ export function useStrudelPreviewPlayer({ code, onError }: UseStrudelPreviewPlay
               | ((fn: (msg: string) => void) => void)
               | undefined;
 
-            setLogger?.((msg: string) => {
-              if (!SUPPRESSED_ERROR_PATTERNS.some(pattern => msg.includes(pattern))) {
-                console.log('[strudel-preview]', msg);
-              }
-            });
+            if (process.env.NODE_ENV === 'development') {
+              setLogger?.((msg: string) => {
+                if (!SUPPRESSED_ERROR_PATTERNS.some(pattern => msg.includes(pattern))) {
+                  console.log('[strudel-preview]', msg);
+                }
+              });
+            }
 
             const { Pattern } = await import('@strudel/core');
             const proto = Pattern.prototype as Record<string, (name: string) => unknown>;

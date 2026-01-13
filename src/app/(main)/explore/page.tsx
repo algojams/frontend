@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useInfinitePublicStrudels, usePublicTags } from "@/lib/hooks/use-strudels";
-import { Eye, GitFork, Loader2, Search, Filter, X, Sparkles, BarChart3 } from "lucide-react";
+import { Eye, GitFork, Loader2, Search, Filter, X, Sparkles, BarChart3, AlertTriangle, RefreshCw } from "lucide-react";
 import { StrudelStatsDialog } from "@/components/shared/strudel-stats-dialog";
 import { StrudelPreviewModal } from "@/components/shared/strudel-preview-modal";
 import type { Strudel } from "@/lib/api/strudels/types";
@@ -44,6 +44,8 @@ export default function ExplorePage() {
   const {
     data,
     isLoading,
+    isError,
+    refetch,
     isFetchingNextPage,
     hasNextPage,
     fetchNextPage,
@@ -219,6 +221,20 @@ export default function ExplorePage() {
             </Card>
           ))}
         </div>
+      ) : isError ? (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <AlertTriangle className="h-12 w-12 text-destructive mb-4" />
+            <h3 className="text-lg font-medium mb-2">Failed to load strudels</h3>
+            <p className="text-muted-foreground text-center mb-4">
+              Something went wrong. Please try again.
+            </p>
+            <Button variant="outline" onClick={() => refetch()}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Retry
+            </Button>
+          </CardContent>
+        </Card>
       ) : strudels.length > 0 ? (
         <>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">

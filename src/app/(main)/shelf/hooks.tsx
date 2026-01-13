@@ -14,11 +14,11 @@ export const useDashboard = () => {
     fetchNextPage,
   } = useInfiniteStrudels();
 
-  // Flatten pages into single array
+  // flatten pages into single array
   const strudels = data?.pages.flatMap(page => page.strudels) ?? [];
   const total = data?.pages[0]?.pagination.total ?? 0;
 
-  // Intersection observer for infinite scroll
+  // intersection observer for infinite scroll
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useCallback(
     (node: HTMLDivElement | null) => {
@@ -41,7 +41,7 @@ export const useDashboard = () => {
     [isFetchingNextPage, hasNextPage, fetchNextPage]
   );
 
-  // Cleanup observer on unmount
+  // cleanup observer on unmount
   useEffect(() => {
     return () => {
       if (observerRef.current) {

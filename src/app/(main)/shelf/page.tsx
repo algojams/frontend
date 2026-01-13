@@ -30,7 +30,7 @@ function DashboardContent() {
   const { setPendingOpenStrudelId } = useUIStore();
 
   const handleOpenStrudel = (strudelId: string) => {
-    // If opening the same strudel, just navigate
+    // if opening the same strudel, just navigate
     if (strudelId === currentStrudelId) {
       router.push(`/?id=${strudelId}`);
       return;

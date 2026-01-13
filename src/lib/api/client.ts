@@ -1,3 +1,4 @@
+import { toast } from 'sonner';
 import { useAuthStore } from '@/lib/stores/auth';
 import { API_BASE_URL } from '@/lib/constants';
 
@@ -40,7 +41,8 @@ class ApiClient {
 
     if (response.status === 401) {
       useAuthStore.getState().clearAuth();
-      window.location.href = '/login?error=Session expired';
+      toast.error('Session expired. Please log in again.');
+      window.location.href = '/login';
       throw new Error('Unauthorized');
     }
 

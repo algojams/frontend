@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useLiveSessions, useLastSession } from '@/lib/hooks/use-sessions';
-import { Users, Radio, ArrowRight } from 'lucide-react';
+import { Users, Radio, ArrowRight, AlertTriangle, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { formatRelativeTime } from '@/lib/utils/date';
 import { useAuth } from '@/lib/hooks/use-auth';
@@ -17,7 +17,7 @@ import { useAuth } from '@/lib/hooks/use-auth';
 export default function LivePage() {
   const { isAuthenticated } = useAuth();
   const { data: lastSession, isLoading: isLoadingLastSession } = useLastSession();
-  const { data, isLoading } = useLiveSessions();
+  const { data, isLoading, isError, refetch } = useLiveSessions();
 
   // check if last session is already in the live sessions list
   const lastSessionInList = data?.sessions?.some(s => s.id === lastSession?.id);
@@ -96,6 +96,20 @@ export default function LivePage() {
             </Card>
           ))}
         </div>
+      ) : isError ? (
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <AlertTriangle className="h-12 w-12 text-destructive mb-4" />
+            <h3 className="text-lg font-medium mb-2">Failed to load live sessions</h3>
+            <p className="text-muted-foreground text-center mb-4">
+              Something went wrong. Please try again.
+            </p>
+            <Button variant="outline" onClick={() => refetch()}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Retry
+            </Button>
+          </CardContent>
+        </Card>
       ) : data?.sessions && data.sessions.length > 0 ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
           {data.sessions.map(session => (

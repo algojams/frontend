@@ -106,7 +106,8 @@ function HomePageContent() {
         variant="outline"
         size="icon"
         className="fixed bottom-20 right-3 z-50 md:hidden rounded-full h-12 w-12 shadow-lg !bg-background"
-        onClick={toggleChatPanel}>
+        onClick={toggleChatPanel}
+        aria-label={isChatPanelOpen ? 'Close samples panel' : 'Open samples panel'}>
         <svg
           className="h-5 w-5"
           viewBox="0 0 24 24"

@@ -45,12 +45,21 @@ export function SampleItem({ name }: SampleItemProps) {
   return (
     <div
       className="flex items-center justify-between py-1 px-3 hover:bg-muted/50 group cursor-pointer"
-      onClick={handlePlay}>
+      onClick={handlePlay}
+      role="button"
+      tabIndex={0}
+      aria-label={`Play ${name} sample`}
+      onKeyDown={e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handlePlay();
+        }
+      }}>
       <div className="flex items-center gap-1.5">
         {isLoading ? (
-          <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+          <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" aria-hidden="true" />
         ) : (
-          <Play className="h-3 w-3 text-muted-foreground" />
+          <Play className="h-3 w-3 text-muted-foreground" aria-hidden="true" />
         )}
         <code className="text-xs font-mono">{name}</code>
       </div>
@@ -62,11 +71,11 @@ export function SampleItem({ name }: SampleItemProps) {
           e.stopPropagation();
           handleCopy();
         }}
-        title="Copy to clipboard">
+        aria-label={`Copy ${name} to clipboard`}>
         {copied ? (
-          <Check className="h-3 w-3 text-green-500" />
+          <Check className="h-3 w-3 text-green-500" aria-hidden="true" />
         ) : (
-          <Copy className="h-3 w-3" />
+          <Copy className="h-3 w-3" aria-hidden="true" />
         )}
       </Button>
     </div>
