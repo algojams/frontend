@@ -109,11 +109,11 @@ export function SamplesPanel() {
           </Link>
 
           <a
-            href="https://github.com/algoraveai/server/blob/main/LICENSE"
+            href="https://codeberg.org/algorave"
             target="_blank"
             rel="noopener noreferrer"
             className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-            AGPL-V3
+            CODEBERG
           </a>
 
           <a
