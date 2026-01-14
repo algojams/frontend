@@ -52,14 +52,21 @@ export default function AboutPage() {
       <section className="mb-12">
         <h2 className="text-2xl font-semibold mb-4">The Origin Story</h2>
         <p className="text-muted-foreground mb-4">
-          Algorave began with a simple question. After watching DJ Dave live code a music
-          session, narrating every creative decision in real-time while building beats
-          from scratch, I wondered:
+          Algorave began with a simple question. After watching{' '}
+          <a
+            href="https://vt.tiktok.com/ZS53jrCTw/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary hover:underline">
+            Switch Angel live code a music session on TikTok
+          </a>
+          , narrating every creative decision in real-time while building beats from
+          scratch, I wondered:
         </p>
         <p className="text-muted-foreground italic my-6 pl-4 border-l-2 border-violet-500">
-          What if you could explore music production and pattern-making without memorizing
-          syntax? What if the barrier to entry for live coding could be lower, while still
-          respecting the craft?
+          What if you could explore music production and pattern-making using natural
+          language instructions? without memorizing syntax? What if the barrier to entry
+          for live coding could be lower, while still respecting the craft?
         </p>
         <p className="text-muted-foreground mb-4">
           The goal was never to replace the skill and artistry of live coders. It was to
