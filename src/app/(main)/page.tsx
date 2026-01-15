@@ -30,6 +30,7 @@ function HomePageContent() {
     handleCodeChange,
     handlePlay,
     handleStop,
+    handleUpdate,
     handleSendAIRequest,
     handleSendMessage,
     handleSave,
@@ -75,6 +76,7 @@ function HomePageContent() {
         <EditorToolbar
           onPlay={handlePlay}
           onStop={handleStop}
+          onUpdate={handleUpdate}
           onSave={handleSave}
           onNew={handleNewStrudel}
           onGoLive={handleGoLive}

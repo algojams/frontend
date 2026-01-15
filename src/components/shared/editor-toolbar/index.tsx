@@ -3,13 +3,14 @@
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { Play, Square, Plus, Radio, X } from 'lucide-react';
+import { Play, Square, Plus, Radio, X, RefreshCw } from 'lucide-react';
 import { useEditorToolbar, type SaveStatus } from './hooks';
 import { SaveIndicator, ConnectionIndicator } from './indicators';
 
 interface EditorToolbarProps {
   onPlay: () => void;
   onStop: () => void;
+  onUpdate: () => void;
   onSave?: () => void;
   onNew?: () => void;
   onGoLive?: () => void;
@@ -26,6 +27,7 @@ interface EditorToolbarProps {
 export function EditorToolbar({
   onPlay,
   onStop,
+  onUpdate,
   onSave,
   onNew,
   onGoLive,
@@ -38,7 +40,7 @@ export function EditorToolbar({
   saveStatus = 'saved',
   isViewer = false,
 }: EditorToolbarProps) {
-  const { isPlaying, isInitialized, status } = useEditorToolbar();
+  const { isPlaying, isInitialized, isCodeDirty, status } = useEditorToolbar();
 
   return (
     <div className="flex items-center gap-2 p-2 border-b bg-background h-12">
@@ -62,6 +64,14 @@ export function EditorToolbar({
             <Play className="h-3 w-3" />
           )}
           {isPlaying ? 'Stop' : 'Play'}
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={onUpdate}
+          disabled={isViewer || !isPlaying || !isCodeDirty}
+          className="rounded-none aspect-square px-0">
+          <RefreshCw className="h-3 w-3" />
         </Button>
       </div>
 

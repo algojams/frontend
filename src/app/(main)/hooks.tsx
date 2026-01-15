@@ -358,6 +358,11 @@ export const useEditor = ({
     }
   }, [stop, canEdit, sendStop]);
 
+  // update: re-evaluate code without stopping/starting - applies changes to running pattern
+  const handleUpdate = useCallback(() => {
+    evaluate();
+  }, [evaluate]);
+
   const handleCodeChange = useCallback(
     (newCode: string) => {
       if (isConnected && canEdit) {
@@ -398,6 +403,7 @@ export const useEditor = ({
     handleCodeChange,
     handlePlay,
     handleStop,
+    handleUpdate,
     handleSendAIRequest,
     handleSendMessage,
     handleSave,

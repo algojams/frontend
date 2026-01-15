@@ -448,6 +448,12 @@ export function useStrudelEditor(
             if (started) setError(null);
           },
 
+          onUpdateState: (state: { isDirty?: boolean }) => {
+            if (typeof state.isDirty === 'boolean') {
+              useAudioStore.getState().setCodeDirty(state.isDirty);
+            }
+          },
+
           onError: (error: Error) => {
             console.error('strudel error:', error);
             setError(error.message);

@@ -6,12 +6,13 @@ import { useWebSocketStore } from '@/lib/stores/websocket';
 export type SaveStatus = 'saved' | 'saving' | 'unsaved';
 
 export function useEditorToolbar() {
-  const { isPlaying, isInitialized } = useAudioStore();
+  const { isPlaying, isInitialized, isCodeDirty } = useAudioStore();
   const { status } = useWebSocketStore();
 
   return {
     isPlaying,
     isInitialized,
+    isCodeDirty,
     status,
   };
 }

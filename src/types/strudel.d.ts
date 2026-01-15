@@ -11,6 +11,7 @@ declare module "@strudel/codemirror" {
     bgFill?: boolean;
     prebake?: () => Promise<void>;
     onToggle?: (started: boolean) => void;
+    onUpdateState?: (state: { isDirty?: boolean; code?: string; activeCode?: string }) => void;
     onError?: (error: Error) => void;
   }
 
