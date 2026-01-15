@@ -46,12 +46,7 @@ export function StrudelCard({
       </CardHeader>
 
       <CardContent>
-        <pre className="text-xs bg-muted p-2 rounded overflow-hidden text-ellipsis whitespace-nowrap">
-          {strudel.code.slice(0, 100)}
-          {strudel.code.length > 100 && '...'}
-        </pre>
-
-        <div className="flex gap-1 mt-2 overflow-hidden">
+        <div className="flex gap-1 overflow-hidden">
           {strudel.ai_assist_count > 0 && (
             <span className="text-xs bg-violet-500/15 text-violet-400 px-2 py-0.5 rounded flex items-center gap-1 shrink-0">
               <Sparkles className="h-3 w-3" />

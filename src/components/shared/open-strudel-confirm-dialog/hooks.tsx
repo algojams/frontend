@@ -1,14 +1,12 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useUIStore } from '@/lib/stores/ui';
 import { useEditorStore } from '@/lib/stores/editor';
 import { EDITOR } from '@/lib/constants';
 
 export function useOpenStrudelConfirmDialog() {
   const router = useRouter();
-  const pathname = usePathname();
   const {
     pendingOpenStrudelId,
     setPendingOpenStrudelId,
@@ -20,11 +18,6 @@ export function useOpenStrudelConfirmDialog() {
   const hasUnsavedChanges =
     isDirty || (!currentStrudelId && code !== EDITOR.DEFAULT_CODE);
 
-  useEffect(() => {
-    if (pendingOpenStrudelId && pathname !== '/') {
-      setPendingOpenStrudelId(null);
-    }
-  }, [pathname, pendingOpenStrudelId, setPendingOpenStrudelId]);
 
   const handleClose = () => {
     setPendingOpenStrudelId(null);
