@@ -12,6 +12,8 @@ import {
 } from 'lucide-react';
 import { AIMessage } from '../ai-message';
 import { useAIInput } from './hooks';
+import { useUIStore } from '@/lib/stores/ui';
+import { useResizable } from '@/lib/hooks/use-resizable';
 
 interface AIInputProps {
   onSendAIRequest: (query: string) => void;
@@ -33,6 +35,13 @@ export function AIInput({ onSendAIRequest, disabled = false }: AIInputProps) {
     handleSend,
     handleKeyDown,
   } = useAIInput(onSendAIRequest, disabled);
+
+  const { aiDrawerHeight, setAIDrawerHeight } = useUIStore();
+  const { handleMouseDown } = useResizable({
+    initialSize: aiDrawerHeight,
+    onResize: setAIDrawerHeight,
+    direction: 'top',
+  });
 
   if (isAIBlocked) {
     return (
@@ -65,11 +74,23 @@ export function AIInput({ onSendAIRequest, disabled = false }: AIInputProps) {
     );
   }
 
+  // calculate max available height for drawer
+  const maxDrawerHeight = 'calc(100vh - var(--spacing-toolbar) - var(--spacing-footer) - 3rem)';
+  const drawerHeight = `min(${aiDrawerHeight}px, ${maxDrawerHeight})`;
+
   return (
-    <div className="border-t bg-background min-h-footer">
+    <div
+      className="border-t bg-background flex flex-col overflow-hidden"
+      style={{ maxHeight: `calc(100vh - var(--spacing-toolbar))` }}>
       {isExpanded && conversationHistory.length > 0 && (
-        <div className="border-b">
-          <div className="flex items-center justify-between px-3 py-2 bg-muted/30">
+        <div className="border-b flex flex-col min-h-0 overflow-hidden" style={{ height: drawerHeight }}>
+          {/* resize handle */}
+          <div
+            onMouseDown={handleMouseDown}
+            className="h-1 cursor-row-resize shrink-0"
+          />
+
+          <div className="flex items-center justify-between px-3 py-2 bg-muted/30 shrink-0">
             <span className="text-xs font-medium text-muted-foreground flex items-center gap-2">
               {isAIGenerating ? (
                 <>
@@ -90,7 +111,7 @@ export function AIInput({ onSendAIRequest, disabled = false }: AIInputProps) {
             </Button>
           </div>
 
-          <div className="max-h-96 overflow-y-auto p-3 space-y-2">
+          <div className="overflow-y-auto p-3 space-y-2 flex-1 min-h-0">
             {conversationHistory.map(msg => (
               <AIMessage
                 key={msg.id || msg.created_at}
@@ -104,7 +125,7 @@ export function AIInput({ onSendAIRequest, disabled = false }: AIInputProps) {
         </div>
       )}
 
-      <div className="p-3 h-footer flex items-center">
+      <div className="p-3 h-footer flex items-center shrink-0">
         <div className="bg-muted/50 border border-muted rounded-lg px-3 py-2 flex items-center gap-2 w-full">
           <input
             type="text"

@@ -1,7 +1,19 @@
 import { create } from 'zustand';
 
+// sidebar panel constraints
+const CHAT_PANEL_MIN_WIDTH = 280;
+const CHAT_PANEL_MAX_WIDTH = 600;
+const CHAT_PANEL_DEFAULT_WIDTH = 320;
+
+// AI drawer constraints
+const AI_DRAWER_MIN_HEIGHT = 100;
+const AI_DRAWER_MAX_HEIGHT = 2000; // CSS calc() handles actual max based on viewport
+const AI_DRAWER_DEFAULT_HEIGHT = 200;
+
 interface UIState {
   isChatPanelOpen: boolean;
+  chatPanelWidth: number;
+  aiDrawerHeight: number;
   isDraftsModalOpen: boolean;
   isInviteDialogOpen: boolean;
   isLoginModalOpen: boolean;
@@ -15,6 +27,8 @@ interface UIState {
 
   toggleChatPanel: () => void;
   setChatPanelOpen: (open: boolean) => void;
+  setChatPanelWidth: (width: number) => void;
+  setAIDrawerHeight: (height: number) => void;
   setDraftsModalOpen: (open: boolean) => void;
   setInviteDialogOpen: (open: boolean) => void;
   setLoginModalOpen: (open: boolean) => void;
@@ -30,6 +44,8 @@ interface UIState {
 
 export const useUIStore = create<UIState>(set => ({
   isChatPanelOpen: true,
+  chatPanelWidth: CHAT_PANEL_DEFAULT_WIDTH,
+  aiDrawerHeight: AI_DRAWER_DEFAULT_HEIGHT,
   isDraftsModalOpen: false,
   isInviteDialogOpen: false,
   isLoginModalOpen: false,
@@ -40,6 +56,24 @@ export const useUIStore = create<UIState>(set => ({
   isSidebarOpen: false,
   pendingForkId: null,
   pendingOpenStrudelId: null,
+
+  setChatPanelWidth: width => {
+    set({
+      chatPanelWidth: Math.min(
+        CHAT_PANEL_MAX_WIDTH,
+        Math.max(CHAT_PANEL_MIN_WIDTH, width)
+      ),
+    });
+  },
+
+  setAIDrawerHeight: height => {
+    set({
+      aiDrawerHeight: Math.min(
+        AI_DRAWER_MAX_HEIGHT,
+        Math.max(AI_DRAWER_MIN_HEIGHT, height)
+      ),
+    });
+  },
 
   setSidebarOpen: isSidebarOpen => set({ isSidebarOpen }),
   setPendingForkId: pendingForkId => set({ pendingForkId }),

@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils';
 import { useEditor } from './hooks';
 import { useUIStore } from '@/lib/stores/ui';
 import { useAIFeaturesEnabled } from '@/lib/hooks/use-ai-features';
+import { useResizable } from '@/lib/hooks/use-resizable';
 
 const MD_BREAKPOINT = 768;
 
@@ -23,8 +24,20 @@ function HomePageContent() {
   const urlInviteToken = searchParams.get('invite');
   const urlDisplayName = searchParams.get('name');
 
-  const { setInviteDialogOpen, setLoginModalOpen, setChatPanelOpen } = useUIStore();
+  const {
+    setInviteDialogOpen,
+    setLoginModalOpen,
+    setChatPanelOpen,
+    chatPanelWidth,
+    setChatPanelWidth,
+  } = useUIStore();
   const aiEnabled = useAIFeaturesEnabled();
+
+  const { handleMouseDown: handleSidebarMouseDown } = useResizable({
+    initialSize: chatPanelWidth,
+    onResize: setChatPanelWidth,
+    direction: 'left',
+  });
 
   const {
     handleCodeChange,
@@ -47,7 +60,13 @@ function HomePageContent() {
     isAuthenticated,
     isLive,
     isEndingLive,
-  } = useEditor({ strudelId, forkStrudelId, urlSessionId, urlInviteToken, urlDisplayName });
+  } = useEditor({
+    strudelId,
+    forkStrudelId,
+    urlSessionId,
+    urlInviteToken,
+    urlDisplayName,
+  });
 
   // re-open sidebar when switching from mobile to desktop
   useEffect(() => {
@@ -72,7 +91,7 @@ function HomePageContent() {
 
   return (
     <div className="flex h-full overflow-hidden">
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <EditorToolbar
           onPlay={handlePlay}
           onStop={handleStop}
@@ -90,17 +109,11 @@ function HomePageContent() {
           isViewer={isViewer}
         />
         <div className="flex-1 overflow-hidden">
-          <StrudelEditor
-            onCodeChange={handleCodeChange}
-            readOnly={isViewer}
-          />
+          <StrudelEditor onCodeChange={handleCodeChange} readOnly={isViewer} />
         </div>
-        
+
         {canEdit && aiEnabled && (
-          <AIInput
-            onSendAIRequest={handleSendAIRequest}
-            disabled={!isConnected}
-          />
+          <AIInput onSendAIRequest={handleSendAIRequest} disabled={!isConnected} />
         )}
       </div>
 
@@ -125,17 +138,25 @@ function HomePageContent() {
       </Button>
 
       <div
-        className={cn('transition-all duration-300 overflow-hidden hidden md:block', {
-          'w-80': isChatPanelOpen,
+        className={cn('overflow-hidden hidden md:flex', {
           'w-0': !isChatPanelOpen,
-        })}>
+        })}
+        style={{ width: isChatPanelOpen ? chatPanelWidth : 0 }}>
         {isChatPanelOpen && (
-          <SidebarPanel
-            showChat={showChat}
-            onSendMessage={handleSendMessage}
-            disabled={!isConnected}
-            isViewer={isViewer}
-          />
+          <>
+            <div
+              onMouseDown={handleSidebarMouseDown}
+              className="w-1 cursor-col-resize shrink-0"
+            />
+            <div className="flex-1 min-w-0">
+              <SidebarPanel
+                showChat={showChat}
+                onSendMessage={handleSendMessage}
+                disabled={!isConnected}
+                isViewer={isViewer}
+              />
+            </div>
+          </>
         )}
       </div>
 
@@ -160,7 +181,10 @@ function HomePageContent() {
 
 export default function HomePage() {
   return (
-    <Suspense fallback={<div className="flex h-full items-center justify-center">Loading...</div>}>
+    <Suspense
+      fallback={
+        <div className="flex h-full items-center justify-center">Loading...</div>
+      }>
       <HomePageContent />
     </Suspense>
   );
