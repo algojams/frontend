@@ -104,7 +104,7 @@ let superdoughFn:
 // track the last time we explicitly requested play
 // used to ignore spurious onToggle(false) calls that arrive too soon after play
 let lastExplicitPlayTime: number = 0;
-const TOGGLE_DEBOUNCE_MS = 500;
+const TOGGLE_DEBOUNCE_MS = 1000;
 
 export function getStrudelMirrorInstance() {
   return strudelMirrorInstance;
