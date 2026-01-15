@@ -101,6 +101,11 @@ let superdoughFn:
   | ((value: Record<string, unknown>, time: number, duration?: number) => Promise<void>)
   | null = null;
 
+// track the last time we explicitly requested play
+// used to ignore spurious onToggle(false) calls that arrive too soon after play
+let lastExplicitPlayTime: number = 0;
+const TOGGLE_DEBOUNCE_MS = 500;
+
 export function getStrudelMirrorInstance() {
   return strudelMirrorInstance;
 }
@@ -195,12 +200,20 @@ export async function evaluateStrudel() {
   try {
     // optimistically set playing state before evaluate
     // this ensures UI updates even if onToggle callback is delayed
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[strudel] evaluateStrudel: setting isPlaying=true (optimistic)');
+    }
+    lastExplicitPlayTime = Date.now();
     useAudioStore.getState().setPlaying(true);
 
     await strudelMirrorInstance.evaluate();
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[strudel] evaluateStrudel: evaluate() completed');
+    }
   } catch (error) {
     console.error('[strudel] Evaluate failed:', error);
-    // revert state on error
+    // revert state on error - clear timestamp so onToggle(false) won't be ignored
+    lastExplicitPlayTime = 0;
     useAudioStore.getState().setPlaying(false);
   }
 }
@@ -211,8 +224,14 @@ export function stopStrudel() {
     return;
   }
 
+  // clear the play timestamp so onToggle(false) won't be ignored
+  lastExplicitPlayTime = 0;
+
   // optimistically set playing state to false
   // this ensures UI updates even if onToggle callback is delayed
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[strudel] stopStrudel: setting isPlaying=false (optimistic)');
+  }
   useAudioStore.getState().setPlaying(false);
 
   strudelMirrorInstance.stop();
@@ -486,6 +505,23 @@ export function useStrudelEditor(
           },
 
           onToggle: (started: boolean) => {
+            if (process.env.NODE_ENV === 'development') {
+              console.log('[strudel] onToggle callback fired:', started);
+            }
+
+            // ignore spurious onToggle(false) calls that arrive too soon after
+            // an explicit play request - this prevents race conditions where
+            // strudel fires false before true during startup
+            if (!started) {
+              const timeSincePlay = Date.now() - lastExplicitPlayTime;
+              if (timeSincePlay < TOGGLE_DEBOUNCE_MS) {
+                if (process.env.NODE_ENV === 'development') {
+                  console.log('[strudel] ignoring onToggle(false) - too soon after play request:', timeSincePlay, 'ms');
+                }
+                return;
+              }
+            }
+
             setPlaying(started);
             if (started) setError(null);
           },

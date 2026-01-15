@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useEditor } from './hooks';
 import { useUIStore } from '@/lib/stores/ui';
+import { usePlayerStore } from '@/lib/stores/player';
 import { useAIFeaturesEnabled } from '@/lib/hooks/use-ai-features';
 import { useResizable } from '@/lib/hooks/use-resizable';
 
@@ -31,6 +32,7 @@ function HomePageContent() {
     chatPanelWidth,
     setChatPanelWidth,
   } = useUIStore();
+  const { currentStrudel: playerStrudel } = usePlayerStore();
   const aiEnabled = useAIFeaturesEnabled();
 
   const { handleMouseDown: handleSidebarMouseDown } = useResizable({
@@ -90,7 +92,7 @@ function HomePageContent() {
   };
 
   return (
-    <div className="flex h-full overflow-hidden">
+    <div className={cn("flex h-full overflow-hidden", playerStrudel && "pb-16")}>
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <EditorToolbar
           onPlay={handlePlay}

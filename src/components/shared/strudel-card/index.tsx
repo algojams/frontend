@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Sparkles } from 'lucide-react';
+import { Sparkle } from 'lucide-react';
 import type { Strudel } from '@/lib/api/strudels/types';
 
 interface StrudelCardProps {
@@ -49,7 +49,7 @@ export function StrudelCard({
         <div className="flex gap-1 overflow-hidden">
           {strudel.ai_assist_count > 0 && (
             <span className="text-xs bg-violet-500/15 text-violet-400 px-2 py-0.5 rounded flex items-center gap-1 shrink-0">
-              <Sparkles className="h-3 w-3" />
+              <Sparkle className="h-3 w-3" />
               AI ({strudel.ai_assist_count})
             </span>
           )}

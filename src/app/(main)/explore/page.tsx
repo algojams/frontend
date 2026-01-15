@@ -1,9 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { StrudelCard } from "@/components/shared/strudel-card";
+import { StrudelListItem } from "@/components/shared/strudel-list-item";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -13,19 +12,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useInfinitePublicStrudels, usePublicTags } from "@/lib/hooks/use-strudels";
-import { Eye, GitFork, Loader2, Search, Filter, X, BarChart3, AlertTriangle, RefreshCw } from "lucide-react";
+import { Loader2, Search, Filter, X, AlertTriangle, RefreshCw } from "lucide-react";
 import { StrudelStatsDialog } from "@/components/shared/strudel-stats-dialog";
 import { StrudelPreviewModal } from "@/components/shared/strudel-preview-modal";
 import type { Strudel } from "@/lib/api/strudels/types";
 import { useDebounce } from "@/lib/hooks/use-debounce";
-import { useEditorStore } from "@/lib/stores/editor";
-import { useUIStore } from "@/lib/stores/ui";
-import { EDITOR } from "@/lib/constants";
+import { usePlayerStore } from "@/lib/stores/player";
 
 export default function ExplorePage() {
-  const router = useRouter();
-  const { isDirty, code, currentStrudelId } = useEditorStore();
-  const { setPendingForkId } = useUIStore();
+  const { currentStrudel: playerStrudel } = usePlayerStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -87,18 +82,6 @@ export default function ExplorePage() {
     };
   }, []);
 
-  const handleFork = (strudelId: string) => {
-    const hasUnsavedChanges = isDirty || (!currentStrudelId && code !== EDITOR.DEFAULT_CODE);
-
-    if (hasUnsavedChanges) {
-      // show confirmation dialog
-      setPendingForkId(strudelId);
-    } else {
-      // fork directly
-      router.push(`/?fork=${strudelId}`);
-    }
-  };
-
   const toggleTag = (tag: string) => {
     setSelectedTags(prev =>
       prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
@@ -114,7 +97,7 @@ export default function ExplorePage() {
   const hasActiveFilters = searchQuery || selectedTags.length > 0;
 
   return (
-    <div className="container p-8 w-full max-w-full">
+    <div className={`container p-8 w-full max-w-full ${playerStrudel ? 'pb-24' : ''}`}>
       <div className="mb-8 flex items-start justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold">Explore</h1>
@@ -238,40 +221,13 @@ export default function ExplorePage() {
         </Card>
       ) : strudels.length > 0 ? (
         <>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+          <div className="flex flex-col border rounded-lg divide-y">
             {strudels.map((strudel) => (
-              <StrudelCard
+              <StrudelListItem
                 key={strudel.id}
                 strudel={strudel}
-                showDescription
-                actions={
-                  <>
-                    <Button
-                      size="icon-round-sm"
-                      variant="outline"
-                      className="text-muted-foreground hover:text-foreground"
-                      onClick={() => setStatsStrudel(strudel)}
-                    >
-                      <BarChart3 className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="icon-round-sm"
-                      variant="outline"
-                      className="text-muted-foreground hover:text-foreground"
-                      onClick={() => setPreviewStrudel(strudel)}
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="icon-round-sm"
-                      variant="outline"
-                      className="text-muted-foreground hover:text-foreground"
-                      onClick={() => handleFork(strudel.id)}
-                    >
-                      <GitFork className="h-4 w-4" />
-                    </Button>
-                  </>
-                }
+                onView={() => setPreviewStrudel(strudel)}
+                onStats={() => setStatsStrudel(strudel)}
               />
             ))}
           </div>

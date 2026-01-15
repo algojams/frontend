@@ -13,6 +13,7 @@ import { Settings, Pencil, Loader2, BarChart3 } from 'lucide-react';
 import type { Strudel } from '@/lib/api/strudels/types';
 import { useEditorStore } from '@/lib/stores/editor';
 import { useUIStore } from '@/lib/stores/ui';
+import { usePlayerStore } from '@/lib/stores/player';
 import { EDITOR } from '@/lib/constants';
 
 function DashboardContent() {
@@ -23,6 +24,7 @@ function DashboardContent() {
 
   const { isDirty, code, currentStrudelId } = useEditorStore();
   const { setPendingOpenStrudelId } = useUIStore();
+  const { currentStrudel: playerStrudel } = usePlayerStore();
 
   const handleOpenStrudel = (strudelId: string) => {
     // if opening the same strudel, just navigate
@@ -43,7 +45,7 @@ function DashboardContent() {
 
   return (
     <AuthGuard>
-      <div className="container p-8 w-full max-w-full">
+      <div className={`container p-8 w-full max-w-full ${playerStrudel ? 'pb-24' : ''}`}>
         <div className="flex items-center justify-between mb-8">
           <div>
             <h1 className="text-3xl font-bold">Shelf</h1>

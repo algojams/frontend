@@ -8,7 +8,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { GitFork, Sparkles } from 'lucide-react';
+import { GitFork, Sparkle } from 'lucide-react';
 import type { Strudel } from '@/lib/api/strudels/types';
 import { StrudelPreviewPlayer } from '@/components/shared/strudel-preview-player';
 import { useStrudelPreviewModal } from './hooks';
@@ -59,7 +59,7 @@ export function StrudelPreviewModal({
           <div className="flex flex-wrap gap-2 mt-4">
             {strudel.ai_assist_count > 0 && (
               <span className="text-xs bg-violet-500/15 text-violet-400 px-2 py-0.5 rounded flex items-center gap-1">
-                <Sparkles className="h-3 w-3" />
+                <Sparkle className="h-3 w-3" />
                 AI Assisted ({strudel.ai_assist_count})
               </span>
             )}
