@@ -1,16 +1,19 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { GitFork, BotMessageSquare, Play, Pause, Loader2 } from 'lucide-react';
+import {
+  GitFork,
+  BotMessageSquare,
+  Play,
+  Pause,
+  Loader2,
+  Scale,
+  Activity,
+} from 'lucide-react';
 import type { Strudel } from '@/lib/api/strudels/types';
+import { CC_SIGNALS } from '@/lib/api/strudels/types';
 import {
   StrudelPreviewPlayer,
   type PlayerState,
@@ -48,10 +51,28 @@ export function StrudelPreviewModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="md:max-w-3xl lg:max-w-4xl max-h-[85vh] flex flex-col">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">{strudel.title}</DialogTitle>
-          {strudel.description && (
-            <DialogDescription>{strudel.description}</DialogDescription>
+        <DialogHeader className="flex flex-col gap-4 py-1">
+          <DialogTitle className="flex items-center gap-2 text-xl leading-1">
+            {strudel.title}
+          </DialogTitle>
+
+          {(strudel.license || strudel.cc_signal) && (
+            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+              {strudel.license && (
+                <span className="flex items-center gap-1 text-amber-500">
+                  <Scale className="h-4 w-4" />
+                  {strudel.license}
+                </span>
+              )}
+
+              <span className="flex items-center gap-1 text-white/50">
+                <Activity className="h-3.5 w-3.5" />
+                {strudel.cc_signal?.toUpperCase() || 'NO-AI'} (
+                {CC_SIGNALS.find(s => s.id === strudel.cc_signal)?.label ??
+                  'AI use not allowed'}
+                )
+              </span>
+            </div>
           )}
         </DialogHeader>
 
@@ -93,11 +114,14 @@ export function StrudelPreviewModal({
                 : 'bg-primary/10 hover:!bg-zinc-900'
             }`}
             onClick={isPlaying ? playerState?.handleStop : playerState?.handlePlay}
-            disabled={isLoading || !isInitialized}
-          >
+            disabled={isLoading || !isInitialized}>
             {isLoading ? (
               <Loader2
-                className={`h-4 w-4 animate-spin ${isPlaying ? 'text-primary-foreground group-hover/play:!text-white' : 'text-primary group-hover/play:!text-white'}`}
+                className={`h-4 w-4 animate-spin ${
+                  isPlaying
+                    ? 'text-primary-foreground group-hover/play:!text-white'
+                    : 'text-primary group-hover/play:!text-white'
+                }`}
               />
             ) : isPlaying ? (
               <Pause className="h-4 w-4 text-primary-foreground group-hover/play:!text-white" />

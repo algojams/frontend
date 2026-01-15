@@ -77,6 +77,7 @@ function DashboardContent() {
                   key={strudel.id}
                   strudel={strudel}
                   showCodePreview
+                  maxTags={4}
                   actions={
                     <>
                       {strudel.is_public && (
