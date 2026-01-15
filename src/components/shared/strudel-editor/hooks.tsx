@@ -506,17 +506,20 @@ export function useStrudelEditor(
 
           onToggle: (started: boolean) => {
             if (process.env.NODE_ENV === 'development') {
-              console.log('[strudel] onToggle callback fired:', started);
+              console.log('[strudel] onToggle callback fired:', started, 'lastExplicitPlayTime:', lastExplicitPlayTime);
             }
 
             // ignore spurious onToggle(false) calls that arrive too soon after
             // an explicit play request - this prevents race conditions where
             // strudel fires false before true during startup
-            if (!started) {
+            if (!started && lastExplicitPlayTime > 0) {
               const timeSincePlay = Date.now() - lastExplicitPlayTime;
+              if (process.env.NODE_ENV === 'development') {
+                console.log('[strudel] onToggle(false) debounce check - timeSincePlay:', timeSincePlay, 'ms, threshold:', TOGGLE_DEBOUNCE_MS);
+              }
               if (timeSincePlay < TOGGLE_DEBOUNCE_MS) {
                 if (process.env.NODE_ENV === 'development') {
-                  console.log('[strudel] ignoring onToggle(false) - too soon after play request:', timeSincePlay, 'ms');
+                  console.log('[strudel] ignoring onToggle(false) - too soon after play request');
                 }
                 return;
               }
