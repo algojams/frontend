@@ -5,14 +5,10 @@ import { agentApi } from '@/lib/api/agent';
 import { useEditorStore } from '@/lib/stores/editor';
 import { useWebSocketStore } from '@/lib/stores/websocket';
 import { storage } from '@/lib/utils/storage';
+import { getBYOKProvider, getBYOKApiKey } from '@/components/shared/settings-modal/hooks';
 import type { GenerateRequest, GenerateResponse } from '@/lib/api/agent/types';
 
-interface UseAgentGenerateOptions {
-  provider?: 'anthropic' | 'openai';
-  providerApiKey?: string;
-}
-
-export function useAgentGenerate(options: UseAgentGenerateOptions = {}) {
+export function useAgentGenerate() {
   const {
     code,
     conversationHistory,
@@ -37,6 +33,10 @@ export function useAgentGenerate(options: UseAgentGenerateOptions = {}) {
       // for drafts: pass history from local store
       const isSavedStrudel = !!currentStrudelId;
 
+      // get BYOK settings from localStorage
+      const byokApiKey = getBYOKApiKey();
+      const byokProvider = byokApiKey ? getBYOKProvider() : undefined;
+
       const request: GenerateRequest = {
         user_query: query,
         editor_state: code,
@@ -47,8 +47,8 @@ export function useAgentGenerate(options: UseAgentGenerateOptions = {}) {
             content: msg.content,
           })),
         }),
-        ...(options.provider && { provider: options.provider }),
-        ...(options.providerApiKey && { provider_api_key: options.providerApiKey }),
+        ...(byokProvider && { provider: byokProvider }),
+        ...(byokApiKey && { provider_api_key: byokApiKey }),
         ...(currentStrudelId && { strudel_id: currentStrudelId }),
         ...(forkedFromId && { forked_from_id: forkedFromId }),
         ...(sessionId && { session_id: sessionId }),

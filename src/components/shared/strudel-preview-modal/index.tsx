@@ -54,6 +54,11 @@ export function StrudelPreviewModal({
         <DialogHeader className="flex flex-col gap-4 py-1">
           <DialogTitle className="flex items-center gap-2 text-xl leading-1">
             {strudel.title}
+            {strudel.author_name && (
+              <span className="text-sm font-normal text-muted-foreground">
+                by {strudel.author_name}
+              </span>
+            )}
           </DialogTitle>
 
           {(strudel.license || strudel.cc_signal) && (

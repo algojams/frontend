@@ -65,10 +65,12 @@ export function StrudelListItem({
           )}
         </div>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <span className="truncate">
-            {strudel.description || 'No description'}
-          </span>
-          <span className="shrink-0">·</span>
+          {strudel.author_name && (
+            <>
+              <span className="truncate">by {strudel.author_name}</span>
+              <span className="shrink-0">·</span>
+            </>
+          )}
           <span className="shrink-0">
             {new Date(strudel.updated_at).toLocaleDateString()}
           </span>

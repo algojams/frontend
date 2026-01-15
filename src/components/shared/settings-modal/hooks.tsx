@@ -1,13 +1,17 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useRef } from 'react';
 import { useUIStore } from '@/lib/stores/ui';
 import { useAuth } from '@/lib/hooks/use-auth';
-import { useUpdateAIFeaturesEnabled } from '@/lib/hooks/use-users';
+import { useUpdateAIFeaturesEnabled, useUpdateDisplayName } from '@/lib/hooks/use-users';
 import { toast } from 'sonner';
 
 const AI_DISABLED_KEY = 'algorave_ai_disabled';
 const ANON_DISPLAY_NAME_KEY = 'algorave_display_name';
+const BYOK_PROVIDER_KEY = 'algorave_byok_provider';
+const BYOK_API_KEY = 'algorave_byok_api_key';
+
+export type BYOKProvider = 'anthropic' | 'openai';
 
 function getAnonAIEnabled(): boolean {
   if (typeof window === 'undefined') return true;
@@ -28,17 +32,69 @@ function setAnonDisplayName(name: string): void {
   }
 }
 
+export function getBYOKProvider(): BYOKProvider {
+  if (typeof window === 'undefined') return 'anthropic';
+  return (localStorage.getItem(BYOK_PROVIDER_KEY) as BYOKProvider) || 'anthropic';
+}
+
+export function getBYOKApiKey(): string {
+  if (typeof window === 'undefined') return '';
+  return localStorage.getItem(BYOK_API_KEY) || '';
+}
+
+function setBYOKProvider(provider: BYOKProvider): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(BYOK_PROVIDER_KEY, provider);
+}
+
+function setBYOKApiKey(key: string): void {
+  if (typeof window === 'undefined') return;
+  if (key.trim()) {
+    localStorage.setItem(BYOK_API_KEY, key.trim());
+  } else {
+    localStorage.removeItem(BYOK_API_KEY);
+  }
+}
+
 export function useSettingsModal() {
   const { isSettingsModalOpen, setSettingsModalOpen } = useUIStore();
   const { user, isAuthenticated } = useAuth();
   const updateAIFeatures = useUpdateAIFeaturesEnabled();
+  const updateDisplayName = useUpdateDisplayName();
 
   // track optimistic state for pending updates
   const [optimisticValue, setOptimisticValue] = useState<boolean | null>(null);
 
+  // debounce timer for display name updates
+  const displayNameDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   // anonymous display name - save on change, read fresh when modal opens
-  const handleDisplayNameChange = useCallback((value: string) => {
-    setAnonDisplayName(value);
+  const handleDisplayNameChange = useCallback((value: string, isAuth: boolean) => {
+    if (isAuth) {
+      // debounce API calls for authenticated users
+      if (displayNameDebounceRef.current) {
+        clearTimeout(displayNameDebounceRef.current);
+      }
+      displayNameDebounceRef.current = setTimeout(async () => {
+        try {
+          await updateDisplayName.mutateAsync({ display_name: value.trim() });
+          toast.success('Display name updated');
+        } catch {
+          toast.error('Failed to update display name');
+        }
+      }, 500);
+    } else {
+      setAnonDisplayName(value);
+    }
+  }, [updateDisplayName]);
+
+  // BYOK handlers
+  const handleBYOKProviderChange = useCallback((provider: BYOKProvider) => {
+    setBYOKProvider(provider);
+  }, []);
+
+  const handleBYOKApiKeyChange = useCallback((key: string) => {
+    setBYOKApiKey(key);
   }, []);
 
   const handleOpenChange = useCallback((open: boolean) => {
@@ -103,6 +159,7 @@ export function useSettingsModal() {
     aiEnabled,
     handleAiToggle,
     handleDisplayNameChange,
-    getAnonDisplayName,
+    handleBYOKProviderChange,
+    handleBYOKApiKeyChange,
   };
 }

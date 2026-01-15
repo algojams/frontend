@@ -6,6 +6,7 @@ import { useAuthStore } from "@/lib/stores/auth";
 import type {
   TrainingConsentRequest,
   AIFeaturesEnabledRequest,
+  UpdateDisplayNameRequest,
 } from "@/lib/api/users/types";
 
 export const userKeys = {
@@ -40,6 +41,18 @@ export function useUpdateAIFeaturesEnabled() {
       usersApi.updateAIFeaturesEnabled(data),
     onSuccess: (updatedUser) => {
       // update the auth store directly with the returned user
+      setUser(updatedUser);
+    },
+  });
+}
+
+export function useUpdateDisplayName() {
+  const setUser = useAuthStore((state) => state.setUser);
+
+  return useMutation({
+    mutationFn: (data: UpdateDisplayNameRequest) =>
+      usersApi.updateDisplayName(data),
+    onSuccess: (updatedUser) => {
       setUser(updatedUser);
     },
   });

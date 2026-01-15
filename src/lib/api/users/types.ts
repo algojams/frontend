@@ -23,3 +23,7 @@ export interface TrainingConsentRequest {
 export interface AIFeaturesEnabledRequest {
   ai_features_enabled: boolean;
 }
+
+export interface UpdateDisplayNameRequest {
+  display_name: string;
+}

@@ -7,13 +7,20 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Settings, BotMessageSquare, User } from 'lucide-react';
-import { useSettingsModal, getAnonDisplayName } from './hooks';
+import { Settings, BotMessageSquare, User, Key } from 'lucide-react';
+import { useSettingsModal, getAnonDisplayName, getBYOKProvider, getBYOKApiKey, type BYOKProvider } from './hooks';
 
-export { getAnonDisplayName } from './hooks';
+export { getAnonDisplayName, getBYOKProvider, getBYOKApiKey, type BYOKProvider } from './hooks';
 
 export function SettingsModal() {
   const {
@@ -24,6 +31,8 @@ export function SettingsModal() {
     aiEnabled,
     handleAiToggle,
     handleDisplayNameChange,
+    handleBYOKProviderChange,
+    handleBYOKApiKeyChange,
   } = useSettingsModal();
 
   return (
@@ -53,7 +62,7 @@ export function SettingsModal() {
                     id="display-name"
                     placeholder="Anonymous"
                     defaultValue={getAnonDisplayName()}
-                    onChange={e => handleDisplayNameChange(e.target.value)}
+                    onChange={e => handleDisplayNameChange(e.target.value, false)}
                     maxLength={50}
                   />
                 </div>
@@ -74,8 +83,16 @@ export function SettingsModal() {
               </h3>
               <div className="space-y-4 rounded-lg border p-4">
                 <div className="space-y-2">
-                  <Label className="text-muted-foreground">Name</Label>
-                  <p className="text-sm">{user?.name}</p>
+                  <Label htmlFor="auth-display-name">
+                    Display Name <span className='text-xs text-muted-foreground'>(for shared sessions & raves)</span>
+                  </Label>
+                  <Input
+                    id="auth-display-name"
+                    placeholder="Enter display name"
+                    defaultValue={user?.name || ''}
+                    onChange={e => handleDisplayNameChange(e.target.value, true)}
+                    maxLength={50}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-muted-foreground">Email</Label>
@@ -90,20 +107,57 @@ export function SettingsModal() {
               <BotMessageSquare className="h-4 w-4" />
               AI Features
             </h3>
-            <div className="flex items-center justify-between rounded-lg border p-4">
-              <div className="space-y-0.5">
-                <Label htmlFor="ai-toggle" className="text-base">
-                  AI Assistant
-                </Label>
-                <p className="text-sm text-muted-foreground">
-                  Quick docs retrieval and code snippets
+            <div className="space-y-4 rounded-lg border p-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="ai-toggle" className="text-base">
+                    AI Assistant
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Quick docs retrieval and code snippets
+                  </p>
+                </div>
+                <Switch
+                  id="ai-toggle"
+                  checked={aiEnabled}
+                  onCheckedChange={handleAiToggle}
+                />
+              </div>
+
+              <div className="pt-4 border-t border-dashed space-y-4">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Key className="h-4 w-4" />
+                  <span>Bring Your Own Key (optional)</span>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="byok-provider">Provider</Label>
+                  <Select
+                    defaultValue={getBYOKProvider()}
+                    onValueChange={(value) => handleBYOKProviderChange(value as BYOKProvider)}
+                  >
+                    <SelectTrigger id="byok-provider" className="w-full">
+                      <SelectValue placeholder="Select provider" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="anthropic">Anthropic</SelectItem>
+                      <SelectItem value="openai">OpenAI</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="byok-api-key">API Key</Label>
+                  <Input
+                    id="byok-api-key"
+                    type="password"
+                    placeholder="sk-..."
+                    defaultValue={getBYOKApiKey()}
+                    onChange={e => handleBYOKApiKeyChange(e.target.value)}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Key is stored locally and sent directly to the provider. Unlimited usage when using your own key.
                 </p>
               </div>
-              <Switch
-                id="ai-toggle"
-                checked={aiEnabled}
-                onCheckedChange={handleAiToggle}
-              />
             </div>
           </div>
         </div>

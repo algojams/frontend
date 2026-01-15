@@ -109,6 +109,7 @@ export function inferSignalFromLicense(license: CCLicense | null | undefined): C
 export interface Strudel {
   id: string;
   user_id: string;
+  author_name?: string;
   title: string;
   code: string;
   description?: string;
