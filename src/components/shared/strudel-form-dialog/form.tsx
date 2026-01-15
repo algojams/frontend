@@ -149,7 +149,7 @@ export function StrudelForm({ strudel, mode, onClose }: StrudelFormProps) {
             <div className="flex items-center gap-2">
               <Label>AI/CC Signal</Label>
               {license && inferredSignal && !signalOverridden && (
-                <span className="text-xs text-muted-foreground">(inferred from license)</span>
+                <span className="text-xs text-muted-foreground leading-0">(inferred from license)</span>
               )}
               {signalOverridden && (
                 <span className="text-xs text-orange-400">(custom)</span>
