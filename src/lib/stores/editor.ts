@@ -210,17 +210,22 @@ export const useEditorStore = create<EditorState>((set, get) => ({
 
     // save draft to localStorage when conversation updates
     const { currentDraftId, currentStrudelId, code, conversationHistory, forkedFromId, parentCCSignal } = get();
-    const draftId = currentStrudelId || currentDraftId;
-    if (draftId) {
-      storage.setDraft({
-        id: draftId,
-        code,
-        conversationHistory,
-        updatedAt: Date.now(),
-        forkedFromId: forkedFromId || undefined,
-        parentCCSignal,
-      });
+    let draftId = currentStrudelId || currentDraftId;
+
+    // create a new draft ID if none exists (important for preserving conversation before sign-in)
+    if (!draftId) {
+      draftId = `draft_${Date.now()}`;
+      get().setCurrentDraftId(draftId);
     }
+
+    storage.setDraft({
+      id: draftId,
+      code,
+      conversationHistory,
+      updatedAt: Date.now(),
+      forkedFromId: forkedFromId || undefined,
+      parentCCSignal,
+    });
 
     return result;
   },

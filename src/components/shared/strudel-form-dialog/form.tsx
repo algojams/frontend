@@ -187,8 +187,6 @@ export function StrudelForm({ strudel, mode, onClose }: StrudelFormProps) {
             </Select>
           </div>
         </div>
-
-        {error && <p className="text-sm text-destructive">{error}</p>}
       </div>
       <DialogFooter className="gap-2 sm:gap-0">
         <Button variant="ghost" onClick={onClose}>
