@@ -330,7 +330,7 @@ export const useEditor = ({
       stopStrudel();
       setShowSyncOverlay(false);
       setPendingPlayback(null);
-      toast.info(reason || 'Session ended by host');
+      toast(reason || 'Session ended by host');
     });
 
     return () => {
