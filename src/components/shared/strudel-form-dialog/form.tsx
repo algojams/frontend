@@ -58,6 +58,9 @@ export function StrudelForm({ strudel, mode, onClose }: StrudelFormProps) {
   // get what signal would be inferred from current license
   const inferredSignal = inferSignalFromLicense(license);
 
+  // determine default signal (can't use no-ai when AI was used)
+  const defaultSignal = hasAIAssistance ? 'cc-cr' : 'no-ai';
+
   return (
     <>
       <DialogHeader>
@@ -157,7 +160,7 @@ export function StrudelForm({ strudel, mode, onClose }: StrudelFormProps) {
               )}
             </div>
             <Select
-              value={ccSignal || 'no-ai'}
+              value={ccSignal || defaultSignal}
               onValueChange={v => handleSignalChange((v as CCSignal) || null)}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="AI/CC signal..." />
@@ -168,26 +171,20 @@ export function StrudelForm({ strudel, mode, onClose }: StrudelFormProps) {
                   if (parentCCSignal && SIGNAL_RESTRICTIVENESS[s.id] < SIGNAL_RESTRICTIVENESS[parentCCSignal]) {
                     return false;
                   }
-                  // filter out no-ai when AI was used
-                  if (hasAIAssistance && s.id === 'no-ai') {
-                    return false;
-                  }
                   return true;
-                }).map(signal => (
-                  <SelectItem key={signal.id} value={signal.id}>
-                    <span className="font-medium uppercase">{signal.id}</span>
-                    <span className="text-muted-foreground ml-2 text-xs">
-                      {signal.desc}
-                    </span>
-                  </SelectItem>
-                ))}
+                }).map(signal => {
+                  const isDisabled = hasAIAssistance && signal.id === 'no-ai';
+                  return (
+                    <SelectItem key={signal.id} value={signal.id} disabled={isDisabled}>
+                      <span className="font-medium uppercase">{signal.id}</span>
+                      <span className="text-muted-foreground ml-2 text-xs">
+                        {isDisabled ? 'Disabled - AI assistance detected' : signal.desc}
+                      </span>
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
-            {hasAIAssistance && (
-              <p className="text-xs text-muted-foreground mt-1">
-                &apos;no-ai&apos; unavailable — AI assistance detected
-              </p>
-            )}
           </div>
         </div>
 
