@@ -51,6 +51,7 @@ export function StrudelForm({ strudel, mode, onClose }: StrudelFormProps) {
     isCreate,
     isPending,
     parentCCSignal,
+    hasAIAssistance,
     handleSave,
   } = useStrudelForm(strudel, mode, onClose);
 
@@ -163,8 +164,15 @@ export function StrudelForm({ strudel, mode, onClose }: StrudelFormProps) {
               </SelectTrigger>
               <SelectContent>
                 {CC_SIGNALS.filter(s => {
-                  if (!parentCCSignal) return true;
-                  return SIGNAL_RESTRICTIVENESS[s.id] >= SIGNAL_RESTRICTIVENESS[parentCCSignal];
+                  // filter by parent restrictiveness
+                  if (parentCCSignal && SIGNAL_RESTRICTIVENESS[s.id] < SIGNAL_RESTRICTIVENESS[parentCCSignal]) {
+                    return false;
+                  }
+                  // filter out no-ai when AI was used
+                  if (hasAIAssistance && s.id === 'no-ai') {
+                    return false;
+                  }
+                  return true;
                 }).map(signal => (
                   <SelectItem key={signal.id} value={signal.id}>
                     <span className="font-medium uppercase">{signal.id}</span>
@@ -175,6 +183,11 @@ export function StrudelForm({ strudel, mode, onClose }: StrudelFormProps) {
                 ))}
               </SelectContent>
             </Select>
+            {hasAIAssistance && (
+              <p className="text-xs text-muted-foreground mt-1">
+                &apos;no-ai&apos; unavailable — AI assistance detected
+              </p>
+            )}
           </div>
         </div>
 

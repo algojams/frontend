@@ -29,6 +29,9 @@ export function useStrudelForm(
     markSaved,
   } = useEditorStore();
 
+  // check if AI was used (any message has is_code_response)
+  const hasAIAssistance = conversationHistory.some(msg => msg.is_code_response);
+
   const {
     pendingForkId,
     setPendingForkId,
@@ -72,7 +75,11 @@ export function useStrudelForm(
 
     // only auto-infer if user hasn't manually overridden
     if (!signalOverridden) {
-      const inferredSignal = inferSignalFromLicense(newLicense);
+      let inferredSignal = inferSignalFromLicense(newLicense);
+      // if AI was used, don't allow no-ai to be inferred
+      if (hasAIAssistance && inferredSignal === 'no-ai') {
+        inferredSignal = 'cc-op'; // default to cc-op (open) when AI was used
+      }
       setCCSignal(inferredSignal);
     }
   };
@@ -187,6 +194,7 @@ export function useStrudelForm(
     isCreate,
     isPending,
     parentCCSignal,
+    hasAIAssistance,
     handleSave,
   };
 }
