@@ -8,8 +8,9 @@ import { Button } from '@/components/ui/button';
 import { AuthGuard } from '@/components/shared/auth-guard';
 import { StrudelFormDialog } from '@/components/shared/strudel-form-dialog';
 import { StrudelStatsDialog } from '@/components/shared/strudel-stats-dialog';
+import { StrudelPreviewModal } from '@/components/shared/strudel-preview-modal';
 import { useDashboard } from './hooks';
-import { Settings, Pencil, Loader2, BarChart3 } from 'lucide-react';
+import { Settings, Pencil, Loader2, BarChart3, Eye } from 'lucide-react';
 import type { Strudel } from '@/lib/api/strudels/types';
 import { useEditorStore } from '@/lib/stores/editor';
 import { useUIStore } from '@/lib/stores/ui';
@@ -21,6 +22,7 @@ function DashboardContent() {
   const [selectedStrudel, setSelectedStrudel] = useState<Strudel | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [statsStrudel, setStatsStrudel] = useState<Strudel | null>(null);
+  const [previewStrudel, setPreviewStrudel] = useState<Strudel | null>(null);
 
   const { isDirty, code, currentStrudelId } = useEditorStore();
   const { setPendingOpenStrudelId } = useUIStore();
@@ -74,6 +76,7 @@ function DashboardContent() {
                 <StrudelCard
                   key={strudel.id}
                   strudel={strudel}
+                  showCodePreview
                   actions={
                     <>
                       {strudel.is_public && (
@@ -94,6 +97,13 @@ function DashboardContent() {
                           setSettingsOpen(true);
                         }}>
                         <Settings className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="icon-round-sm"
+                        variant="outline"
+                        className="text-muted-foreground hover:text-foreground"
+                        onClick={() => setPreviewStrudel(strudel)}>
+                        <Eye className="h-4 w-4" />
                       </Button>
                       <Button
                         size="icon-round-sm"
@@ -155,6 +165,12 @@ function DashboardContent() {
           strudelTitle={statsStrudel?.title}
           open={!!statsStrudel}
           onOpenChange={open => !open && setStatsStrudel(null)}
+        />
+
+        <StrudelPreviewModal
+          strudel={previewStrudel}
+          open={!!previewStrudel}
+          onOpenChange={open => !open && setPreviewStrudel(null)}
         />
       </div>
     </AuthGuard>

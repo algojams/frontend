@@ -15,6 +15,7 @@ interface StrudelCardProps {
   strudel: Strudel;
   actions?: ReactNode;
   showDescription?: boolean;
+  showCodePreview?: boolean;
   maxTags?: number;
 }
 
@@ -22,10 +23,11 @@ export function StrudelCard({
   strudel,
   actions,
   showDescription = false,
+  showCodePreview = false,
   maxTags = 3,
 }: StrudelCardProps) {
   return (
-    <Card className="rounded-md">
+    <Card className="rounded-md gap-2">
       <CardHeader className="relative">
         {actions && <div className="absolute -top-1 right-4 flex gap-1">{actions}</div>}
         <CardDescription>
@@ -39,7 +41,13 @@ export function StrudelCard({
         )}
       </CardHeader>
 
-      <CardContent>
+      <CardContent className="space-y-4">
+        {showCodePreview && strudel.code && (
+          <pre className="text-xs bg-zinc-900/50 p-4 rounded overflow-hidden line-clamp-10 leading-5 text-muted-foreground">
+            {strudel.code}
+          </pre>
+        )}
+
         <div className="flex gap-1 overflow-hidden">
           {strudel.ai_assist_count > 0 && (
             <span className="text-xs bg-violet-500/15 text-violet-400 px-2 py-0.5 rounded flex items-center gap-1 shrink-0">

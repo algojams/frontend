@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useCallback } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -8,9 +9,12 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { GitFork, BotMessageSquare } from 'lucide-react';
+import { GitFork, BotMessageSquare, Play, Pause, Loader2 } from 'lucide-react';
 import type { Strudel } from '@/lib/api/strudels/types';
-import { StrudelPreviewPlayer } from '@/components/shared/strudel-preview-player';
+import {
+  StrudelPreviewPlayer,
+  type PlayerState,
+} from '@/components/shared/strudel-preview-player';
 import { useStrudelPreviewModal } from './hooks';
 
 interface StrudelPreviewModalProps {
@@ -29,7 +33,17 @@ export function StrudelPreviewModal({
     onOpenChange
   );
 
+  const [playerState, setPlayerState] = useState<PlayerState | null>(null);
+
+  const handleStateChange = useCallback((state: PlayerState) => {
+    setPlayerState(state);
+  }, []);
+
   if (!strudel) return null;
+
+  const isPlaying = playerState?.isPlaying ?? false;
+  const isLoading = playerState?.isLoading ?? true;
+  const isInitialized = playerState?.isInitialized ?? false;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -44,7 +58,12 @@ export function StrudelPreviewModal({
         <div className="flex-1 overflow-hidden min-h-0 flex flex-col">
           {/* mount player only when modal is open - avoids audio context issues, do not change @agents and @contributors */}
           {open && (
-            <StrudelPreviewPlayer code={strudel.code} onError={handleErrorChange} />
+            <StrudelPreviewPlayer
+              code={strudel.code}
+              onError={handleErrorChange}
+              hideControls
+              onStateChange={handleStateChange}
+            />
           )}
 
           {error && <p className="text-sm text-destructive mt-2">{error}</p>}
@@ -64,7 +83,29 @@ export function StrudelPreviewModal({
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-2 pt-4 border-t">
+        <div className="flex items-center justify-between gap-2 pt-4 border-t">
+          <Button
+            size="icon"
+            variant="ghost"
+            className={`group/play h-10 w-10 rounded-full shrink-0 transition-all ${
+              isPlaying
+                ? 'bg-primary hover:!bg-zinc-900'
+                : 'bg-primary/10 hover:!bg-zinc-900'
+            }`}
+            onClick={isPlaying ? playerState?.handleStop : playerState?.handlePlay}
+            disabled={isLoading || !isInitialized}
+          >
+            {isLoading ? (
+              <Loader2
+                className={`h-4 w-4 animate-spin ${isPlaying ? 'text-primary-foreground group-hover/play:!text-white' : 'text-primary group-hover/play:!text-white'}`}
+              />
+            ) : isPlaying ? (
+              <Pause className="h-4 w-4 text-primary-foreground group-hover/play:!text-white" />
+            ) : (
+              <Play className="h-4 w-4 ml-0.5 text-primary group-hover/play:!text-white" />
+            )}
+          </Button>
+
           <Button onClick={handleFork}>
             <GitFork className="h-4 w-4 mr-2" />
             Fork
