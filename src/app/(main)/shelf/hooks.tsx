@@ -14,8 +14,8 @@ export const useDashboard = () => {
     fetchNextPage,
   } = useInfiniteStrudels();
 
-  // flatten pages into single array
-  const strudels = data?.pages.flatMap(page => page.strudels) ?? [];
+  // flatten pages into single array (filter out any null values)
+  const strudels = data?.pages.flatMap(page => page.strudels).filter(Boolean) ?? [];
   const total = data?.pages[0]?.pagination.total ?? 0;
 
   // intersection observer for infinite scroll

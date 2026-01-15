@@ -51,8 +51,8 @@ export default function ExplorePage() {
     fetchNextPage,
   } = useInfinitePublicStrudels(filters);
 
-  // flatten pages into single array
-  const strudels = data?.pages.flatMap(page => page.strudels) ?? [];
+  // flatten pages into single array (filter out any null values)
+  const strudels = data?.pages.flatMap(page => page.strudels).filter(Boolean) ?? [];
 
   // intersection observer for infinite scroll
   const observerRef = useRef<IntersectionObserver | null>(null);
