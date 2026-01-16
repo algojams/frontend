@@ -1,4 +1,4 @@
-name: Build and Push
+name: Deploy Frontend
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -32,3 +32,15 @@ jobs:
             NEXT_PUBLIC_WS_URL=wss://algorave.cc
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Deploy to Lightsail
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.LIGHTSAIL_HOST }}
+          username: ubuntu
+          key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
+          script: |
+            cd ~/frontend
+            docker compose pull
+            docker compose up -d
+            docker image prune -f
