@@ -92,11 +92,18 @@ export default function AboutPage() {
       <section className="mb-12">
         <h2 className="text-2xl font-semibold mb-4">The Problem I Had to Solve</h2>
         <p className="text-muted-foreground mb-4">
-          While building Algorave, I watched a slightly similar ai-assisted music project
-          launch and immediately face backlash. The project allegedly utilized public
-          Strudel patterns, including CC-licensed work in its training data & prompts
-          without permission and compatible licensing. The response from the community was
-          swift and clear:
+          While building Algorave, I watched a{' '}
+          <a
+            href="https://x.com/todepond/status/2006713609154597256"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary hover:underline">
+            slightly similar ai-assisted music project
+          </a>{' '}
+          launch and immediately face backlash for utilizing public Strudel patterns,
+          including CC-licensed work in its training data & prompts without permission or
+          compatible licensing even though the project in question is open source. The
+          response from the community was swift and clear:
         </p>
         <p className="font-semibold my-6 pl-4 py-3 bg-amber-500/10 border-l-4 border-amber-500 rounded-r">
           AI tools built on creative work, without consent, are not welcome.
@@ -524,7 +531,9 @@ export default function AboutPage() {
       <hr className="my-8 border-border" />
 
       <section className="mb-12">
-        <h2 className="text-2xl font-semibold mb-4">To Creatives & the Strudel Community</h2>
+        <h2 className="text-2xl font-semibold mb-4">
+          To Creatives & the Strudel Community
+        </h2>
         <p className="text-muted-foreground mb-4">
           I know AI tools have extracted value from your work without permission before
           now and is still doing so. I understand the skepticism.
