@@ -10,9 +10,14 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Algorave | Live code music with friends using strudel",
-  description: "Create live music with strudel with and collaborate in real-time.",
+  description: "Create live music with strudel and collaborate in real-time.",
+  manifest: "/manifest.json",
   icons: {
-    icon: "/favicon.ico",
+    icon: [
+      { url: "/favicon.ico", sizes: "32x32" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
+    apple: "/apple-touch-icon.png",
   },
 };
 
