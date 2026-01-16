@@ -84,8 +84,8 @@ export default function LivePage() {
 
       {isLoading || (isAuthenticated && isLoadingLastSession) ? (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-          {[1, 2, 3, 4].map(i => (
-            <Card key={i} className="animate-pulse">
+          {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
+            <Card key={i} className={`animate-pulse rounded-md ${i > 6 ? 'hidden 2xl:block' : ''}`}>
               <CardHeader>
                 <div className="h-4 bg-muted rounded w-3/4" />
                 <div className="h-3 bg-muted rounded w-1/2 mt-2" />

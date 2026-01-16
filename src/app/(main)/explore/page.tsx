@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, useMemo } from "react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { StrudelListItem } from "@/components/shared/strudel-list-item";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -192,17 +192,19 @@ export default function ExplorePage() {
       </div>
 
       {isLoading ? (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="flex flex-col border rounded-lg divide-y">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <Card key={i} className="animate-pulse">
-              <CardHeader>
-                <div className="h-4 bg-muted rounded w-3/4" />
-                <div className="h-3 bg-muted rounded w-1/2 mt-2" />
-              </CardHeader>
-              <CardContent>
-                <div className="h-20 bg-muted rounded" />
-              </CardContent>
-            </Card>
+            <div key={i} className="flex items-center gap-4 px-4 py-3 animate-pulse">
+              <div className="h-10 w-10 rounded-full bg-muted shrink-0" />
+              <div className="flex-1 min-w-0">
+                <div className="h-4 bg-muted rounded w-1/3 mb-2" />
+                <div className="h-3 bg-muted rounded w-1/4" />
+              </div>
+              <div className="hidden md:flex items-center gap-1">
+                <div className="h-5 w-12 bg-muted rounded" />
+                <div className="h-5 w-12 bg-muted rounded" />
+              </div>
+            </div>
           ))}
         </div>
       ) : isError ? (
