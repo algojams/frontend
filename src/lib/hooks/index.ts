@@ -28,9 +28,4 @@ export {
   useSessionMessages,
   sessionKeys,
 } from "./use-sessions";
-export {
-  useUsage,
-  useUpdateTrainingConsent,
-  useUpdateAIFeaturesEnabled,
-  userKeys,
-} from "./use-users";
+export { useUpdateAIFeaturesEnabled } from "./use-users";
