@@ -36,7 +36,7 @@ export default function LivePage() {
     !lastSessionInList;
 
   return (
-    <div className="container p-8 w-full max-w-full">
+    <div className="container p-4 md:p-8 w-full max-w-full">
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-2">
           <Radio className="h-6 w-6 text-red-500 animate-pulse" />

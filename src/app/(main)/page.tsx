@@ -73,8 +73,13 @@ function HomePageContent() {
     urlDisplayName,
   });
 
-  // re-open sidebar when switching from mobile to desktop
+  // open sidebar on desktop (default closed for mobile), re-open when resizing to desktop
   useEffect(() => {
+    // open on desktop on initial mount
+    if (window.innerWidth >= MD_BREAKPOINT) {
+      setChatPanelOpen(true);
+    }
+
     const handleResize = () => {
       if (window.innerWidth >= MD_BREAKPOINT && !isChatPanelOpen) {
         setChatPanelOpen(true);
@@ -83,7 +88,8 @@ function HomePageContent() {
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, [isChatPanelOpen, setChatPanelOpen]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleGoLive = () => {
     if (!isAuthenticated) {

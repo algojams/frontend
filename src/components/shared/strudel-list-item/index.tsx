@@ -31,12 +31,12 @@ export function StrudelListItem({
   };
 
   return (
-    <div className="group flex items-center gap-4 px-4 py-3 rounded-md hover:bg-muted/50 transition-colors">
+    <div className="group flex items-center gap-2 md:gap-4 px-3 md:px-4 py-2 md:py-3 rounded-md hover:bg-muted/50 transition-colors">
       {/* Play button */}
       <Button
         size="icon"
         variant="ghost"
-        className={`group/play h-10 w-10 rounded-full shrink-0 transition-all ${
+        className={`group/play h-8 w-8 md:h-10 md:w-10 rounded-full shrink-0 transition-all ${
           isThisPlaying
             ? 'bg-primary hover:!bg-zinc-900'
             : 'bg-primary/10 hover:!bg-zinc-900'
@@ -56,15 +56,15 @@ export function StrudelListItem({
       {/* Info */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className="font-medium truncate">{strudel.title}</span>
+          <span className="text-[15px] md:text-base font-medium truncate">{strudel.title}</span>
           {strudel.ai_assist_count > 0 && (
-            <span className="text-xs bg-violet-500/15 text-violet-400 px-1.5 py-0.5 rounded flex items-center gap-1 shrink-0">
+            <span className="hidden md:flex text-xs bg-violet-500/15 text-violet-400 px-1.5 py-0.5 rounded items-center gap-1 shrink-0">
               <BotMessageSquare className="h-3.5 w-3.5" />
               {strudel.ai_assist_count}
             </span>
           )}
         </div>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <div className="flex items-center gap-2 text-xs md:text-sm text-muted-foreground">
           {strudel.author_name && (
             <>
               <span className="truncate">by {strudel.author_name}</span>
@@ -95,22 +95,22 @@ export function StrudelListItem({
       </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="flex items-center gap-1 shrink-0 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
         <Button
           size="icon-round-sm"
           variant="ghost"
-          className="text-muted-foreground hover:text-foreground"
+          className="h-7 w-7 md:h-8 md:w-8 text-muted-foreground hover:text-foreground"
           onClick={onStats}
         >
-          <BarChart3 className="h-4 w-4" />
+          <BarChart3 className="h-3.5 w-3.5 md:h-4 md:w-4" />
         </Button>
         <Button
           size="icon-round-sm"
           variant="ghost"
-          className="text-muted-foreground hover:text-foreground"
+          className="h-7 w-7 md:h-8 md:w-8 text-muted-foreground hover:text-foreground"
           onClick={onView}
         >
-          <Eye className="h-4 w-4" />
+          <Eye className="h-3.5 w-3.5 md:h-4 md:w-4" />
         </Button>
       </div>
     </div>

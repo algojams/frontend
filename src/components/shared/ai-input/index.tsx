@@ -134,7 +134,7 @@ export function AIInput({ onSendAIRequest, disabled = false }: AIInputProps) {
             onKeyDown={handleKeyDown}
             placeholder="Ask algorave agent for help or code snippets..."
             disabled={disabled || isAIGenerating}
-            className="flex-1 bg-transparent text-sm focus:outline-none disabled:opacity-50"
+            className="flex-1 bg-transparent text-base md:text-sm focus:outline-none disabled:opacity-50"
           />
 
           {conversationHistory.length > 0 && (

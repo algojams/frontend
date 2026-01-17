@@ -97,8 +97,8 @@ export default function ExplorePage() {
   const hasActiveFilters = searchQuery || selectedTags.length > 0;
 
   return (
-    <div className={`container p-8 w-full max-w-full ${playerStrudel ? 'pb-24' : ''}`}>
-      <div className="mb-8 flex items-start justify-between gap-4">
+    <div className={`container p-4 md:p-8 w-full max-w-full ${playerStrudel ? 'pb-24' : ''}`}>
+      <div className="mb-8 flex flex-col md:flex-row md:items-start md:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold">Explore</h1>
           <p className="text-muted-foreground">
@@ -107,7 +107,7 @@ export default function ExplorePage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-2 h-9 w-[280px] justify-end">
+          <div className="flex items-center gap-2 h-9 w-full md:w-[280px] justify-end">
             {isSearchOpen ? (
               <>
                 <div className="relative flex-1">

@@ -44,7 +44,7 @@ export function StrudelStatsDialog({
               Usage Stats
             </DialogTitle>
             {strudelTitle && (
-              <DialogDescription className="truncate">{strudelTitle}</DialogDescription>
+              <DialogDescription className="truncate text-left">{strudelTitle}</DialogDescription>
             )}
           </DialogHeader>
 
@@ -63,7 +63,8 @@ export function StrudelStatsDialog({
                 <div className="bg-muted/50 rounded-lg p-3">
                   <div className="flex items-center gap-2 text-muted-foreground text-xs mb-1">
                     <BarChart3 className="h-3 w-3" />
-                    AI References
+                    <span className="md:hidden">AI Refs</span>
+                    <span className="hidden md:inline">AI References</span>
                   </div>
                   <div className="text-xl font-semibold">{data.stats.total_uses}</div>
                 </div>
@@ -77,7 +78,8 @@ export function StrudelStatsDialog({
                 <div className="bg-muted/50 rounded-lg p-3">
                   <div className="flex items-center gap-2 text-muted-foreground text-xs mb-1">
                     <Users className="h-3 w-3" />
-                    {data.stats.unique_users === 1 ? 'Unique User' : 'Unique Users'}
+                    <span className="md:hidden">{data.stats.unique_users === 1 ? 'User' : 'Users'}</span>
+                    <span className="hidden md:inline">{data.stats.unique_users === 1 ? 'Unique User' : 'Unique Users'}</span>
                   </div>
                   <div className="text-xl font-semibold">{data.stats.unique_users}</div>
                 </div>
@@ -92,18 +94,21 @@ export function StrudelStatsDialog({
 
               {data.recent_uses.length > 0 && (
                 <div>
-                  <h4 className="text-sm font-medium mb-2">Inspired these strudels</h4>
+                  <h4 className="text-sm font-medium mb-2">
+                    <span className="md:hidden">Inspired</span>
+                    <span className="hidden md:inline">Inspired these strudels</span>
+                  </h4>
                   <div className="space-y-2">
                     {data.recent_uses.map(use => (
                       <div
                         key={use.id}
-                        className="flex items-center justify-between p-2 rounded-md bg-muted/30">
-                        <div className="truncate flex-1 min-w-0">
-                          <span className="text-sm">
+                        className="flex items-center justify-between p-1.5 md:p-2 rounded-md bg-muted/30">
+                        <div className="flex flex-col md:flex-row md:items-center flex-1 min-w-0">
+                          <span className="text-xs md:text-sm truncate">
                             {use.target_strudel_title || 'Untitled'}
                           </span>
                           {use.requesting_display_name && (
-                            <span className="text-xs text-muted-foreground ml-2">
+                            <span className="text-xs text-muted-foreground md:ml-2">
                               by {use.requesting_display_name}
                             </span>
                           )}
@@ -111,13 +116,13 @@ export function StrudelStatsDialog({
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="ml-2 shrink-0"
+                          className="ml-2 shrink-0 h-7 w-7 md:h-auto md:w-auto p-0 md:px-3"
                           onClick={() =>
                             use.target_strudel_id &&
                             handleOpenPreview(use.target_strudel_id)
                           }>
-                          <Eye className="h-4 w-4 mr-1" />
-                          View
+                          <Eye className="h-4 w-4 md:mr-1" />
+                          <span className="hidden md:inline">View</span>
                         </Button>
                       </div>
                     ))}

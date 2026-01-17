@@ -45,7 +45,7 @@ interface UIState {
 }
 
 export const useUIStore = create<UIState>(set => ({
-  isChatPanelOpen: true,
+  isChatPanelOpen: false,
   chatPanelWidth: CHAT_PANEL_DEFAULT_WIDTH,
   aiDrawerHeight: AI_DRAWER_DEFAULT_HEIGHT,
   sidebarTab: 'samples',

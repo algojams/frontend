@@ -129,7 +129,7 @@ export function SidebarPanel({
                 onKeyDown={handleKeyDown}
                 placeholder="Send a message..."
                 disabled={disabled}
-                className="flex-1 bg-transparent text-sm focus:outline-none disabled:opacity-50"
+                className="flex-1 bg-transparent text-base md:text-sm focus:outline-none disabled:opacity-50"
               />
               <Button
                 size="icon"
