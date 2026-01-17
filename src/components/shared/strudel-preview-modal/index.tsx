@@ -64,7 +64,7 @@ const SIGNAL_DETAILS: Record<CCSignal, string> = {
 };
 
 // blog post explaining CC signals
-const SIGNALS_BLOG_URL = 'https://creativecommons.org/2024/04/04/cc-and-data-signals/';
+const SIGNALS_BLOG_URL = 'https://creativecommons.org/ai-and-the-commons/cc-signals/implementation/';
 
 // signal colors matching about page
 const SIGNAL_COLORS: Record<CCSignal | 'default', { text: string; hover: string }> = {
