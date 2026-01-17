@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Button } from '@/components/ui/button';
 import {
   GitFork,
@@ -11,14 +12,60 @@ import {
   Loader2,
   Scale,
   Activity,
+  ExternalLink,
+  Info,
 } from 'lucide-react';
-import type { Strudel } from '@/lib/api/strudels/types';
-import { CC_SIGNALS } from '@/lib/api/strudels/types';
+import type { Strudel, CCLicense, CCSignal } from '@/lib/api/strudels/types';
+import { CC_SIGNALS, CC_LICENSES } from '@/lib/api/strudels/types';
 import {
   StrudelPreviewPlayer,
   type PlayerState,
 } from '@/components/shared/strudel-preview-player';
 import { useStrudelPreviewModal } from './hooks';
+
+// detailed descriptions for license popover
+const LICENSE_DETAILS: Record<CCLicense, { description: string; url: string }> = {
+  'CC0 1.0': {
+    description: 'No rights reserved. You can copy, modify, distribute and perform the work, even for commercial purposes, all without asking permission.',
+    url: 'https://creativecommons.org/publicdomain/zero/1.0/',
+  },
+  'CC BY 4.0': {
+    description: 'You may share and adapt for any purpose, even commercially, as long as you give appropriate credit to the original creator.',
+    url: 'https://creativecommons.org/licenses/by/4.0/',
+  },
+  'CC BY-SA 4.0': {
+    description: 'You may share and adapt for any purpose, even commercially, as long as you give credit and license your derivatives under the same terms.',
+    url: 'https://creativecommons.org/licenses/by-sa/4.0/',
+  },
+  'CC BY-NC 4.0': {
+    description: 'You may share and adapt for non-commercial purposes only, as long as you give appropriate credit.',
+    url: 'https://creativecommons.org/licenses/by-nc/4.0/',
+  },
+  'CC BY-NC-SA 4.0': {
+    description: 'You may share and adapt for non-commercial purposes only, as long as you give credit and license derivatives under the same terms.',
+    url: 'https://creativecommons.org/licenses/by-nc-sa/4.0/',
+  },
+  'CC BY-ND 4.0': {
+    description: 'You may share for any purpose, even commercially, as long as you give credit and do not modify the original work.',
+    url: 'https://creativecommons.org/licenses/by-nd/4.0/',
+  },
+  'CC BY-NC-ND 4.0': {
+    description: 'You may share for non-commercial purposes only, as long as you give credit and do not modify the original work.',
+    url: 'https://creativecommons.org/licenses/by-nc-nd/4.0/',
+  },
+};
+
+// detailed descriptions for signal popover
+const SIGNAL_DETAILS: Record<CCSignal, string> = {
+  'cc-cr': 'AI systems may use this work for training or inference, provided they give appropriate credit/attribution to the creator.',
+  'cc-dc': 'AI systems may use this work with attribution and should support the creator (e.g., through payment, promotion, or other means).',
+  'cc-ec': 'AI systems may use this work with attribution and should contribute back to the open creative ecosystem.',
+  'cc-op': 'AI systems may use this work with attribution, but the resulting AI model or agent must remain open source.',
+  'no-ai': 'This work may not be used for AI training or inference purposes.',
+};
+
+// blog post explaining CC signals
+const SIGNALS_BLOG_URL = 'https://creativecommons.org/2024/04/04/cc-and-data-signals/';
 
 interface StrudelPreviewModalProps {
   strudel: Strudel | null;
@@ -64,19 +111,77 @@ export function StrudelPreviewModal({
           {(strudel.license || strudel.cc_signal) && (
             <div className="flex items-center gap-4 text-sm text-muted-foreground">
               {strudel.license && (
-                <span className="flex items-center gap-1 text-amber-500">
-                  <Scale className="h-4 w-4" />
-                  {strudel.license}
-                </span>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button className="flex items-center gap-1 text-amber-500 hover:text-amber-400 transition-colors cursor-pointer">
+                      <Scale className="h-4 w-4" />
+                      {strudel.license}
+                      <Info className="h-3 w-3 opacity-60" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-80">
+                    <div className="space-y-3">
+                      <p className="text-sm text-muted-foreground">
+                        Creative Commons licenses let creators share their work while keeping some rights.
+                        They range from very permissive (CC0) to restrictive (NC, ND).
+                      </p>
+                      <div className="border-t pt-3">
+                        <p className="font-medium text-sm mb-1">
+                          {CC_LICENSES.find(l => l.id === strudel.license)?.label}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {LICENSE_DETAILS[strudel.license]?.description}
+                        </p>
+                      </div>
+                      <a
+                        href={LICENSE_DETAILS[strudel.license]?.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
+                        View full license
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    </div>
+                  </PopoverContent>
+                </Popover>
               )}
 
-              <span className="flex items-center gap-1 text-white/50">
-                <Activity className="h-3.5 w-3.5" />
-                {strudel.cc_signal?.toUpperCase() || 'NO-AI'} (
-                {CC_SIGNALS.find(s => s.id === strudel.cc_signal)?.label ??
-                  'AI use not allowed'}
-                )
-              </span>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button className="flex items-center gap-1 text-white/50 hover:text-white/70 transition-colors cursor-pointer">
+                    <Activity className="h-3.5 w-3.5" />
+                    {strudel.cc_signal?.toUpperCase() || 'NO-AI'} (
+                    {CC_SIGNALS.find(s => s.id === strudel.cc_signal)?.label ??
+                      'AI use not allowed'}
+                    )
+                    <Info className="h-3 w-3 opacity-60" />
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80">
+                  <div className="space-y-3">
+                    <p className="text-sm text-muted-foreground">
+                      CC Signals indicate how creators want AI systems to interact with their work.
+                      These are preferences that help AI developers respect creator intent.
+                    </p>
+                    <div className="border-t pt-3">
+                      <p className="font-medium text-sm mb-1">
+                        {CC_SIGNALS.find(s => s.id === strudel.cc_signal)?.label ?? 'No AI'}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {SIGNAL_DETAILS[strudel.cc_signal as CCSignal] ?? SIGNAL_DETAILS['no-ai']}
+                      </p>
+                    </div>
+                    <a
+                      href={SIGNALS_BLOG_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
+                      Learn about CC Signals
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </div>
+                </PopoverContent>
+              </Popover>
             </div>
           )}
         </DialogHeader>

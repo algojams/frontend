@@ -49,6 +49,7 @@ function HomePageContent() {
     handleSendAIRequest,
     handleSendMessage,
     handleSave,
+    handleRestore,
     handleNewStrudel,
     handleEndLive,
     isChatPanelOpen,
@@ -58,6 +59,7 @@ function HomePageContent() {
     canEdit,
     sessionId,
     saveStatus,
+    hasRestorableVersion,
     showChat,
     isAuthenticated,
     isLive,
@@ -99,6 +101,7 @@ function HomePageContent() {
           onStop={handleStop}
           onUpdate={handleUpdate}
           onSave={handleSave}
+          onRestore={handleRestore}
           onNew={handleNewStrudel}
           onGoLive={handleGoLive}
           onEndLive={handleEndLive}
@@ -108,6 +111,7 @@ function HomePageContent() {
           isLive={isLive}
           isEndingLive={isEndingLive}
           saveStatus={saveStatus}
+          hasRestorableVersion={hasRestorableVersion()}
           isViewer={isViewer}
         />
         <div className="flex-1 overflow-hidden">

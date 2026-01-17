@@ -3,6 +3,12 @@ import type { AgentMessage, CCSignal } from '@/lib/api/strudels/types';
 
 const DRAFT_PREFIX = 'algorave_draft_';
 const CURRENT_DRAFT_ID_KEY = 'algorave_current_draft_id';
+const GOOD_VERSION_PREFIX = 'algorave_good_version_';
+
+export interface GoodVersion {
+  code: string;
+  timestamp: number;
+}
 
 export interface Draft {
   id: string;
@@ -184,5 +190,30 @@ export const storage = {
   getLatestDraft: (): Draft | null => {
     const drafts = storage.getAllDrafts();
     return drafts.length > 0 ? drafts[0] : null;
+  },
+
+  // good version - last manually saved state for recovery
+  getGoodVersion: (strudelId: string): GoodVersion | null => {
+    if (typeof window === 'undefined') return null;
+    const data = localStorage.getItem(`${GOOD_VERSION_PREFIX}${strudelId}`);
+    if (!data) return null;
+    try {
+      return JSON.parse(data);
+    } catch {
+      return null;
+    }
+  },
+
+  setGoodVersion: (strudelId: string, code: string): void => {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem(
+      `${GOOD_VERSION_PREFIX}${strudelId}`,
+      JSON.stringify({ code, timestamp: Date.now() })
+    );
+  },
+
+  clearGoodVersion: (strudelId: string): void => {
+    if (typeof window === 'undefined') return;
+    localStorage.removeItem(`${GOOD_VERSION_PREFIX}${strudelId}`);
   },
 };

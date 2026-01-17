@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { Play, Square, Plus, Radio, X, RefreshCw } from 'lucide-react';
+import { Play, Square, Plus, Radio, X, RefreshCw, RotateCcw } from 'lucide-react';
 import { useEditorToolbar, type SaveStatus } from './hooks';
 import { SaveIndicator, ConnectionIndicator } from './indicators';
 
@@ -12,6 +12,7 @@ interface EditorToolbarProps {
   onStop: () => void;
   onUpdate: () => void;
   onSave?: () => void;
+  onRestore?: () => void;
   onNew?: () => void;
   onGoLive?: () => void;
   onEndLive?: () => void;
@@ -21,6 +22,7 @@ interface EditorToolbarProps {
   isLive?: boolean;
   isEndingLive?: boolean;
   saveStatus?: SaveStatus;
+  hasRestorableVersion?: boolean;
   isViewer?: boolean;
 }
 
@@ -29,6 +31,7 @@ export function EditorToolbar({
   onStop,
   onUpdate,
   onSave,
+  onRestore,
   onNew,
   onGoLive,
   onEndLive,
@@ -38,6 +41,7 @@ export function EditorToolbar({
   isLive = false,
   isEndingLive = false,
   saveStatus = 'saved',
+  hasRestorableVersion = false,
   isViewer = false,
 }: EditorToolbarProps) {
   const { isPlaying, isInitialized, isCodeDirty, status } = useEditorToolbar();
@@ -82,6 +86,21 @@ export function EditorToolbar({
       </div>
 
       <div className="flex-1" />
+
+      {showSave && hasRestorableVersion && onRestore && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              size="icon-round-sm"
+              variant="outline"
+              onClick={onRestore}
+              className="text-muted-foreground hover:text-foreground">
+              <RotateCcw className="h-4 w-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Restore last saved version</TooltipContent>
+        </Tooltip>
+      )}
 
       {showSave && (
         <Tooltip>

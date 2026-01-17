@@ -51,7 +51,7 @@ export const useEditor = ({
   const { token } = useAuthStore();
   const agentGenerate = useAgentGenerate();
   const { evaluate, stop } = useStrudelAudio();
-  const { saveStatus, handleSave, isAuthenticated } = useAutosave();
+  const { saveStatus, handleSave, handleRestore, hasRestorableVersion, isAuthenticated } = useAutosave();
   const { isChatPanelOpen, toggleChatPanel, setNewStrudelDialogOpen } = useUIStore();
   const {
     setCode,
@@ -465,6 +465,7 @@ export const useEditor = ({
     handleSendAIRequest,
     handleSendMessage,
     handleSave,
+    handleRestore,
     handleNewStrudel,
     handleEndLive,
     isChatPanelOpen,
@@ -475,6 +476,7 @@ export const useEditor = ({
     sessionId,
     token,
     saveStatus,
+    hasRestorableVersion,
     isAuthenticated,
     isLoadingStrudel,
     currentStrudelId,

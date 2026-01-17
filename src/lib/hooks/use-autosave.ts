@@ -5,13 +5,14 @@ import { useEditorStore } from "@/lib/stores/editor";
 import { useAuthStore } from "@/lib/stores/auth";
 import { useUIStore } from "@/lib/stores/ui";
 import { useUpdateStrudel } from "@/lib/hooks/use-strudels";
+import { storage, type GoodVersion } from "@/lib/utils/storage";
 
 type SaveStatus = "saved" | "saving" | "unsaved";
 
 const AUTOSAVE_DEBOUNCE_MS = 3000;
 
 export function useAutosave() {
-  const { isDirty, code, conversationHistory, currentStrudelId, markSaved } = useEditorStore();
+  const { isDirty, code, conversationHistory, currentStrudelId, markSaved, setCode } = useEditorStore();
   const { token } = useAuthStore();
   const { setLoginModalOpen, setSaveStrudelDialogOpen } = useUIStore();
   const updateStrudel = useUpdateStrudel();
@@ -36,6 +37,17 @@ export function useAutosave() {
   useEffect(() => {
     setSaveStatus(getSaveStatus());
   }, [getSaveStatus]);
+
+  // Set initial good version when loading a strudel (if none exists)
+  useEffect(() => {
+    if (!currentStrudelId || !code) return;
+
+    const existingGoodVersion = storage.getGoodVersion(currentStrudelId);
+    if (!existingGoodVersion) {
+      // first time loading this strudel - set current code as good version
+      storage.setGoodVersion(currentStrudelId, code);
+    }
+  }, [currentStrudelId]); // only on strudel change, not code change
 
   // Autosave for authenticated users with an existing strudel
   useEffect(() => {
@@ -119,6 +131,8 @@ export function useAutosave() {
           })),
         },
       });
+      // manual save = mark this as "good version" checkpoint
+      storage.setGoodVersion(currentStrudelId, code);
       markSaved();
     } catch (error) {
       console.error("Save failed:", error);
@@ -127,10 +141,33 @@ export function useAutosave() {
     }
   }, [isAuthenticated, hasStrudel, currentStrudelId, code, conversationHistory, setLoginModalOpen, setSaveStrudelDialogOpen, markSaved, updateStrudel]);
 
+  // get good version for current strudel
+  const getGoodVersion = useCallback((): GoodVersion | null => {
+    if (!currentStrudelId) return null;
+    return storage.getGoodVersion(currentStrudelId);
+  }, [currentStrudelId]);
+
+  // check if good version exists and differs from current code
+  const hasRestorableVersion = useCallback((): boolean => {
+    const goodVersion = getGoodVersion();
+    return goodVersion !== null && goodVersion.code !== code;
+  }, [getGoodVersion, code]);
+
+  // restore code from good version
+  const handleRestore = useCallback(() => {
+    const goodVersion = getGoodVersion();
+    if (goodVersion) {
+      setCode(goodVersion.code);
+    }
+  }, [getGoodVersion, setCode]);
+
   return {
     saveStatus,
     handleSave,
+    handleRestore,
     isAuthenticated,
     hasStrudel,
+    getGoodVersion,
+    hasRestorableVersion,
   };
 }
