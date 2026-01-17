@@ -438,7 +438,7 @@ export default function AboutPage() {
                 <td className="p-3 border-r border-border">
                   A learning tool for exploring live coding
                 </td>
-                <td className="p-3">A system trained on scraped creative work</td>
+                <td className="p-3">A shortcut to skip learning</td>
               </tr>
             </tbody>
           </table>
