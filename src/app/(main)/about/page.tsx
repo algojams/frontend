@@ -283,7 +283,9 @@ export default function AboutPage() {
             <h3 className="text-lg font-semibold mb-3">
               <span className="text-amber-600">4.</span> Paste Lock System
             </h3>
-            <p className="text-muted-foreground font-light mb-3">If you paste code that:</p>
+            <p className="text-muted-foreground font-light mb-3">
+              If you paste code that:
+            </p>
             <ul className="list-disc list-inside text-muted-foreground font-light space-y-1 ml-2">
               <li>
                 Matches a public strudel with{' '}
@@ -626,16 +628,16 @@ export default function AboutPage() {
       <section className="mb-12">
         <h2 className="text-2xl font-semibold mb-4">Get Started</h2>
         <div className="space-y-4 md:space-y-2">
-          <p className="text-muted-foreground font-light flex flex-col md:inline">
-            <span>Ready to try live coding?</span>
+          <p className="text-muted-foreground font-light">
+            <span className="block md:inline">Ready to try live coding?</span>{' '}
             <Link
               href="/"
               className="text-emerald-400 hover:text-emerald-300 hover:underline">
               Launch the editor →
             </Link>
           </p>
-          <p className="text-muted-foreground font-light flex flex-col md:inline">
-            <span>New to strudel/algorithmic composition?</span>
+          <p className="text-muted-foreground font-light">
+            <span className="block md:inline">New to strudel/algorithmic composition?</span>{' '}
             <a
               target="_blank"
               rel="noopener noreferrer"
@@ -644,8 +646,8 @@ export default function AboutPage() {
               Checkout the docs →
             </a>
           </p>
-          <p className="text-muted-foreground font-light flex flex-col md:inline">
-            <span>Want to dive into the code or contribute?</span>
+          <p className="text-muted-foreground font-light">
+            <span className="block md:inline">Want to dive into the code or contribute?</span>{' '}
             <a
               href="https://codeberg.org/algorave"
               target="_blank"
@@ -661,7 +663,7 @@ export default function AboutPage() {
 
       <footer className="text-center">
         <p className="text-muted-foreground font-light italic mb-4">
-          Algorave: Where the beat drops and creator rights don&apos;t.
+          Beats drop, creator rights shouldn&apos;t.
         </p>
       </footer>
     </div>
