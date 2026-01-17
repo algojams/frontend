@@ -18,7 +18,7 @@ export function useInviteDialog() {
   const { isInviteDialogOpen, setInviteDialogOpen } = useUIStore();
   const { sessionId } = useWebSocketStore();
 
-  const [role, setRole] = useState<InviteRole>('co-author');
+  const [role, setRole] = useState<InviteRole>('viewer');
   const [maxUses, setMaxUses] = useState<string>('');
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
 

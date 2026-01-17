@@ -11,7 +11,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { Copy, Check, Trash2, Users, Eye, Loader2 } from 'lucide-react';
+import { Copy, Check, Trash2, Users, Eye, Loader2, Globe, Lock } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { SessionRole } from '@/lib/api/sessions/types';
 import { useInviteDialog, getRoleLabel } from './hooks';
 
@@ -63,22 +64,30 @@ export function InviteDialog() {
                 <span className="font-medium">{isLive ? 'Public' : 'Private'}</span>
               </div>
               <p className="text-xs text-muted-foreground">
-                {isLive ? 'Public Rave' : 'Invite-only Rave'}
+                {isLive ? 'Anyone can join from Raves' : 'Invite-only'}
               </p>
             </div>
-            <Button
-              size="sm"
-              variant={isLive ? 'outline' : 'default'}
-              onClick={handleToggleLive}
-              disabled={setDiscoverable.isPending || !sessionId}>
-              {setDiscoverable.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : isLive ? (
-                'Make Private'
-              ) : (
-                'Make Public'
-              )}
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="icon"
+                  variant={isLive ? 'outline' : 'default'}
+                  onClick={handleToggleLive}
+                  disabled={setDiscoverable.isPending || !sessionId}
+                  className="h-9 w-9">
+                  {setDiscoverable.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : isLive ? (
+                    <Lock className="h-4 w-4" />
+                  ) : (
+                    <Globe className="h-4 w-4" />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                {isLive ? 'Make private' : 'Make public'}
+              </TooltipContent>
+            </Tooltip>
           </div>
 
           <Separator />
