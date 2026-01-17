@@ -83,11 +83,11 @@ export function AIInput({ onSendAIRequest, disabled = false }: AIInputProps) {
       className="bg-background flex flex-col overflow-hidden"
       style={{ maxHeight: `calc(100vh - var(--spacing-toolbar))` }}>
       {isExpanded && conversationHistory.length > 0 && (
-        <div className="border-b flex flex-col min-h-0 overflow-hidden" style={{ height: drawerHeight }}>
+        <div className="border border-border rounded-xl mt-1 flex flex-col min-h-0 overflow-hidden" style={{ height: drawerHeight }}>
           {/* resize handle */}
           <div
             onMouseDown={handleMouseDown}
-            className="h-1 cursor-row-resize shrink-0"
+            className="h-1 cursor-row-resize shrink-0 bg-muted/30"
           />
 
           <div className="flex items-center justify-between px-3 py-2 bg-muted/30 shrink-0">
@@ -111,7 +111,7 @@ export function AIInput({ onSendAIRequest, disabled = false }: AIInputProps) {
             </Button>
           </div>
 
-          <div className="overflow-y-auto p-3 space-y-2 flex-1 min-h-0">
+          <div className="overflow-y-auto p-3 space-y-2 flex-1 min-h-0 flex flex-col justify-end">
             {conversationHistory.map(msg => (
               <AIMessage
                 key={msg.id || msg.created_at}
