@@ -36,21 +36,11 @@ export function SidebarPanel({
           value={effectiveTab}
           onValueChange={setSelectedTab}
           className="flex flex-col h-full">
-          <TabsList
-            className={cn('w-full rounded-none bg-transparent h-12', {
-              'flex items-center px-1.5 gap-1.5': mounted && !isViewer && showChat,
-              'p-0': mounted && (isViewer || !showChat),
-            })}>
+          <TabsList className="w-full rounded-none bg-transparent h-12 p-0 flex border-t border-b">
             {(!mounted || !isViewer) && (
               <TabsTrigger
                 value="samples"
-                className={cn(
-                  'flex-1 data-[state=active]:rounded-none border-none shadow-none',
-                  {
-                    'data-[state=active]:bg-transparent data-[state=active]:h-9':
-                      mounted && !isViewer && showChat,
-                  }
-                )}>
+                className="flex-1 h-full rounded-none border-none shadow-none data-[state=active]:bg-transparent">
                 <Headphones className="h-4 w-4 mr-1" />
                 Samples
               </TabsTrigger>
@@ -59,13 +49,7 @@ export function SidebarPanel({
             {(!mounted || showChat) && (
               <TabsTrigger
                 value="chat"
-                className={cn(
-                  'flex-1 data-[state=active]:rounded-none border-none shadow-none',
-                  {
-                    'data-[state=active]:bg-transparent data-[state=active]:h-9':
-                      mounted && !isViewer && showChat,
-                  }
-                )}>
+                className="flex-1 h-full rounded-none border-none shadow-none data-[state=active]:bg-transparent">
                 <MessageCircle className="h-4 w-4 mr-1" />
                 Chat
               </TabsTrigger>
