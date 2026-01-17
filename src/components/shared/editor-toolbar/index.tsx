@@ -162,11 +162,11 @@ export function EditorToolbar({
                 variant="outline"
                 onClick={onEndLive}
                 disabled={isEndingLive}
-                className="relative text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30">
+                className="relative text-red-500 hover:text-red-500 hover:bg-red-500/10 border-red-500/30">
                 <Radio className="h-4 w-4" />
                 <span className="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-destructive" />
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500" />
                 </span>
               </Button>
             </TooltipTrigger>
