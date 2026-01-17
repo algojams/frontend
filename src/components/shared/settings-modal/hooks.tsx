@@ -143,11 +143,7 @@ export function useSettingsModal() {
     } else {
       // for anon users, update localStorage
       if (typeof window !== 'undefined') {
-        if (checked) {
-          localStorage.removeItem(AI_DISABLED_KEY);
-        } else {
-          localStorage.setItem(AI_DISABLED_KEY, 'true');
-        }
+        localStorage.setItem(AI_DISABLED_KEY, checked ? 'false' : 'true');
 
         // dispatch event for same-tab updates
         window.dispatchEvent(new Event('ai-features-changed'));

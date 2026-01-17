@@ -104,7 +104,7 @@ function HomePageContent() {
   return (
     <div className={cn("flex h-full overflow-hidden pl-3 pr-3 md:pr-0 transition-[padding] duration-200 ease-out", !(canEdit && aiEnabled) && "pb-3", playerStrudel && "pb-16")}>
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <div className={cn("flex-1 flex flex-col min-w-0 overflow-hidden rounded-xl md:rounded-l-xl md:rounded-r-none border border-border bg-background relative transition-[border-radius] duration-200 ease-out", sidebarTab === 'samples' && "md:rounded-br-xl")}>
+        <div className={cn("flex-1 flex flex-col min-w-0 overflow-hidden rounded-xl md:rounded-l-xl md:rounded-r-none border border-border bg-background relative transition-[border-radius] duration-200 ease-out", sidebarTab === 'samples' && "md:rounded-br-xl", playerStrudel && !(canEdit && aiEnabled) && "border-b-0 !rounded-bl-none !rounded-br-none")}>
           <EditorToolbar
             onPlay={handlePlay}
             onStop={handleStop}
@@ -144,7 +144,9 @@ function HomePageContent() {
         size="icon"
         className={cn(
           "fixed right-8 z-50 md:hidden rounded-full h-12 w-12 shadow-lg !bg-background",
-          canEdit && aiEnabled ? "bottom-20" : "bottom-6"
+          canEdit && aiEnabled
+            ? playerStrudel ? "bottom-36" : "bottom-20"
+            : playerStrudel ? "bottom-20" : "bottom-6"
         )}
         onClick={toggleChatPanel}
         aria-label={isChatPanelOpen ? 'Close panel' : 'Open panel'}>
