@@ -100,9 +100,10 @@ export default function ExplorePage() {
     <div className={`container p-4 md:p-8 w-full max-w-full ${playerStrudel ? 'pb-24' : ''}`}>
       <div className="mb-8 flex flex-col md:flex-row md:items-start md:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Explore</h1>
-          <p className="text-muted-foreground">
-            Discover patterns created by the community
+          <h1 className="text-2xl md:text-3xl font-bold">Explore</h1>
+          <p className="text-[15px] md:text-base text-muted-foreground">
+            <span className="md:hidden">Community patterns</span>
+            <span className="hidden md:inline">Discover patterns created by the community</span>
           </p>
         </div>
 

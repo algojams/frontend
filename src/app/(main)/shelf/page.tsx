@@ -50,8 +50,11 @@ function DashboardContent() {
       <div className={`container p-4 md:p-8 w-full max-w-full ${playerStrudel ? 'pb-24' : ''}`}>
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold">Shelf</h1>
-            <p className="text-muted-foreground">Your creations and live sessions</p>
+            <h1 className="text-2xl md:text-3xl font-bold">Shelf</h1>
+            <p className="text-[15px] md:text-base text-muted-foreground">
+              <span className="md:hidden">Your creations</span>
+              <span className="hidden md:inline">Your creations and live sessions</span>
+            </p>
           </div>
         </div>
 
