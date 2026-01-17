@@ -49,7 +49,7 @@ export function SidebarPanel({
                 value="samples"
                 className={cn(
                   "flex-1 h-full rounded-none !border-none shadow-none",
-                  bothTabsVisible ? "!bg-transparent data-[state=active]:!bg-foreground data-[state=active]:!text-background" : ""
+                  bothTabsVisible ? "!bg-transparent data-[state=active]:!bg-foreground data-[state=active]:!text-background data-[state=active]:!rounded-none" : ""
                 )}>
                 <Headphones className="h-4 w-4 mr-1" />
                 Samples
@@ -61,7 +61,7 @@ export function SidebarPanel({
                 value="chat"
                 className={cn(
                   "flex-1 h-full rounded-none !border-none shadow-none",
-                  bothTabsVisible ? "!bg-transparent data-[state=active]:!bg-foreground data-[state=active]:!text-background" : ""
+                  bothTabsVisible ? "!bg-transparent data-[state=active]:!bg-foreground data-[state=active]:!text-background data-[state=active]:!rounded-none" : ""
                 )}>
                 <MessageCircle className="h-4 w-4 mr-1" />
                 Chat
