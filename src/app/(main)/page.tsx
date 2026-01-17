@@ -95,9 +95,9 @@ function HomePageContent() {
   };
 
   return (
-    <div className={cn("flex h-full overflow-hidden pl-3", !(canEdit && aiEnabled) && "pb-3", playerStrudel && "pb-16")}>
+    <div className={cn("flex h-full overflow-hidden pl-3 transition-[padding] duration-200 ease-out", !(canEdit && aiEnabled) && "pb-3", playerStrudel && "pb-16")}>
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <div className={cn("flex-1 flex flex-col min-w-0 overflow-hidden rounded-l-xl border border-border bg-background relative", sidebarTab === 'samples' && "rounded-br-xl")}>
+        <div className={cn("flex-1 flex flex-col min-w-0 overflow-hidden rounded-l-xl border border-border bg-background relative transition-[border-radius] duration-200 ease-out", sidebarTab === 'samples' && "rounded-br-xl")}>
           <EditorToolbar
             onPlay={handlePlay}
             onStop={handleStop}
@@ -127,9 +127,12 @@ function HomePageContent() {
           )}
         </div>
 
-        {canEdit && aiEnabled && (
+        <div className={cn(
+          "overflow-hidden shrink-0 transition-[height] duration-200 ease-out",
+          canEdit && aiEnabled ? "h-16" : "h-0"
+        )}>
           <AIInput onSendAIRequest={handleSendAIRequest} disabled={!isConnected} />
-        )}
+        </div>
       </div>
 
       <Button
