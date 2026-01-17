@@ -77,7 +77,7 @@ export function SidebarPanel({
       {/* Footer */}
       <div
         className={cn(
-          'h-16 shrink-0 bg-background flex items-stretch justify-stretch', {
+          'h-16 shrink-0 bg-background flex items-stretch justify-stretch transition-[border] duration-200 ease-out', {
             'border-b': effectiveTab === 'chat',
           }
         )}>
