@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useTheme } from 'next-themes';
 import { Moon, Sun, FileText, Settings, LogIn, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -16,6 +17,7 @@ import { useAuth } from '@/lib/hooks/use-auth';
 import { useUIStore } from '@/lib/stores/ui';
 
 export function Header() {
+  const pathname = usePathname();
   const { user, isAuthenticated } = useAuth();
   const {
     setLoginModalOpen,
@@ -36,20 +38,20 @@ export function Header() {
           {isAuthenticated && (
             <Link
               href="/shelf"
-              className="text-muted-foreground hover:text-foreground transition-colors">
+              className={pathname === '/shelf' ? 'text-foreground/90' : 'text-muted-foreground hover:text-foreground transition-colors'}>
               Shelf
             </Link>
           )}
 
           <Link
             href="/explore"
-            className="text-muted-foreground hover:text-foreground transition-colors">
+            className={pathname === '/explore' ? 'text-foreground/90' : 'text-muted-foreground hover:text-foreground transition-colors'}>
             Explore
           </Link>
 
           <Link
             href="/raves"
-            className="text-muted-foreground hover:text-foreground transition-colors">
+            className={pathname === '/raves' ? 'text-foreground/90' : 'text-muted-foreground hover:text-foreground transition-colors'}>
             Raves
           </Link>
         </nav>
