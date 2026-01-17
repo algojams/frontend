@@ -46,7 +46,7 @@ export function AIInput({ onSendAIRequest, disabled = false }: AIInputProps) {
   if (isAIBlocked) {
     return (
       <div className="bg-background">
-        <div className="py-3 flex items-center">
+        <div className="h-16 flex items-center shrink-0">
           <div className="bg-muted/30 border border-muted rounded-lg px-3 py-2 flex items-center gap-2 w-full">
             <ShieldAlert className="h-4 w-4 text-muted-foreground shrink-0" />
             <span className="text-sm text-muted-foreground">
@@ -62,7 +62,7 @@ export function AIInput({ onSendAIRequest, disabled = false }: AIInputProps) {
   if (pasteLocked) {
     return (
       <div className="bg-background">
-        <div className="py-3 flex items-center">
+        <div className="h-16 flex items-center shrink-0">
           <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg px-3 py-2 flex items-center gap-2 w-full">
             <ClipboardPaste className="h-4 w-4 text-amber-500 shrink-0" />
             <span className="text-sm text-amber-600 dark:text-amber-400">
