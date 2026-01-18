@@ -6,7 +6,7 @@ import type { CodeUpdateSource } from '@/lib/websocket/types';
 
 // debounce draft saves to avoid excessive writes
 let draftSaveTimeout: ReturnType<typeof setTimeout> | null = null;
-const DRAFT_SAVE_DEBOUNCE_MS = 1000;
+const DRAFT_SAVE_DEBOUNCE_MS = 3000;
 
 type InitialDraftState = {
   code: string;

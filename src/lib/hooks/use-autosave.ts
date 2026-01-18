@@ -9,7 +9,7 @@ import { storage, type GoodVersion } from "@/lib/utils/storage";
 
 type SaveStatus = "saved" | "saving" | "unsaved";
 
-const AUTOSAVE_DEBOUNCE_MS = 3000;
+const AUTOSAVE_DEBOUNCE_MS = 10000;
 
 export function useAutosave() {
   const { isDirty, code, conversationHistory, currentStrudelId, markSaved, setCode } = useEditorStore();
