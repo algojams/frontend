@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Play, Square, Loader2 } from 'lucide-react';
 import { useStrudelPreviewPlayer } from './hooks';
+import { CodeDisplay } from './code-display';
 
 export interface PlayerState {
   isPlaying: boolean;
@@ -41,11 +42,9 @@ export function StrudelPreviewPlayer({
 
   return (
     <div className="flex flex-col gap-3">
-      {/* Simple read-only code display */}
-      <div className="h-96 w-full overflow-auto rounded-lg border bg-muted/30 p-4">
-        <pre className="font-mono text-sm whitespace-pre-wrap break-words text-foreground/90">
-          {code}
-        </pre>
+      {/* Syntax-highlighted read-only code display */}
+      <div className="h-96 w-full overflow-auto rounded-lg border bg-zinc-950 p-4">
+        <CodeDisplay code={code} />
       </div>
 
       {!hideControls && (

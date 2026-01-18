@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { usePlayerStore } from '@/lib/stores/player';
-import { getGlobalMirror, StrudelMirrorInstance } from '@/components/shared/strudel-editor/hooks';
+import { getGlobalMirror, getOrCreatePlaybackMirror, StrudelMirrorInstance } from '@/components/shared/strudel-editor/hooks';
 
 export function useFloatingPlayer() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -24,24 +24,101 @@ export function useFloatingPlayer() {
     setShouldStop,
   } = usePlayerStore();
 
-  // Check if global mirror is available
-  useEffect(() => {
-    const checkMirror = () => {
-      const mirror = getGlobalMirror();
-      if (mirror) {
-        mirrorRef.current = mirror;
-        setIsInitialized(true);
-        console.log('[DEBUG floating-player] using global mirror');
-      }
-    };
+  // Pending strudel to play once mirror is ready
+  const pendingPlayRef = useRef<typeof currentStrudel>(null);
 
-    checkMirror();
-    const timer = setTimeout(checkMirror, 1000);
+  // Get or create a mirror for playback
+  useEffect(() => {
+    let isMounted = true;
+
+    async function initMirror() {
+      // First check if global mirror exists
+      let globalMirror = getGlobalMirror();
+      if (globalMirror) {
+        mirrorRef.current = globalMirror;
+        if (isMounted) {
+          setIsInitialized(true);
+          // If there's a pending play, trigger it
+          if (pendingPlayRef.current) {
+            const pending = pendingPlayRef.current;
+            pendingPlayRef.current = null;
+            playStrudelInternal(pending, globalMirror);
+          }
+        }
+        return;
+      }
+
+      // Wait a bit to see if main editor will create a global mirror
+      // This avoids creating a playback mirror on pages that have the main editor
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      if (!isMounted) return;
+
+      // Check again after waiting
+      globalMirror = getGlobalMirror();
+      if (globalMirror) {
+        mirrorRef.current = globalMirror;
+        if (isMounted) {
+          setIsInitialized(true);
+          if (pendingPlayRef.current) {
+            const pending = pendingPlayRef.current;
+            pendingPlayRef.current = null;
+            playStrudelInternal(pending, globalMirror);
+          }
+        }
+        return;
+      }
+
+      // Still no global mirror, create/get playback mirror (we're likely on explore page)
+      const playbackMirror = await getOrCreatePlaybackMirror();
+      if (playbackMirror && isMounted) {
+        mirrorRef.current = playbackMirror;
+        setIsInitialized(true);
+        if (pendingPlayRef.current) {
+          const pending = pendingPlayRef.current;
+          pendingPlayRef.current = null;
+          playStrudelInternal(pending, playbackMirror);
+        }
+      }
+    }
+
+    initMirror();
 
     return () => {
-      clearTimeout(timer);
+      isMounted = false;
     };
   }, []);
+
+  // Internal play function
+  const playStrudelInternal = useCallback(async (strudel: NonNullable<typeof currentStrudel>, mirror: StrudelMirrorInstance) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      // Resume audio context if needed
+      const { getAudioContext } = await import('@strudel/webaudio');
+      const ctx = getAudioContext();
+      if (ctx.state === 'suspended') {
+        await ctx.resume();
+      }
+
+      // Save original code so we can restore it
+      originalCodeRef.current = mirror.code || '';
+
+      // Set the preview code and evaluate
+      mirror.setCode(strudel.code);
+      mirror.code = strudel.code;
+      await mirror.evaluate();
+
+      setIsPlaying(true);
+      setIsLoading(false);
+    } catch (err) {
+      console.error('floating player error:', err);
+      setError(err instanceof Error ? err.message : 'Failed to play');
+      setIsLoading(false);
+      setIsPlaying(false);
+    }
+  }, [setIsLoading, setIsPlaying]);
 
   // Play when currentStrudel changes
   useEffect(() => {
@@ -49,57 +126,13 @@ export function useFloatingPlayer() {
 
     const mirror = mirrorRef.current || getGlobalMirror();
     if (!mirror) {
-      console.log('[DEBUG floating-player] no mirror available yet');
+      // Mirror not ready, queue the play for when it's ready
+      pendingPlayRef.current = currentStrudel;
       return;
     }
 
-    // Capture values to satisfy TypeScript
-    const strudel = currentStrudel;
-    const activeMirror = mirror;
-    let isMounted = true;
-
-    async function playStrudel() {
-      try {
-        console.log('[DEBUG floating-player] playing:', strudel.title);
-        setIsLoading(true);
-        setError(null);
-
-        // Resume audio context if needed
-        const { getAudioContext } = await import('@strudel/webaudio');
-        const ctx = getAudioContext();
-        if (ctx.state === 'suspended') {
-          await ctx.resume();
-        }
-
-        // Save original code so we can restore it
-        originalCodeRef.current = activeMirror.code || '';
-
-        // Set the preview code and evaluate
-        activeMirror.setCode(strudel.code);
-        activeMirror.code = strudel.code;
-        await activeMirror.evaluate();
-
-        if (isMounted) {
-          setIsPlaying(true);
-          setIsLoading(false);
-          console.log('[DEBUG floating-player] playback started via global mirror');
-        }
-      } catch (err) {
-        console.error('floating player error:', err);
-        if (isMounted) {
-          setError(err instanceof Error ? err.message : 'Failed to play');
-          setIsLoading(false);
-          setIsPlaying(false);
-        }
-      }
-    }
-
-    playStrudel();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [currentStrudel, setIsPlaying, setIsLoading]);
+    playStrudelInternal(currentStrudel, mirror);
+  }, [currentStrudel, playStrudelInternal]);
 
   // Handle resume requests
   useEffect(() => {
@@ -183,12 +216,9 @@ export function useFloatingPlayer() {
       }
     }
     setIsPlaying(false);
-    console.log('[DEBUG floating-player] stopped');
   }, [setIsPlaying]);
 
   const handleClose = useCallback(() => {
-    console.log('[DEBUG floating-player] handleClose');
-
     const mirror = mirrorRef.current || getGlobalMirror();
     if (mirror) {
       mirror.stop();

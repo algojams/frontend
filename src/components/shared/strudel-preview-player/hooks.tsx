@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, useCallback } from 'react';
-import { getGlobalMirror, StrudelMirrorInstance } from '@/components/shared/strudel-editor/hooks';
+import { getGlobalMirror, getOrCreatePlaybackMirror, StrudelMirrorInstance } from '@/components/shared/strudel-editor/hooks';
 
 interface UseStrudelPreviewPlayerOptions {
   code: string;
@@ -15,36 +15,64 @@ export function useStrudelPreviewPlayer({ code, onError }: UseStrudelPreviewPlay
   const originalCodeRef = useRef<string | null>(null);
   const mirrorRef = useRef<StrudelMirrorInstance | null>(null);
 
-  // Check if global mirror is available
+  // Get or create a mirror for playback
   useEffect(() => {
-    const checkMirror = () => {
-      const mirror = getGlobalMirror();
-      if (mirror) {
-        mirrorRef.current = mirror;
-        setIsInitialized(true);
-        console.log('[DEBUG preview] using global mirror');
+    let isMounted = true;
+
+    async function initMirror() {
+      // First check if global mirror exists
+      let globalMirror = getGlobalMirror();
+      if (globalMirror) {
+        mirrorRef.current = globalMirror;
+        if (isMounted) {
+          setIsInitialized(true);
+        }
+        return;
       }
-    };
 
-    // Check immediately
-    checkMirror();
+      // Wait a bit to see if main editor will create a global mirror
+      // This avoids creating a playback mirror on pages that have the main editor
+      await new Promise(resolve => setTimeout(resolve, 500));
 
-    // Also check after a delay in case main editor hasn't initialized yet
-    const timer = setTimeout(checkMirror, 1000);
+      if (!isMounted) return;
+
+      // Check again after waiting
+      globalMirror = getGlobalMirror();
+      if (globalMirror) {
+        mirrorRef.current = globalMirror;
+        if (isMounted) {
+          setIsInitialized(true);
+        }
+        return;
+      }
+
+      // Still no global mirror, create/get playback mirror (we're likely on explore page)
+      const playbackMirror = await getOrCreatePlaybackMirror();
+      if (playbackMirror && isMounted) {
+        mirrorRef.current = playbackMirror;
+        setIsInitialized(true);
+      }
+    }
+
+    initMirror();
 
     return () => {
-      clearTimeout(timer);
-      // Stop playback if we were playing
-      if (isPlaying && mirrorRef.current) {
+      isMounted = false;
+    };
+  }, []);
+
+  // Cleanup effect - stop playback when component unmounts
+  useEffect(() => {
+    return () => {
+      // Use a ref check to avoid stale closure issues
+      if (mirrorRef.current && originalCodeRef.current !== null) {
         mirrorRef.current.stop();
-        // Restore original code if we changed it
-        if (originalCodeRef.current !== null) {
-          mirrorRef.current.setCode(originalCodeRef.current);
-          mirrorRef.current.code = originalCodeRef.current;
-        }
+        mirrorRef.current.setCode(originalCodeRef.current);
+        mirrorRef.current.code = originalCodeRef.current;
+        originalCodeRef.current = null;
       }
     };
-  }, [isPlaying]);
+  }, []);
 
   const handlePlay = useCallback(async () => {
     const mirror = mirrorRef.current || getGlobalMirror();
@@ -74,7 +102,6 @@ export function useStrudelPreviewPlayer({ code, onError }: UseStrudelPreviewPlay
 
       setIsPlaying(true);
       setIsLoading(false);
-      console.log('[DEBUG preview] playback started via global mirror');
     } catch (error) {
       console.error('preview play error:', error);
       onError?.(error instanceof Error ? error.message : 'Failed to play');
@@ -94,7 +121,6 @@ export function useStrudelPreviewPlayer({ code, onError }: UseStrudelPreviewPlay
       }
     }
     setIsPlaying(false);
-    console.log('[DEBUG preview] stopped');
   }, []);
 
   return {
