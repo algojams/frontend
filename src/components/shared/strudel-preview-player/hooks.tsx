@@ -8,6 +8,7 @@ import {
   DRUM_MACHINE_ALIASES,
   DRUM_HIT_TYPES,
   SUPPRESSED_ERROR_PATTERNS,
+  generateId,
 } from '@/components/shared/strudel-editor/hooks';
 
 interface UseStrudelPreviewPlayerOptions {
@@ -21,6 +22,8 @@ export function useStrudelPreviewPlayer({ code, onError }: UseStrudelPreviewPlay
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isInitialized, setIsInitialized] = useState(false);
+  // unique canvas ID per component instance to avoid stale canvas issues on navigation
+  const canvasIdRef = useRef<string>(`strudel-preview-canvas-${generateId()}`);
 
   // initialize the mini player
   useEffect(() => {
@@ -57,8 +60,9 @@ export function useStrudelPreviewPlayer({ code, onError }: UseStrudelPreviewPlay
         const { evalScope, silence } = coreModule;
 
         // import draw module for visualization context
+        // use unique canvas ID to avoid stale canvas issues on Next.js navigation
         const { getDrawContext } = await import('@strudel/draw');
-        const drawContext = getDrawContext();
+        const drawContext = getDrawContext(canvasIdRef.current);
 
         // initialize audio on first click and capture the promise
         const audioReady = initAudioOnFirstClick();
@@ -187,6 +191,12 @@ export function useStrudelPreviewPlayer({ code, onError }: UseStrudelPreviewPlay
         mirrorRef.current.stop();
         mirrorRef.current.destroy?.();
         mirrorRef.current = null;
+      }
+
+      // clean up the canvas element to avoid stale canvas on Next.js navigation
+      const canvas = document.getElementById(canvasIdRef.current);
+      if (canvas) {
+        canvas.remove();
       }
     };
   }, [code, onError]);
