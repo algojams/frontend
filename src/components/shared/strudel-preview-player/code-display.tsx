@@ -135,7 +135,7 @@ export function CodeDisplay({ code }: CodeDisplayProps) {
   const highlighted = useMemo(() => highlightCode(code), [code]);
 
   return (
-    <pre className="font-mono text-sm whitespace-pre-wrap break-words leading-relaxed">
+    <pre className="font-mono text-[14px] leading-[1.4] whitespace-pre-wrap break-words" style={{ fontFamily: 'var(--font-geist-mono), monospace' }}>
       {highlighted}
     </pre>
   );
