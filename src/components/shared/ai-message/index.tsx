@@ -26,7 +26,14 @@ export function AIMessage({ message, onApplyCode }: AIMessageProps) {
     created_at,
   } = message;
 
-  const { copied, applied, handleCopy, handleApply } = useAIMessage(content, onApplyCode);
+  // backwards compat: old messages stored clarifying questions separately
+  const displayContent = content || (
+    clarifying_questions?.length
+      ? `I need a bit more info:\n${clarifying_questions.map(q => `- ${q}`).join('\n')}`
+      : ''
+  );
+
+  const { copied, applied, handleCopy, handleApply } = useAIMessage(displayContent, onApplyCode);
   const myDisplayName = useWebSocketStore(state => state.myDisplayName);
   const formattedTime = formatTime(created_at);
   const userColor = getUserColor(myDisplayName || 'Anonymous');
@@ -35,7 +42,7 @@ export function AIMessage({ message, onApplyCode }: AIMessageProps) {
   if (role === 'user') {
     return (
       <div className="flex justify-end">
-        <div className="rounded-lg rounded-br-none bg-muted/30 border border-muted/60 p-3 w-fit max-w-full">
+        <div className="rounded-lg rounded-br-none bg-transparent border border-muted/40 p-3 w-fit max-w-full">
           <div className="flex items-center gap-2 mb-1">
             <span className={`font-medium text-[12px] ${userColor}`}>You</span>
             {formattedTime && (
@@ -49,7 +56,7 @@ export function AIMessage({ message, onApplyCode }: AIMessageProps) {
   }
 
   return (
-    <div className="rounded-lg rounded-bl-none bg-transparent border border-muted/40 p-3">
+    <div className="rounded-lg rounded-bl-none bg-muted/30 border border-muted/60 p-3">
         <div className="flex items-center gap-2 mb-2">
           <span className={`font-medium text-[12px] ${assistantColor}`}>Assistant</span>
           {formattedTime && (
@@ -57,13 +64,13 @@ export function AIMessage({ message, onApplyCode }: AIMessageProps) {
           )}
         </div>
 
-      {content && (
+      {displayContent && (
         <>
           {is_code_response ? (
             <>
               <Highlight
                 theme={themes.duotoneDark}
-                code={`/* generated */\n\n${content}`}
+                code={`/* generated */\n\n${displayContent}`}
                 language="javascript">
                 {({ style, tokens, getLineProps, getTokenProps }) => (
                   <pre
@@ -119,7 +126,7 @@ export function AIMessage({ message, onApplyCode }: AIMessageProps) {
             </>
           ) : (
             <div className="prose prose-sm prose-invert max-w-none text-foreground/70 text-[13px] [&_p]:my-2 [&_ul]:my-2 [&_ol]:my-2 [&_li]:my-0.5 [&_code]:bg-muted/50 [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-[12px] [&_pre]:bg-muted/30 [&_pre]:p-2 [&_pre]:rounded [&_pre]:overflow-x-auto [&_a]:text-teal-400/70 [&_a:hover]:text-teal-300 [&_strong]:text-foreground/80">
-              <ReactMarkdown>{content}</ReactMarkdown>
+              <ReactMarkdown>{displayContent}</ReactMarkdown>
             </div>
           )}
         </>
