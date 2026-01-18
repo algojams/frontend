@@ -9,8 +9,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Algorave | Live code music with friends using strudel",
-  description: "Create live music with strudel and collaborate in real-time.",
+  metadataBase: new URL("https://algorave.cc"),
+  title: "Algorave",
+  description: "Live code music with strudel and collaborate with friends in real time.",
   manifest: "/manifest.json",
   icons: {
     icon: [
