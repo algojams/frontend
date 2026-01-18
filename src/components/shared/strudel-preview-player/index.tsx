@@ -43,7 +43,7 @@ export function StrudelPreviewPlayer({
   return (
     <div className="flex flex-col gap-3">
       {/* Syntax-highlighted read-only code display */}
-      <div className="h-96 w-full overflow-auto rounded-lg border bg-zinc-950 p-4">
+      <div className="h-96 w-full overflow-auto rounded-lg border bg-muted/30 p-4">
         <CodeDisplay code={code} />
       </div>
 
