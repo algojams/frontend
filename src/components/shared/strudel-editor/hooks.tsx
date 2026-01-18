@@ -668,6 +668,14 @@ export function useStrudelEditor(
           // otherwise evaluateStrudel() will use a stale reference
           mirrorInstanceRef.current = globalMirrorInstance;
           setStrudelMirrorInstance(globalMirrorInstance);
+
+          // re-apply font settings on the new container
+          // (setFontSize sets on this.root which points to old container after navigation)
+          if (containerRef.current) {
+            containerRef.current.style.fontSize = '14px';
+            containerRef.current.style.fontFamily = 'var(--font-geist-mono), monospace';
+          }
+
           setInitialized(true);
 
           // set up code polling

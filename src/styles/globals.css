@@ -146,7 +146,12 @@ body {
   }
 }
 
-/* strudel editor - make CodeMirror fill container height */
+/* strudel editor styles */
+.strudel-editor {
+  font-size: 14px !important;
+  font-family: var(--font-geist-mono), monospace !important;
+}
+
 .strudel-editor .cm-editor {
   height: 100%;
 }
