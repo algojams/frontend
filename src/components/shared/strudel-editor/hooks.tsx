@@ -309,6 +309,13 @@ export async function previewSample(sampleName: string): Promise<boolean> {
   }
 }
 
+// helper function to generate unique IDs (same as Strudel's s4)
+export function generateId() {
+  return Math.floor((1 + Math.random()) * 0x10000)
+    .toString(16)
+    .substring(1);
+}
+
 export function useStrudelEditor(
   initialCode: string,
   onCodeChange: ((code: string) => void) | undefined,
@@ -318,6 +325,8 @@ export function useStrudelEditor(
   const initializedRef = useRef(false);
   const onCodeChangeRef = useRef(onCodeChange);
   const readOnlyRef = useRef(readOnly);
+  // unique canvas ID per component instance to avoid stale canvas issues on navigation
+  const canvasIdRef = useRef<string>(`strudel-canvas-${generateId()}`);
 
   const { code, setCode, currentStrudelId } = useEditorStore();
   const { setPlaying, setInitialized, setError } = useAudioStore();
@@ -485,8 +494,9 @@ export function useStrudelEditor(
         const { evalScope, silence } = coreModule;
 
         // import draw module for visualization context
+        // use unique canvas ID to avoid stale canvas issues on Next.js navigation
         const { getDrawContext } = await import('@strudel/draw');
-        const drawContext = getDrawContext();
+        const drawContext = getDrawContext(canvasIdRef.current);
 
         // initialize audio on first click and capture the promise
         // this must be called before StrudelMirror is created
@@ -715,6 +725,12 @@ export function useStrudelEditor(
         instance.stop();
         instance.destroy?.();
         setStrudelMirrorInstance(null);
+      }
+
+      // clean up the canvas element to avoid stale canvas on Next.js navigation
+      const canvas = document.getElementById(canvasIdRef.current);
+      if (canvas) {
+        canvas.remove();
       }
     };
 
