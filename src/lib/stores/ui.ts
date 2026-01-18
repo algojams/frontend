@@ -15,6 +15,7 @@ interface UIState {
   chatPanelWidth: number;
   aiDrawerHeight: number;
   sidebarTab: 'samples' | 'chat';
+  desktopSidebarOpen: boolean;
   isDraftsModalOpen: boolean;
   isInviteDialogOpen: boolean;
   isLoginModalOpen: boolean;
@@ -28,6 +29,7 @@ interface UIState {
 
   toggleChatPanel: () => void;
   setChatPanelOpen: (open: boolean) => void;
+  setDesktopSidebarOpen: (open: boolean) => void;
   setChatPanelWidth: (width: number) => void;
   setAIDrawerHeight: (height: number) => void;
   setSidebarTab: (tab: 'samples' | 'chat') => void;
@@ -44,11 +46,21 @@ interface UIState {
   setPendingOpenStrudelId: (id: string | null) => void;
 }
 
+// localStorage key for desktop sidebar preference
+const DESKTOP_SIDEBAR_KEY = 'algorave_desktop_sidebar_open';
+
+const getDesktopSidebarPreference = (): boolean => {
+  if (typeof window === 'undefined') return true;
+  const stored = localStorage.getItem(DESKTOP_SIDEBAR_KEY);
+  return stored === null ? true : stored === 'true';
+};
+
 export const useUIStore = create<UIState>(set => ({
   isChatPanelOpen: false,
   chatPanelWidth: CHAT_PANEL_DEFAULT_WIDTH,
   aiDrawerHeight: AI_DRAWER_DEFAULT_HEIGHT,
   sidebarTab: 'samples',
+  desktopSidebarOpen: getDesktopSidebarPreference(),
   isDraftsModalOpen: false,
   isInviteDialogOpen: false,
   isLoginModalOpen: false,
@@ -83,6 +95,12 @@ export const useUIStore = create<UIState>(set => ({
   setPendingForkId: pendingForkId => set({ pendingForkId }),
   setPendingOpenStrudelId: pendingOpenStrudelId => set({ pendingOpenStrudelId }),
   setChatPanelOpen: isChatPanelOpen => set({ isChatPanelOpen }),
+  setDesktopSidebarOpen: desktopSidebarOpen => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(DESKTOP_SIDEBAR_KEY, String(desktopSidebarOpen));
+    }
+    set({ desktopSidebarOpen });
+  },
   setDraftsModalOpen: isDraftsModalOpen => set({ isDraftsModalOpen }),
   setInviteDialogOpen: isInviteDialogOpen => set({ isInviteDialogOpen }),
   setLoginModalOpen: isLoginModalOpen => set({ isLoginModalOpen }),

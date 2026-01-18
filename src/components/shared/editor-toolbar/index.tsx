@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { Play, Square, Plus, Radio, X, RefreshCw, RotateCcw } from 'lucide-react';
+import { Play, Square, Plus, Radio, X, RefreshCw, RotateCcw, PanelRight } from 'lucide-react';
 import { useEditorToolbar, type SaveStatus } from './hooks';
 import { SaveIndicator, ConnectionIndicator } from './indicators';
 
@@ -16,11 +16,13 @@ interface EditorToolbarProps {
   onNew?: () => void;
   onGoLive?: () => void;
   onEndLive?: () => void;
+  onToggleSidebar?: () => void;
   showSave?: boolean;
   showNew?: boolean;
   showGoLive?: boolean;
   isLive?: boolean;
   isEndingLive?: boolean;
+  isSidebarOpen?: boolean;
   saveStatus?: SaveStatus;
   hasRestorableVersion?: boolean;
   isViewer?: boolean;
@@ -35,11 +37,13 @@ export function EditorToolbar({
   onNew,
   onGoLive,
   onEndLive,
+  onToggleSidebar,
   showSave = false,
   showNew = false,
   showGoLive = false,
   isLive = false,
   isEndingLive = false,
+  isSidebarOpen = true,
   saveStatus = 'saved',
   hasRestorableVersion = false,
   isViewer = false,
@@ -149,6 +153,21 @@ export function EditorToolbar({
             </Button>
           </TooltipTrigger>
           <TooltipContent>Go Live</TooltipContent>
+        </Tooltip>
+      )}
+
+      {onToggleSidebar && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              size="icon-round-sm"
+              variant="outline"
+              onClick={onToggleSidebar}
+              className="hidden md:inline-flex text-muted-foreground hover:text-foreground">
+              <PanelRight className={isSidebarOpen ? 'h-4 w-4' : 'h-4 w-4 opacity-50'} />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{isSidebarOpen ? 'Hide sidebar' : 'Show sidebar'}</TooltipContent>
         </Tooltip>
       )}
 

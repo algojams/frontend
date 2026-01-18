@@ -33,6 +33,8 @@ function HomePageContent() {
     chatPanelWidth,
     setChatPanelWidth,
     sidebarTab,
+    desktopSidebarOpen,
+    setDesktopSidebarOpen,
   } = useUIStore();
   const { currentStrudel: playerStrudel } = usePlayerStore();
   const aiEnabled = useAIFeaturesEnabled();
@@ -75,23 +77,22 @@ function HomePageContent() {
     urlDisplayName,
   });
 
-  // open sidebar on desktop (default closed for mobile), re-open when resizing to desktop
+  // sync sidebar state with desktop preference on mount and resize
   useEffect(() => {
-    // open on desktop on initial mount
+    // on desktop, use persisted preference; on mobile, start closed
     if (window.innerWidth >= MD_BREAKPOINT) {
-      setChatPanelOpen(true);
+      setChatPanelOpen(desktopSidebarOpen);
     }
 
     const handleResize = () => {
-      if (window.innerWidth >= MD_BREAKPOINT && !isChatPanelOpen) {
-        setChatPanelOpen(true);
+      if (window.innerWidth >= MD_BREAKPOINT) {
+        setChatPanelOpen(desktopSidebarOpen);
       }
     };
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [desktopSidebarOpen, setChatPanelOpen]);
 
   const handleGoLive = () => {
     if (!isAuthenticated) {
@@ -102,10 +103,19 @@ function HomePageContent() {
     setInviteDialogOpen(true);
   };
 
+  const handleToggleDesktopSidebar = () => {
+    const newState = !isChatPanelOpen;
+    setChatPanelOpen(newState);
+    setDesktopSidebarOpen(newState);
+  };
+
+  // when sidebar is collapsed on desktop, use mobile-like styling
+  const sidebarVisible = isChatPanelOpen;
+
   return (
-    <div className={cn("flex h-full overflow-hidden pl-3 pr-3 md:pr-0 transition-[padding] duration-200 ease-out", !(canEdit && aiEnabled) && "pb-3", playerStrudel && "pb-16")}>
+    <div className={cn("flex h-full overflow-hidden pl-3 pr-3 transition-[padding] duration-200 ease-out", sidebarVisible && "md:pr-0", !(canEdit && aiEnabled) && "pb-3", playerStrudel && "pb-16")}>
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <div className={cn("flex-1 flex flex-col min-w-0 overflow-hidden rounded-xl md:rounded-l-xl md:rounded-r-none border border-border bg-background relative transition-[border-radius] duration-200 ease-out", sidebarTab === 'samples' && "md:rounded-br-xl", playerStrudel && !(canEdit && aiEnabled) && "border-b-0 !rounded-bl-none !rounded-br-none")}>
+        <div className={cn("flex-1 flex flex-col min-w-0 overflow-hidden rounded-xl border border-border bg-background relative transition-[border-radius] duration-200 ease-out", sidebarVisible && "md:rounded-l-xl md:rounded-r-none", sidebarVisible && sidebarTab === 'samples' && "md:rounded-br-xl", playerStrudel && !(canEdit && aiEnabled) && "border-b-0 !rounded-bl-none !rounded-br-none")}>
           <EditorToolbar
             onPlay={handlePlay}
             onStop={handleStop}
@@ -115,11 +125,13 @@ function HomePageContent() {
             onNew={handleNewStrudel}
             onGoLive={handleGoLive}
             onEndLive={isHost ? handleEndLive : undefined}
+            onToggleSidebar={handleToggleDesktopSidebar}
             showSave={canEdit}
             showNew={canEdit}
             showGoLive={!!sessionId && canEdit}
             isLive={isLive}
             isEndingLive={isEndingLive}
+            isSidebarOpen={sidebarVisible}
             saveStatus={saveStatus}
             hasRestorableVersion={hasRestorableVersion()}
             isViewer={isViewer}
@@ -127,10 +139,10 @@ function HomePageContent() {
           <div className="flex-1 overflow-hidden">
             <StrudelEditor onCodeChange={handleCodeChange} readOnly={isViewer} />
           </div>
-          {isChatPanelOpen && (
+          {sidebarVisible && (
             <div
               onMouseDown={handleSidebarMouseDown}
-              className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize z-10"
+              className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize z-10 hidden md:block"
             />
           )}
         </div>
