@@ -60,9 +60,19 @@ export const useEditor = ({
     setForkedFromId,
     setParentCCSignal,
     currentStrudelId,
+    currentStrudelTitle,
     markSaved,
     setConversationHistory,
   } = useEditorStore();
+
+  // update document title when strudel title changes
+  useEffect(() => {
+    if (currentStrudelTitle) {
+      document.title = `${currentStrudelTitle} | Algorave`;
+    } else {
+      document.title = 'Algorave';
+    }
+  }, [currentStrudelTitle]);
 
   // check if we have a stored viewer session (for refresh reconnection)
   const storedViewerSession =
