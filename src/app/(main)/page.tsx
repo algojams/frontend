@@ -156,7 +156,7 @@ function HomePageContent() {
         variant="outline"
         size="icon"
         className={cn(
-          "fixed right-8 z-50 md:hidden rounded-full h-12 w-12 shadow-lg !bg-background",
+          "fixed right-7 z-50 md:hidden rounded-full h-12 w-12 shadow-lg !bg-background",
           canEdit && aiEnabled
             ? playerStrudel ? "bottom-36" : "bottom-20"
             : playerStrudel ? "bottom-20" : "bottom-6"

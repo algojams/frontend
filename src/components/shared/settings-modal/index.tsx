@@ -44,7 +44,7 @@ export function SettingsModal() {
             <Settings className="h-5 w-5" />
             Settings
           </DialogTitle>
-          <DialogDescription>Manage your preferences</DialogDescription>
+          <DialogDescription className="pl-7 text-left">Manage your preferences</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-7 py-4">
@@ -57,7 +57,7 @@ export function SettingsModal() {
               <div className="space-y-4 rounded-lg border p-4">
                 <div className="space-y-2">
                   <Label htmlFor="display-name">
-                    Display Name <span className='text-xs text-muted-foreground'>(for shared sessions & raves)</span>
+                    Display Name <span className='hidden sm:inline text-xs text-muted-foreground'>(for shared sessions & raves)</span>
                   </Label>
                   <Input
                     id="display-name"
@@ -85,7 +85,7 @@ export function SettingsModal() {
               <div className="space-y-4 rounded-lg border p-4">
                 <div className="space-y-2">
                   <Label htmlFor="auth-display-name">
-                    Display Name <span className='text-xs text-muted-foreground'>(for shared sessions & raves)</span>
+                    Display Name <span className='hidden sm:inline text-xs text-muted-foreground'>(for shared sessions & raves)</span>
                   </Label>
                   <Input
                     id="auth-display-name"
@@ -114,7 +114,7 @@ export function SettingsModal() {
                   <Label htmlFor="ai-toggle" className="text-base">
                     AI Assistant
                   </Label>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-muted-foreground text-left">
                     {byokApiKey ? 'Quick docs retrieval and code snippets' : 'Add your API key below to enable'}
                   </p>
                 </div>
