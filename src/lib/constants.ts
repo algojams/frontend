@@ -25,8 +25,8 @@ export const RATE_LIMITS = {
 export const EDITOR = {
   MAX_CODE_SIZE_BYTES: 100 * 1024, // 100KB
   DEFAULT_CODE: `// Welcome to Algorave!
-// Press Ctrl+Enter (Cmd+Enter on Mac) to play
-// Press Ctrl+. (Cmd+.) to stop
+// Edit the code below and press play
+// Learn more at strudel.cc/learn
 
 // tempo
 setCpm(108/4)
