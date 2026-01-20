@@ -160,7 +160,7 @@ body {
   min-height: 100%;
 }
 
-/* CodeMirror autocomplete dropdown */
+/* codemirror autocomplete dropdown */
 .cm-tooltip.cm-tooltip-autocomplete {
   background: oklch(0.205 0 0) !important;
   border: 1px solid oklch(1 0 0 / 10%) !important;
@@ -194,7 +194,7 @@ body {
   font-weight: 500 !important;
 }
 
-/* Autocomplete info panel (documentation popup) */
+/* autocomplete info panel (documentation popup) */
 .cm-tooltip.cm-completionInfo {
   background: oklch(0.205 0 0) !important;
   border: 1px solid oklch(1 0 0 / 10%) !important;
@@ -208,7 +208,7 @@ body {
   line-height: 1.35 !important;
 }
 
-/* Info panel content */
+/* info panel content */
 .cm-completionInfo .autocomplete-info-container {
   color: oklch(0.985 0 0) !important;
   font-size: 12px !important;
@@ -307,7 +307,7 @@ body {
 }
 
 
-/* Ctrl+hover tooltip (same styling as autocomplete info panel) */
+/* ctrl+hover tooltip (same styling as autocomplete info panel) */
 .cm-tooltip-hover {
   background: oklch(0.205 0 0) !important;
   border: 1px solid oklch(1 0 0 / 10%) !important;

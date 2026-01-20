@@ -99,7 +99,7 @@ function highlightStrudelCode(code: string): string {
       continue;
     }
 
-    // Everything else (whitespace, operators) - pass through escaped
+    // everything else (whitespace, operators) - pass through escaped
     result += escape(code[i]);
     i++;
   }
@@ -107,7 +107,7 @@ function highlightStrudelCode(code: string): string {
   return result;
 }
 
-// Set up MutationObserver to highlight code blocks in tooltips
+// set up mutation observer to highlight code blocks in tooltips
 function setupTooltipHighlighting() {
   if (typeof document === 'undefined') return;
   if ((window as Window & { __strudelHighlightObserver?: MutationObserver }).__strudelHighlightObserver) return;
@@ -116,7 +116,7 @@ function setupTooltipHighlighting() {
     for (const mutation of mutations) {
       for (const node of mutation.addedNodes) {
         if (node instanceof HTMLElement) {
-          // Check if this is a tooltip or contains tooltips
+          // check if this is a tooltip or contains tooltips
           const codeBlocks = node.querySelectorAll('.autocomplete-info-example-code:not([data-highlighted])');
           codeBlocks.forEach((block) => {
             const pre = block as HTMLPreElement;
