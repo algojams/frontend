@@ -626,7 +626,7 @@ html.dark canvas {
 
 /* blue theme: strudel drawings */
 html.blue canvas {
-  filter: brightness(0.75) sepia(1) hue-rotate(180deg) saturate(4) !important;
+  filter: brightness(0.75) sepia(1) hue-rotate(180deg) saturate(2) !important;
 }
 
 /* pink theme: codemirror editor syntax highlighting */
@@ -677,7 +677,7 @@ html.blue canvas {
 
 /* pink theme: strudel drawings */
 html.pink canvas {
-  filter: brightness(0.75) sepia(1) hue-rotate(300deg) saturate(4) !important;
+  filter: brightness(0.75) sepia(1) hue-rotate(300deg) saturate(5) !important;
 }
 
 /* pink theme: save indicator */
