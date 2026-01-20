@@ -10,22 +10,22 @@ import { getBYOKProvider, getBYOKApiKey } from '@/components/shared/settings-mod
 import type { GenerateRequest, GenerateResponse, StreamEvent } from '@/lib/api/agent/types';
 
 export function useAgentGenerate() {
-  const {
-    code,
-    conversationHistory,
-    currentStrudelId,
-    forkedFromId,
-    parentCCSignal,
-    setAIGenerating,
-    addToHistory,
-    updateMessage,
-  } = useEditorStore();
-  const { sessionId } = useWebSocketStore();
+  const { setAIGenerating, addToHistory, updateMessage } = useEditorStore();
   const abortControllerRef = useRef<AbortController | null>(null);
 
   return useMutation({
     meta: { skipGlobalErrorToast: true }, // errors shown in conversation UI instead
     mutationFn: async (query: string) => {
+      // get fresh state at mutation time (not stale render-time values)
+      const {
+        code,
+        conversationHistory,
+        currentStrudelId,
+        forkedFromId,
+        parentCCSignal,
+      } = useEditorStore.getState();
+      const { sessionId } = useWebSocketStore.getState();
+
       // block AI requests if forked and parent has no signal or no-ai restriction
       // default to restrictive (no-ai) when signal is missing
       const parentSignalBlocksAI = !parentCCSignal || parentCCSignal === 'no-ai';
