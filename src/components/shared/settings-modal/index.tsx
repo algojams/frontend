@@ -44,7 +44,7 @@ export function SettingsModal() {
             <Settings className="h-5 w-5" />
             Settings
           </DialogTitle>
-          <DialogDescription className="pl-7 text-left">Manage your preferences</DialogDescription>
+          <DialogDescription className="pl-7 text-left !-mt-1">Manage your preferences</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-7 py-4">
