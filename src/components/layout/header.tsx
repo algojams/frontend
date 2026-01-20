@@ -50,9 +50,9 @@ export function Header() {
           </Link>
 
           <Link
-            href="/raves"
-            className={pathname === '/raves' ? 'text-foreground/90' : 'text-muted-foreground hover:text-foreground transition-colors'}>
-            Raves
+            href="/jams"
+            className={pathname === '/jams' ? 'text-foreground/90' : 'text-muted-foreground hover:text-foreground transition-colors'}>
+            Jams
           </Link>
         </nav>
 

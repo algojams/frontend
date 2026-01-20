@@ -64,7 +64,7 @@ export function InviteDialog() {
                 <span className="font-medium">{isLive ? 'Public' : 'Private'}</span>
               </div>
               <p className="text-xs text-muted-foreground">
-                {isLive ? 'Anyone can join from Raves' : 'Invite-only'}
+                {isLive ? 'Anyone can join from Jams' : 'Invite-only'}
               </p>
             </div>
             <Tooltip>

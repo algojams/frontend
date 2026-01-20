@@ -138,7 +138,7 @@ export default function SessionJoinPage() {
           <CardContent>
             <div className="flex gap-2">
               <Button asChild variant="outline" className="flex-1">
-                <Link href="/raves">Browse Raves</Link>
+                <Link href="/jams">Browse Jams</Link>
               </Button>
               <Button asChild className="flex-1">
                 <Link href="/">Go Home</Link>
@@ -164,7 +164,7 @@ export default function SessionJoinPage() {
           <CardContent>
             <div className="flex gap-2">
               <Button asChild variant="outline" className="flex-1">
-                <Link href="/raves">Browse Raves</Link>
+                <Link href="/jams">Browse Jams</Link>
               </Button>
               <Button asChild className="flex-1">
                 <Link href="/">Go Home</Link>

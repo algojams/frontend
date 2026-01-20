@@ -40,7 +40,7 @@ export default function LivePage() {
       <div className="mb-8">
         <div className="flex items-center gap-2">
           <Radio className="h-6 w-6 text-red-500 animate-pulse" />
-          <h1 className="text-2xl md:text-3xl font-bold">Raves</h1>
+          <h1 className="text-2xl md:text-3xl font-bold">Jams</h1>
         </div>
         <p className="text-[15px] md:text-base text-muted-foreground">
           <span className="md:hidden">Live sets & parties</span>
@@ -165,7 +165,7 @@ export default function LivePage() {
               Start your own session and go live to appear here!
             </p>
             <Button asChild>
-              <Link href="/">Start Raving</Link>
+              <Link href="/">Start Jamming</Link>
             </Button>
           </CardContent>
         </Card>

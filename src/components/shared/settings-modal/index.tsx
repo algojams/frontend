@@ -57,7 +57,7 @@ export function SettingsModal() {
               <div className="space-y-4 rounded-lg border p-4">
                 <div className="space-y-2">
                   <Label htmlFor="display-name">
-                    Display Name <span className='hidden sm:inline text-xs text-muted-foreground'>(for shared sessions & raves)</span>
+                    Display Name <span className='hidden sm:inline text-xs text-muted-foreground'>(for shared sessions & jams)</span>
                   </Label>
                   <Input
                     id="display-name"
@@ -85,7 +85,7 @@ export function SettingsModal() {
               <div className="space-y-4 rounded-lg border p-4">
                 <div className="space-y-2">
                   <Label htmlFor="auth-display-name">
-                    Display Name <span className='hidden sm:inline text-xs text-muted-foreground'>(for shared sessions & raves)</span>
+                    Display Name <span className='hidden sm:inline text-xs text-muted-foreground'>(for shared sessions & jams)</span>
                   </Label>
                   <Input
                     id="auth-display-name"
