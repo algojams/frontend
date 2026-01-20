@@ -620,8 +620,7 @@ body {
 }
 
 /* blue theme: strudel drawings */
-html.blue canvas,
-.blue canvas {
+html.blue canvas {
   filter: brightness(0.75) sepia(1) hue-rotate(180deg) saturate(4) !important;
 }
 
@@ -672,8 +671,7 @@ html.blue canvas,
 }
 
 /* pink theme: strudel drawings */
-html.pink canvas,
-.pink canvas {
+html.pink canvas {
   filter: brightness(0.75) sepia(1) hue-rotate(300deg) saturate(4) !important;
 }
 
