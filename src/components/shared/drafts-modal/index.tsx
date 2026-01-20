@@ -55,7 +55,7 @@ export function DraftsModal() {
                       <h4 className="font-medium truncate">
                         {draft.title || 'Untitled Draft'}
                       </h4>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
                         <Clock className="h-3 w-3" />
                         {formatRelativeTime(new Date(draft.updatedAt).toISOString())}
                       </div>
@@ -74,9 +74,8 @@ export function DraftsModal() {
                       </Button>
                     </div>
                   </div>
-                  <pre className="mt-3 text-xs bg-muted/50 p-2 rounded overflow-hidden text-ellipsis whitespace-nowrap w-full">
-                    {draft.code.slice(0, 150)}
-                    {draft.code.length > 150 && '...'}
+                  <pre className="mt-3 text-xs bg-muted/50 p-2 rounded overflow-hidden whitespace-pre font-mono leading-relaxed max-h-[5.5rem]">
+                    {draft.code.split('\n').slice(0, 5).join('\n')}
                   </pre>
                 </div>
               ))}
