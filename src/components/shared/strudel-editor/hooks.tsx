@@ -52,31 +52,31 @@ function highlightStrudelCode(code: string): string {
       continue;
     }
 
-    // Operators: /, ., , - blue
+    // operators: /, ., , - blue
     if (code[i] === '/' || code[i] === '.' || code[i] === ',') {
       result += span(code[i], HL_COLORS.blue);
       i++;
       continue;
     }
 
-    // Identifiers and function names
+    // identifiers and function names
     if (/[a-zA-Z_$]/.test(code[i])) {
       let end = i;
       while (end < code.length && /[a-zA-Z0-9_$]/.test(code[end])) end++;
       const word = code.slice(i, end);
 
-      // Function call (followed by open paren) - purple
+      // function call (followed by open paren) - purple
       if (code[end] === '(') {
         result += span(word, HL_COLORS.purple);
       } else {
-        // Regular identifier - green
+        // regular identifier - green
         result += span(word, HL_COLORS.green);
       }
       i = end;
       continue;
     }
 
-    // Strings - green
+    // strings - green
     if (code[i] === '"' || code[i] === "'" || code[i] === '`') {
       const quote = code[i];
       let end = i + 1;
@@ -90,7 +90,7 @@ function highlightStrudelCode(code: string): string {
       continue;
     }
 
-    // Numbers - green
+    // numbers - green
     if (/\d/.test(code[i])) {
       let end = i;
       while (end < code.length && /[\d.]/.test(code[end])) end++;
