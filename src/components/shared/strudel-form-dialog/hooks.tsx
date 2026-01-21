@@ -40,6 +40,9 @@ export function useStrudelForm(
     : editorConversationHistory;
   const hasAIAssistance = conversationHistory.some(msg => msg.is_code_response);
 
+  // default signal when none is set (can't use no-ai when AI was used)
+  const defaultSignal: CCSignal = hasAIAssistance ? 'cc-cr' : 'no-ai';
+
   const {
     pendingForkId,
     setPendingForkId,
@@ -101,19 +104,20 @@ export function useStrudelForm(
   const isCreate = mode === 'create';
   const isPending = localSaving || (isCreate ? createStrudel.isPending : updateStrudel.isPending);
 
-  const getEffectiveSignal = (): CCSignal | null => {
-    if (!ccSignal) return null;
+  const getEffectiveSignal = (): CCSignal => {
+    // use defaultSignal if ccSignal is null (ensures dropdown display matches saved value)
+    const signal = ccSignal || defaultSignal;
 
     if (parentCCSignal) {
       const parentLevel = SIGNAL_RESTRICTIVENESS[parentCCSignal];
-      const childLevel = SIGNAL_RESTRICTIVENESS[ccSignal];
+      const childLevel = SIGNAL_RESTRICTIVENESS[signal];
 
       if (childLevel < parentLevel) {
         return parentCCSignal;
       }
     }
 
-    return ccSignal;
+    return signal;
   };
 
   const handleSave = async () => {
@@ -260,6 +264,7 @@ export function useStrudelForm(
     ccSignal,
     handleSignalChange,
     signalOverridden,
+    defaultSignal,
     error,
     setError,
     isCreate,

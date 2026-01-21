@@ -46,6 +46,7 @@ export function StrudelForm({ strudel, mode, onClose }: StrudelFormProps) {
     ccSignal,
     handleSignalChange,
     signalOverridden,
+    defaultSignal,
     setError,
     isCreate,
     isPending,
@@ -57,9 +58,6 @@ export function StrudelForm({ strudel, mode, onClose }: StrudelFormProps) {
 
   // get what signal would be inferred from current license
   const inferredSignal = inferSignalFromLicense(license);
-
-  // determine default signal (can't use no-ai when AI was used)
-  const defaultSignal = hasAIAssistance ? 'cc-cr' : 'no-ai';
 
   return (
     <>
