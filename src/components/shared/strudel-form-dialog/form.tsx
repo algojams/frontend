@@ -194,7 +194,7 @@ export function StrudelForm({ strudel, mode, onClose }: StrudelFormProps) {
             </div>
             {!isPublic && (
               <p className="text-xs text-muted-foreground">
-                License and AI/CC Signal only apply to public strudels.
+                Licenses and CC Signals are applicable to public strudels only.
               </p>
             )}
           </>
