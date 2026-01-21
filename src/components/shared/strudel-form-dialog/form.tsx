@@ -135,10 +135,11 @@ export function StrudelForm({ strudel, mode, onClose }: StrudelFormProps) {
 
             <div className="flex items-start gap-3">
               <div className="flex-1 min-w-0 space-y-2">
-                <Label>License</Label>
+                <Label className={!isPublic ? 'text-muted-foreground' : ''}>License</Label>
                 <Select
                   value={license || ''}
-                  onValueChange={v => handleLicenseChange((v || null) as CCLicense | null)}>
+                  onValueChange={v => handleLicenseChange((v || null) as CCLicense | null)}
+                  disabled={!isPublic}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select license..." />
                   </SelectTrigger>
@@ -151,20 +152,21 @@ export function StrudelForm({ strudel, mode, onClose }: StrudelFormProps) {
                   </SelectContent>
                 </Select>
               </div>
-              <ArrowRightLeft className="h-4 w-4 text-muted-foreground shrink-0 mt-9" />
+              <ArrowRightLeft className={`h-4 w-4 shrink-0 mt-9 ${!isPublic ? 'text-muted-foreground/50' : 'text-muted-foreground'}`} />
               <div className="flex-1 min-w-0 space-y-2">
                 <div className="flex items-center gap-2">
-                  <Label>AI/CC Signal</Label>
-                  {license && inferredSignal && !signalOverridden && (
+                  <Label className={!isPublic ? 'text-muted-foreground' : ''}>AI/CC Signal</Label>
+                  {isPublic && license && inferredSignal && !signalOverridden && (
                     <span className="text-xs text-muted-foreground leading-0">(inferred from license)</span>
                   )}
-                  {signalOverridden && (
+                  {isPublic && signalOverridden && (
                     <span className="text-xs text-orange-400 leading-0">(custom)</span>
                   )}
                 </div>
                 <Select
                   value={ccSignal || defaultSignal}
-                  onValueChange={v => handleSignalChange((v as CCSignal) || null)}>
+                  onValueChange={v => handleSignalChange((v as CCSignal) || null)}
+                  disabled={!isPublic}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="AI/CC signal..." />
                   </SelectTrigger>
@@ -190,6 +192,11 @@ export function StrudelForm({ strudel, mode, onClose }: StrudelFormProps) {
                 </Select>
               </div>
             </div>
+            {!isPublic && (
+              <p className="text-xs text-muted-foreground">
+                License and AI/CC Signal only apply to public strudels.
+              </p>
+            )}
           </>
         )}
 
