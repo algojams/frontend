@@ -813,6 +813,8 @@ export function useStrudelEditor(
           // enable extensions on reused instance
           globalMirrorInstance.reconfigureExtension?.('isAutoCompletionEnabled', true);
           globalMirrorInstance.reconfigureExtension?.('isTooltipEnabled', true);
+          globalMirrorInstance.setLineNumbers?.(true);
+          globalMirrorInstance.setLineWrapping?.(true);
 
           // set up strudel draw theme (when reusing global mirror)
           const drawModule = await import('@strudel/draw') as unknown as { setTheme: (theme: Record<string, string>) => void };
