@@ -257,8 +257,9 @@ body {
   background: oklch(0.205 0 0) !important;
   border: 1px solid oklch(1 0 0 / 10%) !important;
   border-radius: 0.25rem !important;
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
   box-shadow: 0 4px 12px rgb(0 0 0 / 0.3) !important;
-  overflow: hidden !important;
 }
 
 .cm-tooltip-autocomplete > ul {
@@ -286,142 +287,8 @@ body {
   font-weight: 500 !important;
 }
 
-/* autocomplete info panel (documentation popup) */
-.cm-tooltip.cm-completionInfo {
-  position: absolute !important;
-  background: oklch(0.205 0 0) !important;
-  border: 1px solid oklch(1 0 0 / 10%) !important;
-  border-radius: 0.25rem !important;
-  padding: 0.5rem !important;
-  width: max-content !important;
-  max-width: 400px !important;
-  max-height: 300px !important;
-  overflow-y: auto !important;
-  box-shadow: 0 4px 12px rgb(0 0 0 / 0.3) !important;
-  font-size: 12px !important;
-  line-height: 1.35 !important;
-  box-sizing: border-box !important;
-  white-space: pre-line !important;
-  z-index: 1000 !important;
-}
-
-/* info panel positioning (CodeMirror positions it beside the dropdown) */
-.cm-completionInfo.cm-completionInfo-left {
-  right: 100% !important;
-}
-
-.cm-completionInfo.cm-completionInfo-right {
-  left: 100% !important;
-}
-
-.cm-completionInfo.cm-completionInfo-left-narrow {
-  right: 30px !important;
-}
-
-.cm-completionInfo.cm-completionInfo-right-narrow {
-  left: 30px !important;
-}
-
-/* info panel content */
-.cm-completionInfo .autocomplete-info-container {
-  color: oklch(0.985 0 0) !important;
-  font-size: 12px !important;
-  line-height: 1.35 !important;
-}
-
-.cm-completionInfo .autocomplete-info-tooltip {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 0.2rem !important;
-}
-
-.cm-completionInfo .autocomplete-info-function-name {
-  font-size: 13px !important;
-  font-weight: 600 !important;
-  margin: 0 !important;
-  color: oklch(0.985 0 0) !important;
-}
-
-.cm-completionInfo .autocomplete-info-function-synonyms {
-  font-size: 10px !important;
-  color: oklch(0.708 0 0) !important;
-  margin: 0 !important;
-}
-
-.cm-completionInfo .autocomplete-info-function-description {
-  margin: 0.15rem 0 !important;
-  line-height: 1.3 !important;
-  font-size: 11px !important;
-}
-
-.cm-completionInfo .autocomplete-info-function-description p {
-  margin: 0 0 0.15rem 0 !important;
-}
-
-.cm-completionInfo .autocomplete-info-function-description code {
-  background: oklch(0.269 0 0) !important;
-  padding: 0.05rem 0.2rem !important;
-  border-radius: 0.15rem !important;
-  font-size: 10px !important;
-}
-
-.cm-completionInfo .autocomplete-info-section-title,
-.cm-completionInfo .autocomplete-info-params-section h4,
-.cm-completionInfo .autocomplete-info-examples-section h4 {
-  font-size: 9px !important;
-  font-weight: 600 !important;
-  color: oklch(0.708 0 0) !important;
-  margin: 0.25rem 0 0.1rem 0 !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.04em !important;
-}
-
-.cm-completionInfo .autocomplete-info-params-list {
-  list-style: none !important;
-  padding: 0 !important;
-  margin: 0 !important;
-}
-
-.cm-completionInfo .autocomplete-info-param-item {
-  margin-bottom: 0.1rem !important;
-  font-size: 10px !important;
-}
-
-.cm-completionInfo .autocomplete-info-param-name {
-  font-weight: 500 !important;
-  color: oklch(0.985 0 0) !important;
-}
-
-.cm-completionInfo .autocomplete-info-param-type {
-  color: oklch(0.708 0 0) !important;
-  margin-left: 0.3rem !important;
-  font-size: 9px !important;
-}
-
-.cm-completionInfo .autocomplete-info-param-desc {
-  color: oklch(0.708 0 0) !important;
-  font-size: 10px !important;
-  margin-left: 0.5rem !important;
-}
-
-.cm-completionInfo .autocomplete-info-examples-section {
-  margin-top: 0.15rem !important;
-}
-
-.cm-completionInfo .autocomplete-info-example-code {
-  background: oklch(0.269 0 0) !important;
-  padding: 0.25rem 0.4rem !important;
-  border-radius: 0.15rem !important;
-  font-family: var(--font-geist-mono), monospace !important;
-  font-size: 10px !important;
-  white-space: pre-wrap !important;
-  word-break: break-word !important;
-  margin: 0.1rem 0 !important;
-  display: block !important;
-}
-
-
-/* ctrl+hover tooltip (same styling as autocomplete info panel) */
+/* documentation tooltip - shared base styles */
+.cm-tooltip.cm-completionInfo,
 .cm-tooltip-hover {
   background: oklch(0.205 0 0) !important;
   border: 1px solid oklch(1 0 0 / 10%) !important;
@@ -433,44 +300,140 @@ body {
   box-shadow: 0 4px 12px rgb(0 0 0 / 0.3) !important;
   font-size: 12px !important;
   line-height: 1.35 !important;
-  color: oklch(0.985 0 0) !important;
+  white-space: normal !important;
+  color: oklch(0.985 0 0);
+  font-family: var(--font-geist-mono), monospace !important;
 }
 
+/* autocomplete info panel - flat left side to connect seamlessly with dropdown */
+.cm-tooltip.cm-completionInfo {
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+  margin-left: -1px !important;
+  margin-top: -2px !important;
+}
+
+/* generic element styles - no !important on color to allow inline syntax highlighting */
+.cm-tooltip.cm-completionInfo h1,
+.cm-tooltip.cm-completionInfo h2,
+.cm-tooltip.cm-completionInfo h3,
+.cm-tooltip.cm-completionInfo h4,
+.cm-tooltip-hover h1,
+.cm-tooltip-hover h2,
+.cm-tooltip-hover h3,
+.cm-tooltip-hover h4 {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  margin: 0 0 0.25rem 0 !important;
+  color: oklch(0.985 0 0);
+}
+
+.cm-tooltip.cm-completionInfo p,
+.cm-tooltip-hover p {
+  margin: 0 0 0.25rem 0 !important;
+  font-size: 11px !important;
+  line-height: 1.4 !important;
+}
+
+.cm-tooltip.cm-completionInfo code,
+.cm-tooltip-hover code {
+  background: oklch(0.269 0 0) !important;
+  padding: 0.1rem 0.25rem !important;
+  border-radius: 0.15rem !important;
+  font-size: 10px !important;
+  font-family: var(--font-geist-mono), monospace !important;
+}
+
+.cm-tooltip.cm-completionInfo pre,
+.cm-tooltip-hover pre {
+  background: oklch(0.269 0 0) !important;
+  padding: 0.35rem 0.5rem !important;
+  border-radius: 0.2rem !important;
+  font-size: 10px !important;
+  font-family: var(--font-geist-mono), monospace !important;
+  white-space: pre-wrap !important;
+  word-break: break-word !important;
+  margin: 0.25rem 0 !important;
+  overflow-x: auto !important;
+}
+
+.cm-tooltip.cm-completionInfo ul,
+.cm-tooltip.cm-completionInfo ol,
+.cm-tooltip-hover ul,
+.cm-tooltip-hover ol {
+  margin: 0.25rem 0 !important;
+  padding-left: 1rem !important;
+  font-size: 11px !important;
+}
+
+.cm-tooltip.cm-completionInfo li,
+.cm-tooltip-hover li {
+  margin-bottom: 0.15rem !important;
+}
+
+.cm-tooltip.cm-completionInfo a,
+.cm-tooltip-hover a {
+  color: oklch(0.7 0.15 220) !important;
+  text-decoration: underline !important;
+}
+
+.cm-tooltip.cm-completionInfo blockquote,
+.cm-tooltip-hover blockquote {
+  border-left: 3px solid oklch(0.5 0 0) !important;
+  margin: 0.25rem 0 !important;
+  padding-left: 0.5rem !important;
+  color: oklch(0.708 0 0);
+}
+
+/* strudel-specific class selectors (shared between both tooltip types) */
+/* NOTE: no !important on color properties to allow inline syntax highlighting */
+.cm-completionInfo .autocomplete-info-container,
 .cm-tooltip-hover .autocomplete-info-container {
-  color: oklch(0.985 0 0) !important;
+  color: oklch(0.985 0 0);
   font-size: 12px !important;
   line-height: 1.35 !important;
 }
 
+.cm-completionInfo .autocomplete-info-tooltip,
 .cm-tooltip-hover .autocomplete-info-tooltip {
   display: flex !important;
   flex-direction: column !important;
   gap: 0.2rem !important;
 }
 
+.cm-completionInfo .autocomplete-info-function-name,
 .cm-tooltip-hover .autocomplete-info-function-name {
   font-size: 13px !important;
   font-weight: 600 !important;
   margin: 0 !important;
-  color: oklch(0.985 0 0) !important;
+  color: oklch(0.985 0 0);
 }
 
+.cm-completionInfo .autocomplete-info-function-synonyms,
 .cm-tooltip-hover .autocomplete-info-function-synonyms {
   font-size: 10px !important;
-  color: oklch(0.708 0 0) !important;
+  color: oklch(0.708 0 0);
   margin: 0 !important;
 }
 
+.cm-completionInfo .autocomplete-info-function-description,
 .cm-tooltip-hover .autocomplete-info-function-description {
   margin: 0.15rem 0 !important;
   line-height: 1.3 !important;
   font-size: 11px !important;
 }
 
+.cm-completionInfo .autocomplete-info-function-description p,
 .cm-tooltip-hover .autocomplete-info-function-description p {
-  margin: 0 0 0.15rem 0 !important;
+  margin: 0 0 0.4rem 0 !important;
 }
 
+.cm-completionInfo .autocomplete-info-function-description p:last-child,
+.cm-tooltip-hover .autocomplete-info-function-description p:last-child {
+  margin-bottom: 0 !important;
+}
+
+.cm-completionInfo .autocomplete-info-function-description code,
 .cm-tooltip-hover .autocomplete-info-function-description code {
   background: oklch(0.269 0 0) !important;
   padding: 0.05rem 0.2rem !important;
@@ -478,49 +441,62 @@ body {
   font-size: 10px !important;
 }
 
+.cm-completionInfo .autocomplete-info-section-title,
+.cm-completionInfo .autocomplete-info-params-section h4,
+.cm-completionInfo .autocomplete-info-examples-section h4,
 .cm-tooltip-hover .autocomplete-info-section-title,
 .cm-tooltip-hover .autocomplete-info-params-section h4,
 .cm-tooltip-hover .autocomplete-info-examples-section h4 {
   font-size: 9px !important;
   font-weight: 600 !important;
-  color: oklch(0.708 0 0) !important;
+  color: oklch(0.708 0 0);
   margin: 0.25rem 0 0.1rem 0 !important;
   text-transform: uppercase !important;
   letter-spacing: 0.04em !important;
 }
 
-.cm-tooltip-hover .autocomplete-info-params-list {
+.cm-completionInfo ul.autocomplete-info-params-list,
+.cm-tooltip-hover ul.autocomplete-info-params-list {
   list-style: none !important;
   padding: 0 !important;
+  padding-left: 4px !important;
   margin: 0 !important;
+  margin-top: 3px !important;
+  border-left: 3px solid oklch(0.5 0 0) !important;
 }
 
+.cm-completionInfo .autocomplete-info-param-item,
 .cm-tooltip-hover .autocomplete-info-param-item {
   margin-bottom: 0.1rem !important;
   font-size: 10px !important;
 }
 
+.cm-completionInfo .autocomplete-info-param-name,
 .cm-tooltip-hover .autocomplete-info-param-name {
   font-weight: 500 !important;
-  color: oklch(0.985 0 0) !important;
+  color: oklch(0.985 0 0);
 }
 
+.cm-completionInfo .autocomplete-info-param-type,
 .cm-tooltip-hover .autocomplete-info-param-type {
-  color: oklch(0.708 0 0) !important;
+  color: oklch(0.708 0 0);
   margin-left: 0.3rem !important;
   font-size: 9px !important;
 }
 
+.cm-completionInfo .autocomplete-info-param-desc,
 .cm-tooltip-hover .autocomplete-info-param-desc {
-  color: oklch(0.708 0 0) !important;
+  color: oklch(0.708 0 0);
   font-size: 10px !important;
-  margin-left: 0.5rem !important;
+  margin-left: 0 !important;
 }
 
+.cm-completionInfo .autocomplete-info-examples-section,
 .cm-tooltip-hover .autocomplete-info-examples-section {
   margin-top: 0.15rem !important;
 }
 
+.cm-completionInfo .autocomplete-info-example-code,
 .cm-tooltip-hover .autocomplete-info-example-code {
   background: oklch(0.269 0 0) !important;
   padding: 0.25rem 0.4rem !important;
@@ -592,6 +568,19 @@ body {
 .blue .cm-tooltip-hover {
   background: #000 !important;
   border-color: oklch(0.75 0.1 220 / 30%) !important;
+  color: var(--syntax-default) !important;
+}
+
+.blue .cm-tooltip.cm-completionInfo *,
+.blue .cm-tooltip-hover * {
+  color: var(--syntax-default) !important;
+}
+
+.blue .cm-tooltip.cm-completionInfo code,
+.blue .cm-tooltip.cm-completionInfo pre,
+.blue .cm-tooltip-hover code,
+.blue .cm-tooltip-hover pre {
+  background: oklch(0.75 0.1 220 / 10%) !important;
   color: var(--syntax-default) !important;
 }
 
@@ -716,6 +705,19 @@ body {
   color: var(--syntax-default) !important;
 }
 
+.pink .cm-tooltip.cm-completionInfo *,
+.pink .cm-tooltip-hover * {
+  color: var(--syntax-default) !important;
+}
+
+.pink .cm-tooltip.cm-completionInfo code,
+.pink .cm-tooltip.cm-completionInfo pre,
+.pink .cm-tooltip-hover code,
+.pink .cm-tooltip-hover pre {
+  background: oklch(0.75 0.15 350 / 10%) !important;
+  color: var(--syntax-default) !important;
+}
+
 .pink .cm-completionInfo .autocomplete-info-function-name,
 .pink .cm-tooltip-hover .autocomplete-info-function-name {
   color: var(--syntax-default) !important;
@@ -739,4 +741,3 @@ body {
   background: oklch(0.75 0.15 350 / 10%) !important;
   color: var(--syntax-default) !important;
 }
-
