@@ -1,29 +1,20 @@
 'use client';
 
 import { User as UserIcon } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import type { User } from '@/lib/api/auth/types';
-import { sizeClasses, getInitials, iconSizeClasses } from './hooks';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { sizeClasses, iconSizeClasses } from './hooks';
 
 interface UserAvatarProps {
-  user: User | null;
+  user?: null;
   size?: 'sm' | 'md' | 'lg';
   className?: string;
 }
 
-export function UserAvatar({ user, size = 'md', className }: UserAvatarProps) {
-  const initials = getInitials(user);
-  const isAnonymous = !user;
-
+export function UserAvatar({ size = 'md', className }: UserAvatarProps) {
   return (
     <Avatar className={`${sizeClasses[size]} ${className || ''}`}>
-      {!isAnonymous && <AvatarImage src={user?.avatar_url} alt={user?.name || 'User'} />}
-      <AvatarFallback className={isAnonymous ? 'bg-muted text-muted-foreground' : 'bg-primary text-primary-foreground text-xs'}>
-        {isAnonymous ? (
-          <UserIcon className={iconSizeClasses[size]} />
-        ) : (
-          initials
-        )}
+      <AvatarFallback className="bg-muted text-muted-foreground">
+        <UserIcon className={iconSizeClasses[size]} />
       </AvatarFallback>
     </Avatar>
   );

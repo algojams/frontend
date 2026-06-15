@@ -19,7 +19,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Settings, Pencil, Eye, Trash2 } from 'lucide-react';
-import type { Strudel } from '@/lib/api/strudels/types';
+import type { Strudel } from '@/lib/types/strudel';
 import { useEditorStore } from '@/lib/stores/editor';
 import { useUIStore } from '@/lib/stores/ui';
 import { usePlayerStore } from '@/lib/stores/player';

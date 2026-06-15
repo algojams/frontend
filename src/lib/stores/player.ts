@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { Strudel } from '@/lib/api/strudels/types';
+import type { Strudel } from '@/lib/types/strudel';
 
 interface PlayerState {
   currentStrudel: Strudel | null;

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { storage, type LocalStrudel } from '@/lib/utils/storage';
-import type { Strudel } from '@/lib/api/strudels/types';
+import type { Strudel } from '@/lib/types/strudel';
 
 function localToStrudel(local: LocalStrudel): Strudel {
   return {

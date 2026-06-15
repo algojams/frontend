@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { storage } from '@/lib/utils/storage';
-import type { Strudel } from '@/lib/api/strudels/types';
+import type { Strudel } from '@/lib/types/strudel';
 
 interface LocalStrudelSettingsDialogProps {
   strudel: Strudel | null;

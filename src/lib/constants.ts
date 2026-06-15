@@ -1,26 +1,4 @@
-export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
-
-export const WS_BASE_URL =
-  process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8080";
-
-export const STORAGE_KEYS = {
-  SESSION_ID: "algopatterns_session_id",
-  REDIRECT_AFTER_LOGIN: "redirect_after_login",
-} as const;
-
-export const WEBSOCKET = {
-  RECONNECT_MAX_ATTEMPTS: 5,
-  RECONNECT_DELAY_MS: 1000,
-  PING_INTERVAL_MS: 30000,
-  CONNECTION_TIMEOUT_MS: 10000,
-} as const;
-
-export const RATE_LIMITS = {
-  CODE_UPDATES_PER_SECOND: 10,
-  CHAT_MESSAGES_PER_MINUTE: 20,
-  AGENT_REQUESTS_PER_MINUTE: 10,
-} as const;
+export const STORAGE_KEYS = {} as const;
 
 export const EDITOR = {
   MAX_CODE_SIZE_BYTES: 100 * 1024, // 100KB
@@ -39,7 +17,7 @@ $: stack(
   ),
 
   s("sd:8").bank("tr808").beat("4,12", 16),
-  s("hh*8").bank("EmuSP12").gain(0.3),
+  s("hh*8").bank("tr808").gain(0.3),
 )
 
 // chords

@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import type { Strudel } from '@/lib/api/strudels/types';
+import type { Strudel } from '@/lib/types/strudel';
 import { useEditorStore } from '@/lib/stores/editor';
 import { useUIStore } from '@/lib/stores/ui';
 import { EDITOR } from '@/lib/constants';

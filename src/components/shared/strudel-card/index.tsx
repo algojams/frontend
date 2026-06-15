@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { BotMessageSquare } from 'lucide-react';
-import type { Strudel } from '@/lib/api/strudels/types';
+import type { Strudel } from '@/lib/types/strudel';
 
 interface StrudelCardProps {
   strudel: Strudel;

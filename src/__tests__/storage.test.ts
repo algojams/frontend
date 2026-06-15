@@ -8,19 +8,6 @@ describe('storage utilities', () => {
     vi.clearAllMocks();
   });
 
-  describe('sessionId (sessionStorage)', () => {
-    it('should store and retrieve session ID', () => {
-      storage.setSessionId('test-session-123');
-      expect(storage.getSessionId()).toBe('test-session-123');
-    });
-
-    it('should clear session ID', () => {
-      storage.setSessionId('test-session-123');
-      storage.clearSessionId();
-      expect(storage.getSessionId()).toBeNull();
-    });
-  });
-
   describe('currentStrudelId (sessionStorage)', () => {
     it('should store and retrieve current strudel ID', () => {
       storage.setCurrentStrudelId('strudel-abc');
@@ -128,34 +115,4 @@ describe('storage utilities', () => {
     });
   });
 
-  describe('viewerSession (sessionStorage)', () => {
-    it('should store and retrieve viewer session', () => {
-      storage.setViewerSession('session-123', 'invite-token', 'Guest User');
-      const session = storage.getViewerSession();
-      expect(session).toEqual({
-        sessionId: 'session-123',
-        inviteToken: 'invite-token',
-        displayName: 'Guest User',
-      });
-    });
-
-    it('should clear viewer session', () => {
-      storage.setViewerSession('session-123', 'invite-token');
-      storage.clearViewerSession();
-      expect(storage.getViewerSession()).toBeNull();
-    });
-  });
-
-  describe('previousSessionId (sessionStorage)', () => {
-    it('should store and retrieve previous session ID', () => {
-      storage.setPreviousSessionId('prev-session-123');
-      expect(storage.getPreviousSessionId()).toBe('prev-session-123');
-    });
-
-    it('should clear previous session ID', () => {
-      storage.setPreviousSessionId('prev-session-123');
-      storage.clearPreviousSessionId();
-      expect(storage.getPreviousSessionId()).toBeNull();
-    });
-  });
 });

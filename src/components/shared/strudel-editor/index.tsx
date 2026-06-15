@@ -2,7 +2,6 @@
 
 import { useStrudelEditor } from './hooks';
 import { EditorErrorBoundary } from './error-boundary';
-import { RemoteCursors } from '@/components/shared/remote-cursors';
 import { EditorToast } from './editor-toast';
 
 export {
@@ -33,7 +32,6 @@ export function StrudelEditor({
           ref={containerRef}
           className="strudel-editor h-full w-full overflow-auto rounded-none"
         />
-        <RemoteCursors />
         <EditorToast />
       </div>
     </EditorErrorBoundary>

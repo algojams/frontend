@@ -6,7 +6,7 @@ import { generateStream } from '@/lib/agent/client';
 import { useEditorStore } from '@/lib/stores/editor';
 import { storage } from '@/lib/utils/storage';
 import { getBYOKProvider, getBYOKApiKey } from '@/components/shared/settings-modal/hooks';
-import type { GenerateRequest, GenerateResponse, StreamEvent } from '@/lib/api/agent/types';
+import type { GenerateRequest, GenerateResponse, StreamEvent } from '@/lib/types/agent';
 
 export function useAgentGenerate() {
   const { setAIGenerating, addToHistory, updateMessage } = useEditorStore();

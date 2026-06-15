@@ -1,9 +1,7 @@
 'use client';
 
-import { useState, useMemo, useCallback, useRef } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useUIStore } from '@/lib/stores/ui';
-import { useAuth } from '@/lib/hooks/use-auth';
-import { useUpdateAIFeaturesEnabled, useUpdateDisplayName } from '@/lib/hooks/use-users';
 import { toast } from 'sonner';
 
 const AI_DISABLED_KEY = 'algopatterns_ai_disabled';
@@ -15,9 +13,8 @@ export type BYOKProvider = 'anthropic' | 'openai';
 
 function getAnonAIEnabled(): boolean {
   if (typeof window === 'undefined') return false;
-  // Default to disabled - user must explicitly enable after configuring BYOK
   const stored = localStorage.getItem(AI_DISABLED_KEY);
-  if (stored === null) return false; // no preference stored = default off
+  if (stored === null) return false;
   return stored !== 'true';
 }
 
@@ -48,6 +45,7 @@ export function getBYOKApiKey(): string {
 function setBYOKProvider(provider: BYOKProvider): void {
   if (typeof window === 'undefined') return;
   localStorage.setItem(BYOK_PROVIDER_KEY, provider);
+  window.dispatchEvent(new Event('ai-features-changed'));
 }
 
 function setBYOKApiKey(key: string): void {
@@ -57,44 +55,18 @@ function setBYOKApiKey(key: string): void {
   } else {
     localStorage.removeItem(BYOK_API_KEY);
   }
+  window.dispatchEvent(new Event('ai-features-changed'));
 }
 
 export function useSettingsModal() {
   const { isSettingsModalOpen, setSettingsModalOpen } = useUIStore();
-  const { user, isAuthenticated } = useAuth();
-  const updateAIFeatures = useUpdateAIFeaturesEnabled();
-  const updateDisplayName = useUpdateDisplayName();
-
-  // track optimistic state for pending updates
   const [optimisticValue, setOptimisticValue] = useState<boolean | null>(null);
-
-  // track BYOK API key reactively for enabling/disabling toggle
   const [byokApiKey, setBYOKApiKeyState] = useState<string>(() => getBYOKApiKey());
 
-  // debounce timer for display name updates
-  const displayNameDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const handleDisplayNameChange = useCallback((value: string) => {
+    setAnonDisplayName(value);
+  }, []);
 
-  // anonymous display name - save on change, read fresh when modal opens
-  const handleDisplayNameChange = useCallback((value: string, isAuth: boolean) => {
-    if (isAuth) {
-      // debounce API calls for authenticated users
-      if (displayNameDebounceRef.current) {
-        clearTimeout(displayNameDebounceRef.current);
-      }
-      displayNameDebounceRef.current = setTimeout(async () => {
-        try {
-          await updateDisplayName.mutateAsync({ display_name: value.trim() });
-          toast.success('Display name updated');
-        } catch {
-          toast.error('Failed to update display name');
-        }
-      }, 500);
-    } else {
-      setAnonDisplayName(value);
-    }
-  }, [updateDisplayName]);
-
-  // BYOK handlers
   const handleBYOKProviderChange = useCallback((provider: BYOKProvider) => {
     setBYOKProvider(provider);
   }, []);
@@ -106,59 +78,30 @@ export function useSettingsModal() {
 
   const handleOpenChange = useCallback((open: boolean) => {
     if (!open) {
-      // reset optimistic value when modal closes (so next open reads fresh from source)
       setOptimisticValue(null);
     }
     setSettingsModalOpen(open);
   }, [setSettingsModalOpen]);
 
-  // derive the current value from source of truth
   const sourceValue = useMemo(() => {
     if (!isSettingsModalOpen) return true;
-
-    if (isAuthenticated && user) {
-      return user.ai_features_enabled;
-    }
-
     return getAnonAIEnabled();
-  }, [isSettingsModalOpen, isAuthenticated, user]);
+  }, [isSettingsModalOpen]);
 
-  // use optimistic value if set, otherwise use source value
   const aiEnabled = optimisticValue ?? sourceValue;
 
-  const handleAiToggle = useCallback(async (checked: boolean) => {
+  const handleAiToggle = useCallback((checked: boolean) => {
     setOptimisticValue(checked);
-
-    if (isAuthenticated) {
-      // for auth users, update via API
-      try {
-        await updateAIFeatures.mutateAsync({ ai_features_enabled: checked });
-        toast.success(checked ? 'AI features enabled' : 'AI features disabled');
-        setOptimisticValue(null); // clear optimistic state, let source take over
-      } catch {
-        // revert on error
-        setOptimisticValue(null);
-        toast.error('Failed to update settings');
-      }
-    } else {
-      // for anon users, update localStorage
-      if (typeof window !== 'undefined') {
-        localStorage.setItem(AI_DISABLED_KEY, checked ? 'false' : 'true');
-
-        // dispatch event for same-tab updates
-        window.dispatchEvent(new Event('ai-features-changed'));
-      }
-
-      toast.success(checked ? 'AI features enabled' : 'AI features disabled');
-      // keep optimistic value for anon - localStorage change won't trigger useMemo re-run
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(AI_DISABLED_KEY, checked ? 'false' : 'true');
+      window.dispatchEvent(new Event('ai-features-changed'));
     }
-  }, [isAuthenticated, updateAIFeatures]);
+    toast.success(checked ? 'AI features enabled' : 'AI features disabled');
+  }, []);
 
   return {
     isSettingsModalOpen,
     handleOpenChange,
-    user,
-    isAuthenticated,
     aiEnabled,
     handleAiToggle,
     handleDisplayNameChange,

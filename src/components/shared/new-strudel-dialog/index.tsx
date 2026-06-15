@@ -16,36 +16,13 @@ export function NewStrudelDialog() {
   const {
     isNewStrudelDialogOpen,
     setNewStrudelDialogOpen,
-    isAuthenticated,
     hasUnsavedChanges,
     currentStrudelId,
     handleClose,
-    handleLogin,
     handleClearEditor,
     handleSaveFirst,
     handleStartNew,
   } = useNewStrudelDialog();
-
-  if (!isAuthenticated) {
-    return (
-      <AlertDialog open={isNewStrudelDialogOpen} onOpenChange={setNewStrudelDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Start a New Strudel</AlertDialogTitle>
-          </AlertDialogHeader>
-          <AlertDialogBody>
-            Sign in to save your strudels and access them later. As a guest, you can
-            clear the editor to start fresh.
-          </AlertDialogBody>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleClose}>Cancel</AlertDialogCancel>
-            <AlertDialogCancel onClick={handleClearEditor}>Clear Editor</AlertDialogCancel>
-            <AlertDialogAction onClick={handleLogin}>Sign In</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    );
-  }
 
   return (
     <AlertDialog open={isNewStrudelDialogOpen} onOpenChange={setNewStrudelDialogOpen}>
@@ -56,12 +33,13 @@ export function NewStrudelDialog() {
         <AlertDialogBody>
           {hasUnsavedChanges
             ? currentStrudelId
-              ? "You have changes that haven't been autosaved yet. Your current work will be saved as a draft."
+              ? "You have unsaved changes. Save first or start fresh — your current work stays in drafts."
               : 'Your current work will be saved as a draft so you can continue later.'
-            : 'Start fresh with a new strudel session.'}
+            : 'Start fresh with a new strudel.'}
         </AlertDialogBody>
         <AlertDialogFooter>
           <AlertDialogCancel onClick={handleClose}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel onClick={handleClearEditor}>Clear Editor</AlertDialogCancel>
           {hasUnsavedChanges ? (
             <>
               <AlertDialogCancel onClick={handleStartNew}>Start New</AlertDialogCancel>

@@ -1,5 +1,4 @@
-import { STORAGE_KEYS } from '@/lib/constants';
-import type { AgentMessage, CCSignal, CCLicense } from '@/lib/api/strudels/types';
+import type { AgentMessage, CCSignal, CCLicense } from '@/lib/types/strudel';
 
 const DRAFT_PREFIX = 'algopatterns_draft_';
 const CURRENT_DRAFT_ID_KEY = 'algopatterns_current_draft_id';
@@ -39,94 +38,6 @@ export interface Draft {
 }
 
 export const storage = {
-  getSessionId: (): string | null => {
-    if (typeof window === 'undefined') return null;
-    return sessionStorage.getItem(STORAGE_KEYS.SESSION_ID);
-  },
-
-  setSessionId: (sessionId: string): void => {
-    if (typeof window === 'undefined') return;
-    sessionStorage.setItem(STORAGE_KEYS.SESSION_ID, sessionId);
-  },
-
-  clearSessionId: (): void => {
-    if (typeof window === 'undefined') return;
-    sessionStorage.removeItem(STORAGE_KEYS.SESSION_ID);
-  },
-
-  getRedirectUrl: (): string | null => {
-    if (typeof window === 'undefined') return null;
-    return sessionStorage.getItem(STORAGE_KEYS.REDIRECT_AFTER_LOGIN);
-  },
-
-  setRedirectUrl: (url: string): void => {
-    if (typeof window === 'undefined') return;
-    sessionStorage.setItem(STORAGE_KEYS.REDIRECT_AFTER_LOGIN, url);
-  },
-
-  clearRedirectUrl: (): void => {
-    if (typeof window === 'undefined') return;
-    sessionStorage.removeItem(STORAGE_KEYS.REDIRECT_AFTER_LOGIN);
-  },
-
-  // previous session ID - used for login transition to transfer code
-  // stored in sessionStorage so it survives OAuth redirect but is ephemeral
-  getPreviousSessionId: (): string | null => {
-    if (typeof window === 'undefined') return null;
-    return sessionStorage.getItem('algopatterns_previous_session_id');
-  },
-
-  setPreviousSessionId: (sessionId: string): void => {
-    if (typeof window === 'undefined') return;
-    sessionStorage.setItem('algopatterns_previous_session_id', sessionId);
-  },
-
-  clearPreviousSessionId: (): void => {
-    if (typeof window === 'undefined') return;
-    sessionStorage.removeItem('algopatterns_previous_session_id');
-  },
-
-  // viewer/collaborator session - for reconnecting after refresh (within same browser session)
-  getViewerSession: (): {
-    sessionId: string;
-    inviteToken: string;
-    displayName?: string;
-  } | null => {
-    if (typeof window === 'undefined') {
-      return null;
-    }
-
-    const data = sessionStorage.getItem('algopatterns_viewer_session');
-
-    if (!data) {
-      return null;
-    }
-
-    try {
-      return JSON.parse(data);
-    } catch {
-      return null;
-    }
-  },
-
-  setViewerSession: (
-    sessionId: string,
-    inviteToken: string,
-    displayName?: string
-  ): void => {
-    if (typeof window === 'undefined') return;
-
-    sessionStorage.setItem(
-      'algopatterns_viewer_session',
-      JSON.stringify({ sessionId, inviteToken, displayName })
-    );
-  },
-
-  clearViewerSession: (): void => {
-    if (typeof window === 'undefined') return;
-    sessionStorage.removeItem('algopatterns_viewer_session');
-  },
-
   // current strudel being edited - per tab, survives refresh
   getCurrentStrudelId: (): string | null => {
     if (typeof window === 'undefined') return null;

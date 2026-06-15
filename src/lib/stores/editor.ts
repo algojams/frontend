@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { storage } from '@/lib/utils/storage';
 import { EDITOR } from '@/lib/constants';
-import type { AgentMessage, CCSignal } from '@/lib/api/strudels/types';
-import type { CodeUpdateSource } from '@/lib/websocket/types';
+import type { AgentMessage, CCSignal } from '@/lib/types/strudel';
+import type { CodeUpdateSource } from '@/lib/types/editor';
 
 // debounce draft saves to avoid excessive writes
 let draftSaveTimeout: ReturnType<typeof setTimeout> | null = null;

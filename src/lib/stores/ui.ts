@@ -17,9 +17,6 @@ interface UIState {
   sidebarTab: 'samples' | 'chat';
   desktopSidebarOpen: boolean;
   isDraftsModalOpen: boolean;
-  isInviteDialogOpen: boolean;
-  isLoginModalOpen: boolean;
-  isLogoutDialogOpen: boolean;
   isNewStrudelDialogOpen: boolean;
   isSaveStrudelDialogOpen: boolean;
   isSettingsModalOpen: boolean;
@@ -34,9 +31,6 @@ interface UIState {
   setAIDrawerHeight: (height: number) => void;
   setSidebarTab: (tab: 'samples' | 'chat') => void;
   setDraftsModalOpen: (open: boolean) => void;
-  setInviteDialogOpen: (open: boolean) => void;
-  setLoginModalOpen: (open: boolean) => void;
-  setLogoutDialogOpen: (open: boolean) => void;
   setNewStrudelDialogOpen: (open: boolean) => void;
   setSaveStrudelDialogOpen: (open: boolean) => void;
   setSettingsModalOpen: (open: boolean) => void;
@@ -62,9 +56,6 @@ export const useUIStore = create<UIState>(set => ({
   sidebarTab: 'samples',
   desktopSidebarOpen: getDesktopSidebarPreference(),
   isDraftsModalOpen: false,
-  isInviteDialogOpen: false,
-  isLoginModalOpen: false,
-  isLogoutDialogOpen: false,
   isNewStrudelDialogOpen: false,
   isSaveStrudelDialogOpen: false,
   isSettingsModalOpen: false,
@@ -102,9 +93,6 @@ export const useUIStore = create<UIState>(set => ({
     set({ desktopSidebarOpen });
   },
   setDraftsModalOpen: isDraftsModalOpen => set({ isDraftsModalOpen }),
-  setInviteDialogOpen: isInviteDialogOpen => set({ isInviteDialogOpen }),
-  setLoginModalOpen: isLoginModalOpen => set({ isLoginModalOpen }),
-  setLogoutDialogOpen: isLogoutDialogOpen => set({ isLogoutDialogOpen }),
   setNewStrudelDialogOpen: isNewStrudelDialogOpen => set({ isNewStrudelDialogOpen }),
   setSaveStrudelDialogOpen: isSaveStrudelDialogOpen => set({ isSaveStrudelDialogOpen }),
   setSettingsModalOpen: isSettingsModalOpen => set({ isSettingsModalOpen }),

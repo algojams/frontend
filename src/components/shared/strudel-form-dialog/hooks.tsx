@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useEditorStore } from '@/lib/stores/editor';
 import { useUIStore } from '@/lib/stores/ui';
 import { storage } from '@/lib/utils/storage';
-import type { Strudel, CCSignal, CCLicense } from '@/lib/api/strudels/types';
-import { SIGNAL_RESTRICTIVENESS, inferSignalFromLicense } from '@/lib/api/strudels/types';
+import type { Strudel, CCSignal, CCLicense } from '@/lib/types/strudel';
+import { SIGNAL_RESTRICTIVENESS, inferSignalFromLicense } from '@/lib/types/strudel';
 
 export function useStrudelForm(
   strudel: Strudel | null | undefined,
@@ -191,8 +191,6 @@ export function useStrudelForm(
     isCreate,
     isPending,
     parentCCSignal,
-    hasAIAssistance,
-    isAuthenticated: false,
     handleSave,
   };
 }

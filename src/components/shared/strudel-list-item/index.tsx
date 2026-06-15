@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { Play, Pause, Eye, BarChart3, BotMessageSquare, Loader2 } from 'lucide-react';
 import { usePlayerStore } from '@/lib/stores/player';
-import type { Strudel } from '@/lib/api/strudels/types';
+import type { Strudel } from '@/lib/types/strudel';
 
 interface StrudelListItemProps {
   strudel: Strudel;

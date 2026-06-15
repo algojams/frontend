@@ -14,8 +14,8 @@ import {
   Activity,
   ExternalLink,
 } from 'lucide-react';
-import type { Strudel, CCLicense, CCSignal } from '@/lib/api/strudels/types';
-import { CC_SIGNALS, CC_LICENSES } from '@/lib/api/strudels/types';
+import type { Strudel, CCLicense, CCSignal } from '@/lib/types/strudel';
+import { CC_SIGNALS, CC_LICENSES } from '@/lib/types/strudel';
 import {
   StrudelPreviewPlayer,
   type PlayerState,

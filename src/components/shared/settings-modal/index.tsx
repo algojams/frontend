@@ -27,8 +27,6 @@ export function SettingsModal() {
   const {
     isSettingsModalOpen,
     handleOpenChange,
-    user,
-    isAuthenticated,
     aiEnabled,
     handleAiToggle,
     handleDisplayNameChange,
@@ -50,55 +48,24 @@ export function SettingsModal() {
         </DialogHeader>
 
         <div className="space-y-7 py-4">
-          {!isAuthenticated && (
-            <div className="space-y-2">
-              <h3 className="text-sm font-medium flex items-center gap-2">
-                <User className="h-4 w-4" />
-                Profile
-              </h3>
-              <div className="space-y-4 rounded-lg border p-4">
-                <div className="space-y-2">
-                  <Label htmlFor="display-name">
-                    Display Name <span className='hidden sm:inline text-xs text-muted-foreground'>(for shared sessions & jams)</span>
-                  </Label>
-                  <Input
-                    id="display-name"
-                    placeholder="Anonymous"
-                    defaultValue={getAnonDisplayName()}
-                    onChange={e => handleDisplayNameChange(e.target.value, false)}
-                    maxLength={50}
-                  />
-                </div>
-                              </div>
-            </div>
-          )}
-
-          {isAuthenticated && (
-            <div className="space-y-2">
-              <h3 className="text-sm font-medium flex items-center gap-2">
-                <User className="h-4 w-4" />
-                Profile
-              </h3>
-              <div className="space-y-4 rounded-lg border p-4">
-                <div className="space-y-2">
-                  <Label htmlFor="auth-display-name">
-                    Display Name <span className='hidden sm:inline text-xs text-muted-foreground'>(for shared sessions & jams)</span>
-                  </Label>
-                  <Input
-                    id="auth-display-name"
-                    placeholder="Enter display name"
-                    defaultValue={user?.name || ''}
-                    onChange={e => handleDisplayNameChange(e.target.value, true)}
-                    maxLength={50}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-muted-foreground">Email</Label>
-                  <p className="text-sm">{user?.email}</p>
-                </div>
+          <div className="space-y-2">
+            <h3 className="text-sm font-medium flex items-center gap-2">
+              <User className="h-4 w-4" />
+              Profile
+            </h3>
+            <div className="space-y-4 rounded-lg border p-4">
+              <div className="space-y-2">
+                <Label htmlFor="display-name">Display Name</Label>
+                <Input
+                  id="display-name"
+                  placeholder="Anonymous"
+                  defaultValue={getAnonDisplayName()}
+                  onChange={e => handleDisplayNameChange(e.target.value)}
+                  maxLength={50}
+                />
               </div>
             </div>
-          )}
+          </div>
 
           <div className="space-y-2">
             <h3 className="text-sm font-medium flex items-center gap-2">
@@ -134,7 +101,7 @@ export function SettingsModal() {
                     AI Assistant
                   </Label>
                   <p className="text-sm text-muted-foreground text-left">
-                    {byokApiKey ? 'Quick docs retrieval and code snippets' : 'Add your API key below to enable'}
+                    {byokApiKey ? 'Generate and explain Strudel patterns' : 'Add your API key below to enable'}
                   </p>
                 </div>
                 <Switch
@@ -176,7 +143,7 @@ export function SettingsModal() {
                   />
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Stored securely in your browser. Requests go directly to the provider.
+                  Stored in your browser. Requests go directly to the provider.
                 </p>
               </div>
             </div>
