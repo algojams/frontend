@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useEditorStore } from '@/lib/stores/editor';
-import { useWebSocketStore } from '@/lib/stores/websocket';
 import { useUIStore } from '@/lib/stores/ui';
 import { toast } from 'sonner';
 
@@ -15,7 +14,6 @@ export function useAIInput(onSendAIRequest: (query: string) => void, disabled: b
   const [isExpanded, setIsExpanded] = useState(false);
   const [userControlledDrawer, setUserControlledDrawer] = useState(false);
 
-  const { pasteLocked } = useWebSocketStore();
   const { isAIGenerating, conversationHistory, setCode, parentCCSignal, forkedFromId } =
     useEditorStore();
   const { aiDrawerHeight, setAIDrawerHeight } = useUIStore();
@@ -100,7 +98,7 @@ export function useAIInput(onSendAIRequest: (query: string) => void, disabled: b
     isAIGenerating,
     conversationHistory,
     isAIBlocked,
-    pasteLocked,
+    pasteLocked: false,
     messagesEndRef,
     contentRef,
     handleApplyCode,

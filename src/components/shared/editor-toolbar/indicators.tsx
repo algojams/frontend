@@ -1,7 +1,9 @@
 'use client';
 
 import { Cloud, Loader2, Activity } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import type { SaveStatus } from './hooks';
+import type { AudioEngineStatus } from '@/lib/hooks/use-audio-engine-status';
 
 export function SaveIndicator({ status }: { status: SaveStatus }) {
   if (status === 'saving') {
@@ -15,34 +17,43 @@ export function SaveIndicator({ status }: { status: SaveStatus }) {
   return <Cloud className="h-4 w-4 text-green-500 save-indicator-saved" />;
 }
 
-export function ConnectionIndicator({
+const AUDIO_ENGINE_CONFIG: Record<
+  AudioEngineStatus,
+  { className: string; pulse?: boolean }
+> = {
+  ready: {
+    className: 'text-muted-foreground',
+  },
+  playing: {
+    className: 'text-emerald-500',
+    pulse: true,
+  },
+  suspended: {
+    className: 'text-yellow-500',
+    pulse: true,
+  },
+  error: {
+    className: 'text-red-500',
+  },
+};
+
+export function AudioEngineIndicator({
   status,
+  label,
 }: {
-  status: 'connected' | 'connecting' | 'disconnected' | 'reconnecting';
+  status: AudioEngineStatus;
+  label: string;
 }) {
-  const statusConfig = {
-    connected: {
-      icon: <Activity className="h-3.5 w-3.5" />,
-      className: 'text-muted-foreground',
-    },
+  const { className, pulse } = AUDIO_ENGINE_CONFIG[status];
 
-    connecting: {
-      icon: <Activity className="h-3.5 w-3.5 animate-pulse" />,
-      className: 'text-yellow-500',
-    },
-
-    reconnecting: {
-      icon: <Activity className="h-3.5 w-3.5 animate-pulse" />,
-      className: 'text-yellow-500',
-    },
-
-    disconnected: {
-      icon: <Activity className="h-3.5 w-3.5" />,
-      className: 'text-red-500',
-    },
-  };
-
-  const { icon, className } = statusConfig[status];
-
-  return <span className={className}>{icon}</span>;
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className={className} aria-label={label}>
+          <Activity className={`h-3.5 w-3.5 ${pulse ? 'animate-pulse' : ''}`} />
+        </span>
+      </TooltipTrigger>
+      <TooltipContent>{label}</TooltipContent>
+    </Tooltip>
+  );
 }

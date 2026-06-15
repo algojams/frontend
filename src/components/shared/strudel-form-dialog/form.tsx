@@ -10,17 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { ArrowRightLeft } from 'lucide-react';
-import type { Strudel, CCSignal, CCLicense } from '@/lib/api/strudels/types';
-import { CC_SIGNALS, CC_LICENSES, SIGNAL_RESTRICTIVENESS, inferSignalFromLicense } from '@/lib/api/strudels/types';
+import type { Strudel } from '@/lib/api/strudels/types';
 import { useStrudelForm } from './hooks';
 
 interface StrudelFormProps {
@@ -37,27 +27,11 @@ export function StrudelForm({ strudel, mode, onClose }: StrudelFormProps) {
     setDescription,
     tags,
     setTags,
-    categories,
-    setCategories,
-    isPublic,
-    setIsPublic,
-    license,
-    handleLicenseChange,
-    ccSignal,
-    handleSignalChange,
-    signalOverridden,
-    defaultSignal,
     setError,
     isCreate,
     isPending,
-    parentCCSignal,
-    hasAIAssistance,
-    isAuthenticated,
     handleSave,
   } = useStrudelForm(strudel, mode, onClose);
-
-  // get what signal would be inferred from current license
-  const inferredSignal = inferSignalFromLicense(license);
 
   return (
     <>
@@ -65,10 +39,8 @@ export function StrudelForm({ strudel, mode, onClose }: StrudelFormProps) {
         <DialogTitle>{isCreate ? 'Save Strudel' : 'Strudel Settings'}</DialogTitle>
         <DialogDescription>
           {isCreate
-            ? isAuthenticated
-              ? 'Save your strudel to your library.'
-              : 'Save your strudel locally in your browser.'
-            : 'Update your strudel details and visibility.'}
+            ? 'Save your strudel locally in your browser.'
+            : 'Update your strudel details.'}
         </DialogDescription>
       </DialogHeader>
       <div className="space-y-4 py-4">
@@ -109,103 +81,9 @@ export function StrudelForm({ strudel, mode, onClose }: StrudelFormProps) {
           />
         </div>
 
-        {!isCreate && (
-          <div className="space-y-2">
-            <Label htmlFor="strudel-categories">Categories</Label>
-            <Input
-              id="strudel-categories"
-              placeholder="music, experimental (comma separated)"
-              value={categories}
-              onChange={e => setCategories(e.target.value)}
-            />
-          </div>
-        )}
-
-        {/* auth-only: visibility and licensing options */}
-        {isAuthenticated && (
-          <>
-            <div className="flex items-center justify-between py-3 my-4 border-y border-border/50">
-              <Label htmlFor="strudel-private">Private Strudel</Label>
-              <Switch
-                id="strudel-private"
-                checked={!isPublic}
-                onCheckedChange={checked => setIsPublic(!checked)}
-              />
-            </div>
-
-            <div className="flex items-start gap-3">
-              <div className="flex-1 min-w-0 space-y-2">
-                <Label className={!isPublic ? 'text-muted-foreground' : ''}>License</Label>
-                <Select
-                  value={license || ''}
-                  onValueChange={v => handleLicenseChange((v || null) as CCLicense | null)}
-                  disabled={!isPublic}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select license..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {CC_LICENSES.map(l => (
-                      <SelectItem key={l.id} value={l.id}>
-                        {l.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <ArrowRightLeft className={`h-4 w-4 shrink-0 mt-9 ${!isPublic ? 'text-muted-foreground/50' : 'text-muted-foreground'}`} />
-              <div className="flex-1 min-w-0 space-y-2">
-                <div className="flex items-center gap-2">
-                  <Label className={!isPublic ? 'text-muted-foreground' : ''}>AI/CC Signal</Label>
-                  {isPublic && license && inferredSignal && !signalOverridden && (
-                    <span className="text-xs text-muted-foreground leading-0">(inferred from license)</span>
-                  )}
-                  {isPublic && signalOverridden && (
-                    <span className="text-xs text-orange-400 leading-0">(custom)</span>
-                  )}
-                </div>
-                <Select
-                  value={ccSignal || defaultSignal}
-                  onValueChange={v => handleSignalChange((v as CCSignal) || null)}
-                  disabled={!isPublic}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="AI/CC signal..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {CC_SIGNALS.filter(s => {
-                      // filter by parent restrictiveness
-                      if (parentCCSignal && SIGNAL_RESTRICTIVENESS[s.id] < SIGNAL_RESTRICTIVENESS[parentCCSignal]) {
-                        return false;
-                      }
-                      return true;
-                    }).map(signal => {
-                      const isDisabled = hasAIAssistance && signal.id === 'no-ai';
-                      return (
-                        <SelectItem key={signal.id} value={signal.id} disabled={isDisabled}>
-                          <span className="font-medium uppercase">{signal.id}</span>
-                          <span className="text-muted-foreground ml-2 text-xs">
-                            {isDisabled ? 'Disabled - AI assistance detected' : signal.desc}
-                          </span>
-                        </SelectItem>
-                      );
-                    })}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            {!isPublic && (
-              <p className="text-xs text-muted-foreground">
-                Licenses and CC Signals are applicable to public strudels only.
-              </p>
-            )}
-          </>
-        )}
-
-        {/* anon-only: note about local storage */}
-        {!isAuthenticated && (
-          <p className="text-sm text-muted-foreground pt-2">
-            Your strudel will be saved locally in your browser. Sign in to sync across devices and share publicly.
-          </p>
-        )}
+        <p className="text-sm text-muted-foreground pt-2">
+          Your strudel is saved in this browser only.
+        </p>
       </div>
       <DialogFooter className="gap-2 sm:gap-0">
         <Button variant="ghost" onClick={onClose}>

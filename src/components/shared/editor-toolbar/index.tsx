@@ -3,9 +3,9 @@
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { Play, Square, Plus, Radio, X, RefreshCw, RotateCcw, PanelRight, WrapText } from 'lucide-react';
+import { Play, Square, Plus, RefreshCw, RotateCcw, PanelRight, WrapText } from 'lucide-react';
 import { useEditorToolbar, type SaveStatus } from './hooks';
-import { SaveIndicator, ConnectionIndicator } from './indicators';
+import { SaveIndicator, AudioEngineIndicator } from './indicators';
 
 interface EditorToolbarProps {
   onPlay: () => void;
@@ -14,19 +14,13 @@ interface EditorToolbarProps {
   onSave?: () => void;
   onRestore?: () => void;
   onNew?: () => void;
-  onGoLive?: () => void;
-  onEndLive?: () => void;
   onToggleSidebar?: () => void;
   onFormat?: () => void;
   showSave?: boolean;
   showNew?: boolean;
-  showGoLive?: boolean;
-  isLive?: boolean;
-  isEndingLive?: boolean;
   isSidebarOpen?: boolean;
   saveStatus?: SaveStatus;
   hasRestorableVersion?: boolean;
-  isViewer?: boolean;
   isFormatting?: boolean;
 }
 
@@ -37,22 +31,17 @@ export function EditorToolbar({
   onSave,
   onRestore,
   onNew,
-  onGoLive,
-  onEndLive,
   onToggleSidebar,
   onFormat,
   showSave = false,
   showNew = false,
-  showGoLive = false,
-  isLive = false,
-  isEndingLive = false,
   isSidebarOpen = true,
   saveStatus = 'saved',
   hasRestorableVersion = false,
-  isViewer = false,
   isFormatting = false,
 }: EditorToolbarProps) {
-  const { isPlaying, isInitialized, isCodeDirty, status } = useEditorToolbar();
+  const { isPlaying, isInitialized, isCodeDirty, audioEngineStatus, audioEngineLabel } =
+    useEditorToolbar();
 
   return (
     <div className="flex items-center gap-2 p-2 bg-background h-12">
@@ -61,15 +50,9 @@ export function EditorToolbar({
           size="sm"
           variant={isPlaying ? 'outline' : 'default'}
           onClick={isPlaying ? onStop : onPlay}
-          disabled={isViewer || (!isInitialized && !isPlaying)}
+          disabled={!isInitialized && !isPlaying}
           className="rounded-sm min-w-20"
-          title={
-            isViewer
-              ? 'Only hosts can control playback'
-              : isPlaying
-              ? 'Stop (Ctrl+.)'
-              : 'Play (Ctrl+Enter)'
-          }>
+          title={isPlaying ? 'Stop (Ctrl+.)' : 'Play (Ctrl+Enter)'}>
           {isPlaying ? (
             <Square className="h-3 w-3" />
           ) : (
@@ -81,7 +64,7 @@ export function EditorToolbar({
           size="sm"
           variant="outline"
           onClick={onUpdate}
-          disabled={isViewer || !isPlaying || !isCodeDirty}
+          disabled={!isPlaying || !isCodeDirty}
           className="rounded-sm aspect-square px-0">
           <RefreshCw className="h-3 w-3" />
         </Button>
@@ -92,7 +75,7 @@ export function EditorToolbar({
                 size="sm"
                 variant="outline"
                 onClick={onFormat}
-                disabled={isViewer || isFormatting}
+                disabled={isFormatting}
                 className="rounded-sm aspect-square px-0">
                 <WrapText className="h-3 w-3" />
               </Button>
@@ -105,7 +88,7 @@ export function EditorToolbar({
       <Separator orientation="vertical" className="h-6" />
 
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <ConnectionIndicator status={status} />
+        <AudioEngineIndicator status={audioEngineStatus} label={audioEngineLabel} />
       </div>
 
       <div className="flex-1" />
@@ -138,7 +121,7 @@ export function EditorToolbar({
             </Button>
           </TooltipTrigger>
           <TooltipContent>
-            {saveStatus === 'saved' && 'All changes saved'}
+            {saveStatus === 'saved' && 'All changes saved locally'}
             {saveStatus === 'saving' && 'Saving...'}
             {saveStatus === 'unsaved' && 'Unsaved changes'}
           </TooltipContent>
@@ -160,21 +143,6 @@ export function EditorToolbar({
         </Tooltip>
       )}
 
-      {showGoLive && onGoLive && (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              size="icon-round-sm"
-              variant="outline"
-              onClick={onGoLive}
-              className="text-muted-foreground hover:text-foreground">
-              <Radio className="h-4 w-4" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Go Live</TooltipContent>
-        </Tooltip>
-      )}
-
       {onToggleSidebar && (
         <Tooltip>
           <TooltipTrigger asChild>
@@ -188,28 +156,6 @@ export function EditorToolbar({
           </TooltipTrigger>
           <TooltipContent>{isSidebarOpen ? 'Hide sidebar' : 'Show sidebar'}</TooltipContent>
         </Tooltip>
-      )}
-
-      {isLive && onEndLive && (
-        <>
-          <Separator orientation="vertical" className="h-6" />
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={onEndLive}
-                disabled={isEndingLive}
-                className="relative rounded-sm aspect-square px-0 hover:bg-rose-600/10 border-rose-600/30">
-                <span className="flex h-2.5 w-2.5">
-                  <span className="animate-ping absolute inline-flex h-2.5 w-2.5 rounded-sm bg-rose-600 opacity-75" />
-                  <span className="relative inline-flex rounded-sm h-2.5 w-2.5 bg-rose-600" />
-                </span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>End live session</TooltipContent>
-          </Tooltip>
-        </>
       )}
     </div>
   );

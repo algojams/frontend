@@ -12,7 +12,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://algopatterns.cc"),
   title: "Algopatterns",
-  description: "Live code music with strudel and collaborate with friends in real time.",
+  description: "Browser-based Strudel playground for live code music with optional AI assistance.",
   manifest: "/manifest.json",
   icons: {
     icon: [
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "Algopatterns",
-    description: "Live code music with friends using strudel",
+    description: "Browser-based Strudel playground for live code music",
     url: "https://algopatterns.cc",
     siteName: "Algopatterns",
     images: [
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
         url: "/site-banner.png",
         width: 1200,
         height: 630,
-        alt: "Algopatterns - Live code music with friends",
+        alt: "Algopatterns - Live code music with Strudel",
       },
     ],
     type: "website",
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Algopatterns",
-    description: "Live code music with friends using strudel",
+    description: "Browser-based Strudel playground for live code music",
     images: ["/site-banner.png"],
   },
 };

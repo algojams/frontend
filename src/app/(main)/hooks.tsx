@@ -1,58 +1,26 @@
 'use client';
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useStrudelAudio } from '@/lib/hooks/use-strudel-audio';
-import { useWebSocket } from '@/lib/hooks/use-websocket';
 import { useAutosave } from '@/lib/hooks/use-autosave';
 import { useAgentGenerate } from '@/lib/hooks/use-agent';
-import { useStrudel, usePublicStrudel } from '@/lib/hooks/use-strudels';
-import { useSessionInvites, useSessionLiveStatus, useSoftEndSession } from '@/lib/hooks/use-sessions';
 import { useUIStore } from '@/lib/stores/ui';
-import { useAuthStore } from '@/lib/stores/auth';
 import { useEditorStore } from '@/lib/stores/editor';
-import { useAudioStore } from '@/lib/stores/audio';
-import { useWebSocketStore } from '@/lib/stores/websocket';
-import { wsClient } from '@/lib/websocket/client';
 import { storage } from '@/lib/utils/storage';
 import { formatCode } from '@/lib/utils/format';
-import { EDITOR } from '@/lib/constants';
-import {
-  evaluateStrudel,
-  stopStrudel,
-  isAudioContextSuspended,
-} from '@/components/shared/strudel-editor';
 
 interface UseEditorOptions {
   strudelId?: string | null;
   forkStrudelId?: string | null;
-  urlSessionId?: string | null;
-  urlInviteToken?: string | null;
-  urlDisplayName?: string | null;
 }
 
-export const useEditor = ({
-  strudelId,
-  forkStrudelId,
-  urlSessionId,
-  urlInviteToken,
-  urlDisplayName,
-}: UseEditorOptions = {}) => {
-  // set skip flag before websocket connects
-  // this prevents session_state from restoring old code when forking
-  useLayoutEffect(() => {
-    if (forkStrudelId && !strudelId) {
-      wsClient.skipCodeRestoration = true;
-    }
-  }, [forkStrudelId, strudelId]);
-
+export const useEditor = ({ strudelId, forkStrudelId }: UseEditorOptions = {}) => {
   const router = useRouter();
-
-  const { token } = useAuthStore();
   const agentGenerate = useAgentGenerate();
   const { evaluate, stop } = useStrudelAudio();
-  const { saveStatus, handleSave, handleRestore, hasRestorableVersion, isAuthenticated } = useAutosave();
+  const { saveStatus, handleSave, handleRestore, hasRestorableVersion } = useAutosave();
   const { isChatPanelOpen, toggleChatPanel, setNewStrudelDialogOpen } = useUIStore();
   const {
     code,
@@ -61,15 +29,14 @@ export const useEditor = ({
     setCurrentDraftId,
     setForkedFromId,
     setParentCCSignal,
-    currentStrudelId,
     currentStrudelTitle,
     markSaved,
     setConversationHistory,
   } = useEditorStore();
 
   const [isFormatting, setIsFormatting] = useState(false);
+  const [isLoadingStrudel, setIsLoadingStrudel] = useState(false);
 
-  // update document title when strudel title changes
   useEffect(() => {
     if (currentStrudelTitle) {
       document.title = `${currentStrudelTitle} | Algopatterns`;
@@ -78,155 +45,73 @@ export const useEditor = ({
     }
   }, [currentStrudelTitle]);
 
-  // check if we have a stored viewer session (for refresh reconnection)
-  const storedViewerSession =
-    typeof window !== 'undefined' ? storage.getViewerSession() : null;
-  const hasInviteContext = !!(urlInviteToken || storedViewerSession?.inviteToken);
-
-  const {
-    sendCode,
-    sendChatMessage,
-    sendPlay,
-    sendStop,
-    isConnected,
-    canEdit,
-    isViewer,
-    isCoAuthor,
-    isHost,
-    sessionId,
-    participants,
-  } = useWebSocket({
-    autoConnect: true,
-    sessionId: urlSessionId || undefined,
-    inviteToken: urlInviteToken || undefined,
-    displayName: urlDisplayName || undefined,
-  });
-
-  // check if host has generated any invites (only for authenticated users)
-  const { data: invitesData } = useSessionInvites(token && sessionId ? sessionId : '');
-  const hasActiveInvites = (invitesData?.tokens?.length ?? 0) > 0;
-
-  // check if session is live (for host to show End Live button)
-  // combine API response with local state for immediate updates
-  const { data: liveStatus } = useSessionLiveStatus(
-    token && sessionId && canEdit ? sessionId : '',
-    !!token && !!sessionId && canEdit
-  );
-  // isLive is true only for editors, when: API says so, OR there are active invites, OR there are multiple participants
-  // also consider discoverable status from session data (via invite dialog hook)
-  const isLive = canEdit && (liveStatus?.is_live || hasActiveInvites || participants.length > 1);
-
-  // soft-end live session mutation
-  const softEndSession = useSoftEndSession();
-
-  const showChat =
-    hasInviteContext ||
-    isViewer ||
-    isCoAuthor ||
-    participants.length > 1 ||
-    hasActiveInvites;
-
   const loadedStrudelIdRef = useRef<string | null>(null);
   const forkedStrudelIdRef = useRef<string | null>(null);
   const previousStrudelIdRef = useRef<string | null | undefined>(undefined);
 
-  // clear conversation when strudel changes to prevent bleed between strudels
   useEffect(() => {
     const currentId = strudelId || null;
     const previousId = previousStrudelIdRef.current;
 
-    // first render - just initialize ref
     if (previousId === undefined) {
       previousStrudelIdRef.current = currentId;
       return;
     }
 
-    // strudel changed - clear conversation immediately
-    // loading effect will set new conversation when data arrives
     if (currentId !== previousId) {
       previousStrudelIdRef.current = currentId;
       setConversationHistory([]);
     }
   }, [strudelId, setConversationHistory]);
 
-  // restore strudel from localStorage if navigating back to editor without URL param
   useEffect(() => {
-    // skip if we already have a strudel ID in URL or are forking/joining session
-    if (strudelId || forkStrudelId || urlSessionId || urlInviteToken) {
+    if (strudelId || forkStrudelId) {
       return;
     }
 
-    // check for saved strudel
     const storedStrudelId = storage.getCurrentStrudelId();
     if (storedStrudelId) {
-      // redirect to include the strudel ID in URL
       router.replace(`/?id=${storedStrudelId}`, { scroll: false });
     }
-    // note: unsaved drafts are accessed via /drafts page, not auto-restored
-  }, [strudelId, forkStrudelId, urlSessionId, urlInviteToken, router]);
+  }, [strudelId, forkStrudelId, router]);
 
-  // check if loading a local strudel (for anon users)
-  const isLocalStrudelId = strudelId?.startsWith('local_') ?? false;
-
-  // fetch strudel for edit mode (requires auth - user's own strudel)
-  // skip API call for local strudels
-  const {
-    data: ownStrudel,
-    isLoading: isLoadingOwnStrudel,
-    error: ownStrudelError,
-  } = useStrudel(isLocalStrudelId ? '' : (strudelId || ''));
-
-  // fetch strudel for fork mode (public endpoint - no auth required)
-  const {
-    data: publicStrudel,
-    isLoading: isLoadingPublicStrudel,
-    error: publicStrudelError,
-  } = usePublicStrudel(forkStrudelId || '');
-
-  const isLoadingStrudel = isLoadingOwnStrudel || isLoadingPublicStrudel;
-
-  // handle local strudel loading (for anon users)
   useEffect(() => {
-    if (!strudelId || !isLocalStrudelId) {
+    if (!strudelId) {
+      if (loadedStrudelIdRef.current) {
+        loadedStrudelIdRef.current = null;
+      }
+      setIsLoadingStrudel(false);
       return;
     }
 
-    // already loaded this strudel
     if (loadedStrudelIdRef.current === strudelId) {
       return;
     }
 
+    setIsLoadingStrudel(true);
     const localStrudel = storage.getLocalStrudel(strudelId);
+
     if (!localStrudel) {
-      toast.error('Local strudel not found');
+      toast.error('Strudel not found');
       router.replace('/');
+      setIsLoadingStrudel(false);
       return;
     }
 
     loadedStrudelIdRef.current = strudelId;
-
-    // set code and conversation history from local strudel
     setCode(localStrudel.code, true);
     setConversationHistory(localStrudel.conversation_history || []);
-
-    // set strudel metadata
     setCurrentStrudel(localStrudel.id, localStrudel.title);
 
-    // set fork info if this strudel was forked
     if (localStrudel.forked_from) {
       setForkedFromId(localStrudel.forked_from);
       setParentCCSignal(localStrudel.parent_cc_signal ?? null);
     }
 
     markSaved();
-
-    // sync code to WebSocket session
-    wsClient.onceConnected(() => {
-      wsClient.sendCodeUpdate(localStrudel.code, undefined, undefined, 'loaded_strudel');
-    });
+    setIsLoadingStrudel(false);
   }, [
     strudelId,
-    isLocalStrudelId,
     router,
     setCode,
     setConversationHistory,
@@ -236,134 +121,47 @@ export const useEditor = ({
     markSaved,
   ]);
 
-  // handle strudel loading from REST API
-  useEffect(() => {
-    // skip for local strudels - handled by separate effect
-    if (!strudelId || isLocalStrudelId) {
-      if (loadedStrudelIdRef.current && !isLocalStrudelId) {
-        loadedStrudelIdRef.current = null;
-      }
-      return;
-    }
-
-    // handle errors from API
-    if (ownStrudelError) {
-      const status = (ownStrudelError as { status?: number })?.status;
-
-      switch (status) {
-        case 404:
-          toast.error('Strudel not found');
-          break;
-        case 403:
-          toast.error("You don't have access to this strudel");
-          break;
-        default:
-          toast.error('Failed to load strudel');
-          break;
-      }
-
-      router.replace('/');
-      return;
-    }
-
-    // load strudel data from REST API
-    if (ownStrudel && loadedStrudelIdRef.current !== strudelId) {
-      loadedStrudelIdRef.current = strudelId;
-
-      // set code and conversation history from strudel
-      setCode(ownStrudel.code, true);
-      setConversationHistory(ownStrudel.conversation_history || []);
-
-      // set strudel metadata
-      setCurrentStrudel(ownStrudel.id, ownStrudel.title);
-
-      // set fork info if this strudel was forked (for AI blocking)
-      if (ownStrudel.forked_from) {
-        setForkedFromId(ownStrudel.forked_from);
-        setParentCCSignal(ownStrudel.parent_cc_signal ?? null);
-      }
-
-      markSaved();
-
-      // sync code to WebSocket session
-      wsClient.onceConnected(() => {
-        wsClient.sendCodeUpdate(ownStrudel.code, undefined, undefined, 'loaded_strudel');
-      });
-    }
-  }, [
-    strudelId,
-    isLocalStrudelId,
-    ownStrudel,
-    ownStrudelError,
-    router,
-    setCode,
-    setConversationHistory,
-    setCurrentStrudel,
-    setForkedFromId,
-    setParentCCSignal,
-    markSaved,
-  ]);
-
-  // handle fork loading (load code but don't set currentStrudelId)
   useEffect(() => {
     if (!forkStrudelId || strudelId) {
       return;
     }
 
-    // handle errors
-    if (publicStrudelError) {
-      const status = (publicStrudelError as { status?: number })?.status;
-      if (status === 404) {
-        toast.error('Strudel not found');
-      } else {
-        toast.error('Failed to load strudel');
-      }
+    if (forkedStrudelIdRef.current === forkStrudelId) {
+      return;
+    }
+
+    const source = storage.getLocalStrudel(forkStrudelId);
+    if (!source) {
+      toast.error('Strudel not found');
       router.replace('/');
       return;
     }
 
-    // load forked code (no conversation history - forks start fresh)
-    if (publicStrudel && forkedStrudelIdRef.current !== forkStrudelId) {
-      forkedStrudelIdRef.current = forkStrudelId;
+    forkedStrudelIdRef.current = forkStrudelId;
+    const forkDraftId = `fork_${forkStrudelId}`;
 
-      // use deterministic draft ID based on forked strudel
-      // this prevents duplicate drafts when re-forking the same strudel
-      const forkDraftId = `fork_${forkStrudelId}`;
+    setCurrentStrudel(null, null);
+    setCurrentDraftId(forkDraftId);
+    setForkedFromId(forkStrudelId);
+    setParentCCSignal(source.cc_signal ?? null);
+    setCode(source.code, true);
+    setConversationHistory([]);
 
-      // set local state (forkedFromId is tracked in store and localStorage, not in code)
-      setCurrentStrudel(null, null);
-      setCurrentDraftId(forkDraftId);
-      setForkedFromId(forkStrudelId);
-      setParentCCSignal(publicStrudel.cc_signal ?? null);
-      setCode(publicStrudel.code, true);
-      setConversationHistory([]);
+    storage.setDraft({
+      id: forkDraftId,
+      code: source.code,
+      conversationHistory: [],
+      updatedAt: Date.now(),
+      title: `Fork of ${source.title}`,
+      forkedFromId: forkStrudelId,
+      parentCCSignal: source.cc_signal ?? null,
+    });
 
-      // save fork to localStorage (overwrites existing fork of same strudel)
-      storage.setDraft({
-        id: forkDraftId,
-        code: publicStrudel.code,
-        conversationHistory: [],
-        updatedAt: Date.now(),
-        title: `Fork of ${publicStrudel.title}`,
-        forkedFromId: forkStrudelId,
-        parentCCSignal: publicStrudel.cc_signal ?? null,
-      });
-
-      // clear fork param from URL
-      router.replace('/', { scroll: false });
-
-      toast.success(`Forked "${publicStrudel.title}" - save to create your own copy`);
-
-      // sync forked code with session
-      wsClient.onceConnected(() => {
-        wsClient.sendCodeUpdate(publicStrudel.code, undefined, undefined, 'forked');
-      });
-    }
+    router.replace('/', { scroll: false });
+    toast.success(`Forked "${source.title}" - save to create your own copy`);
   }, [
     forkStrudelId,
     strudelId,
-    publicStrudel,
-    publicStrudelError,
     router,
     setCode,
     setCurrentStrudel,
@@ -373,161 +171,30 @@ export const useEditor = ({
     setConversationHistory,
   ]);
 
-  // register WebSocket callbacks for remote play/stop
-  useEffect(() => {
-    const { setPendingPlayback, setShowSyncOverlay } = useAudioStore.getState();
-
-    const cleanupPlay = wsClient.onPlay(() => {
-      // always update pending action to latest
-      setPendingPlayback('play');
-
-      if (isAudioContextSuspended()) {
-        // audio needs user interaction - show sync overlay
-        setShowSyncOverlay(true);
-      } else {
-        // audio is ready - play immediately
-        evaluateStrudel();
-      }
-    });
-
-    const cleanupStop = wsClient.onStop(() => {
-      // always update pending action to latest
-      setPendingPlayback('stop');
-
-      if (isAudioContextSuspended()) {
-        // audio needs user interaction - show sync overlay
-        setShowSyncOverlay(true);
-      } else {
-        // audio is ready - stop immediately
-        stopStrudel();
-      }
-    });
-
-    const cleanupSessionEnded = wsClient.onSessionEnded(reason => {
-      stopStrudel();
-      setShowSyncOverlay(false);
-      setPendingPlayback(null);
-      toast.info(reason || 'Session ended by host');
-
-      // for viewers: clear session, restore their state, and reconnect
-      const { myRole } = useWebSocketStore.getState();
-      if (myRole === 'viewer') {
-        // clear viewer session storage
-        storage.clearViewerSession();
-
-        // disconnect from the ended session
-        wsClient.disconnect();
-
-        // check if user is authenticated
-        const { token } = useAuthStore.getState();
-        const isAuthenticated = !!token;
-
-        if (isAuthenticated) {
-          // authenticated viewer: restore their previous state
-          const savedStrudelId = storage.getCurrentStrudelId();
-          const savedDraftId = storage.getCurrentDraftId();
-
-          if (savedStrudelId) {
-            // redirect to load the saved strudel (will reconnect via useWebSocket)
-            router.replace(`/?id=${savedStrudelId}`);
-            return;
-          }
-
-          if (savedDraftId) {
-            // try to restore a local draft
-            const draft = storage.getDraft(savedDraftId);
-            if (draft) {
-              useEditorStore.getState().setCode(draft.code, false);
-              useEditorStore.getState().setCurrentDraftId(draft.id);
-              useEditorStore.getState().setForkedFromId(draft.forkedFromId ?? null);
-              useEditorStore.getState().setParentCCSignal(draft.parentCCSignal ?? null);
-              // reconnect to start a fresh session with their draft
-              wsClient.connect();
-              router.replace('/');
-              return;
-            }
-          }
-        }
-
-        // anonymous viewer or no saved state: fresh slate
-        useEditorStore.getState().setCode(EDITOR.DEFAULT_CODE, false);
-        useEditorStore.getState().setCurrentStrudel(null, null);
-        useEditorStore.getState().setCurrentDraftId(null);
-        useEditorStore.getState().setForkedFromId(null);
-        useEditorStore.getState().setParentCCSignal(null);
-        useEditorStore.getState().setConversationHistory([]);
-
-        // reconnect to start a fresh session
-        wsClient.connect();
-        router.replace('/');
-      }
-    });
-
-    return () => {
-      cleanupPlay();
-      cleanupStop();
-      cleanupSessionEnded();
-    };
-  }, [router]);
-
   const handlePlay = useCallback(() => {
     evaluate();
-
-    // if user can edit (host/co-author), broadcast play to other participants
-    if (canEdit) {
-      sendPlay();
-    }
-  }, [evaluate, canEdit, sendPlay]);
+  }, [evaluate]);
 
   const handleStop = useCallback(() => {
     stop();
+  }, [stop]);
 
-    // if user can edit (host/co-author), broadcast stop to other participants
-    if (canEdit) {
-      sendStop();
-    }
-  }, [stop, canEdit, sendStop]);
-
-  // update: re-evaluate code without stopping/starting - applies changes to running pattern
   const handleUpdate = useCallback(() => {
     evaluate();
   }, [evaluate]);
 
-  const handleCodeChange = useCallback(
-    (newCode: string) => {
-      if (isConnected && canEdit) {
-        sendCode(newCode);
-      }
-    },
-    [isConnected, canEdit, sendCode]
-  );
+  const handleCodeChange = useCallback(() => {
+    // local editor store handles code updates
+  }, []);
 
   const handleSendAIRequest = useCallback(
     (query: string) => agentGenerate.mutate(query),
     [agentGenerate]
   );
 
-  const handleSendMessage = useCallback(
-    (message: string) => sendChatMessage(message),
-    [sendChatMessage]
-  );
-
   const handleNewStrudel = useCallback(() => {
     setNewStrudelDialogOpen(true);
   }, [setNewStrudelDialogOpen]);
-
-  const handleEndLive = useCallback(() => {
-    if (!sessionId) return;
-
-    softEndSession.mutate(sessionId, {
-      onSuccess: (data) => {
-        toast.success(`Live session ended. ${data.participants_kicked} participant(s) removed.`);
-      },
-      onError: () => {
-        toast.error('Failed to end live session');
-      },
-    });
-  }, [sessionId, softEndSession]);
 
   const handleFormat = useCallback(async () => {
     if (isFormatting) return;
@@ -536,12 +203,8 @@ export const useEditor = ({
     try {
       const formatted = await formatCode(code);
       if (formatted !== code) {
-        // reset nextUpdateSource to 'typed' - format is not a paste operation
         useEditorStore.getState().setNextUpdateSource('typed');
         setCode(formatted, false);
-        if (isConnected && canEdit) {
-          sendCode(formatted);
-        }
         toast.success('Code formatted');
       }
     } catch (error) {
@@ -550,7 +213,7 @@ export const useEditor = ({
     } finally {
       setIsFormatting(false);
     }
-  }, [code, isFormatting, setCode, isConnected, canEdit, sendCode]);
+  }, [code, isFormatting, setCode]);
 
   return {
     handleCodeChange,
@@ -558,28 +221,15 @@ export const useEditor = ({
     handleStop,
     handleUpdate,
     handleSendAIRequest,
-    handleSendMessage,
     handleSave,
     handleRestore,
     handleNewStrudel,
-    handleEndLive,
     handleFormat,
     isChatPanelOpen,
     toggleChatPanel,
-    isConnected,
-    canEdit,
-    isViewer,
-    isHost,
-    sessionId,
-    token,
     saveStatus,
     hasRestorableVersion,
-    isAuthenticated,
     isLoadingStrudel,
-    currentStrudelId,
-    showChat,
-    isLive,
-    isEndingLive: softEndSession.isPending,
     isFormatting,
   };
 };

@@ -5,8 +5,6 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { StrudelCard } from '@/components/shared/strudel-card';
 import { Button } from '@/components/ui/button';
-import { StrudelFormDialog } from '@/components/shared/strudel-form-dialog';
-import { StrudelStatsDialog } from '@/components/shared/strudel-stats-dialog';
 import { StrudelPreviewModal } from '@/components/shared/strudel-preview-modal';
 import { LocalStrudelSettingsDialog } from '@/components/shared/local-strudel-settings-dialog';
 import { useDashboard } from './hooks';
@@ -20,9 +18,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Settings, Pencil, Loader2, BarChart3, Eye, Trash2 } from 'lucide-react';
+import { Settings, Pencil, Eye, Trash2 } from 'lucide-react';
 import type { Strudel } from '@/lib/api/strudels/types';
-import { useDeleteStrudel } from '@/lib/hooks/use-strudels';
 import { useEditorStore } from '@/lib/stores/editor';
 import { useUIStore } from '@/lib/stores/ui';
 import { usePlayerStore } from '@/lib/stores/player';
@@ -30,22 +27,17 @@ import { storage } from '@/lib/utils/storage';
 import { EDITOR } from '@/lib/constants';
 
 function DashboardContent() {
-  const { strudels, isLoading, isFetchingNextPage, loadMoreRef, router, isAuthenticated, refreshLocalStrudels } = useDashboard();
+  const { strudels, isLoading, router, refreshLocalStrudels } = useDashboard();
   const [selectedStrudel, setSelectedStrudel] = useState<Strudel | null>(null);
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const [localSettingsOpen, setLocalSettingsOpen] = useState(false);
-  const [statsStrudel, setStatsStrudel] = useState<Strudel | null>(null);
   const [previewStrudel, setPreviewStrudel] = useState<Strudel | null>(null);
   const [deleteStrudel, setDeleteStrudel] = useState<Strudel | null>(null);
-
-  const deleteStrudelMutation = useDeleteStrudel();
 
   const { isDirty, code, currentStrudelId } = useEditorStore();
   const { setPendingOpenStrudelId } = useUIStore();
   const { currentStrudel: playerStrudel } = usePlayerStore();
 
   const handleOpenStrudel = (strudelId: string) => {
-    // if opening the same strudel, just navigate
     if (strudelId === currentStrudelId) {
       router.push(`/?id=${strudelId}`);
       return;
@@ -61,20 +53,12 @@ function DashboardContent() {
     }
   };
 
-  const handleConfirmDelete = async () => {
+  const handleConfirmDelete = () => {
     if (!deleteStrudel) return;
-
-    if (isLocalStrudel(deleteStrudel)) {
-      storage.deleteLocalStrudel(deleteStrudel.id);
-      refreshLocalStrudels();
-    } else {
-      await deleteStrudelMutation.mutateAsync(deleteStrudel.id);
-    }
+    storage.deleteLocalStrudel(deleteStrudel.id);
+    refreshLocalStrudels();
     setDeleteStrudel(null);
   };
-
-  // check if strudel is local (for anon users)
-  const isLocalStrudel = (strudel: Strudel) => strudel.user_id === 'local';
 
   return (
     <div className={`container px-6 py-4 md:p-8 w-full max-w-full ${playerStrudel ? 'pb-24' : ''}`}>
@@ -82,208 +66,132 @@ function DashboardContent() {
         <div>
           <h1 className="text-2xl md:text-3xl font-bold">Shelf</h1>
           <p className="text-[15px] md:text-base text-muted-foreground">
-            <span className="md:hidden">Your creations</span>
-            <span className="hidden md:inline">
-              {isAuthenticated ? 'Your creations and live sessions' : 'Your locally saved creations'}
-            </span>
+            Your locally saved creations
           </p>
         </div>
       </div>
 
-        {isLoading ? (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-            {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
-              <Card key={i} className={`animate-pulse rounded-md ${i > 6 ? 'hidden 2xl:block' : ''}`}>
-                <CardHeader>
-                  <div className="h-4 bg-muted rounded w-3/4" />
-                  <div className="h-3 bg-muted rounded w-1/2 mt-2" />
-                </CardHeader>
-                <CardContent>
-                  <div className="h-20 bg-muted rounded" />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : strudels.length > 0 ? (
-          <>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
-              {strudels.map(strudel => (
-                <StrudelCard
-                  key={strudel.id}
-                  strudel={strudel}
-                  showCodePreview
-                  maxTags={4}
-                  actions={
-                    isLocalStrudel(strudel) ? (
-                      // local strudel actions (anon users)
-                      <>
-                        <Button
-                          size="icon-round-sm"
-                          variant="outline"
-                          className="text-muted-foreground hover:text-foreground"
-                          onClick={() => {
-                            setSelectedStrudel(strudel);
-                            setLocalSettingsOpen(true);
-                          }}>
-                          <Settings className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="icon-round-sm"
-                          variant="outline"
-                          className="text-muted-foreground hover:text-foreground"
-                          onClick={() => setPreviewStrudel(strudel)}>
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="icon-round-sm"
-                          variant="outline"
-                          className="text-muted-foreground hover:text-foreground"
-                          onClick={() => handleOpenStrudel(strudel.id)}>
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="icon-round-sm"
-                          variant="outline"
-                          className="text-destructive hover:text-destructive"
-                          onClick={() => setDeleteStrudel(strudel)}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </>
-                    ) : (
-                      // cloud strudel actions (auth users)
-                      <>
-                        {strudel.is_public && (
-                          <Button
-                            size="icon-round-sm"
-                            variant="outline"
-                            className="text-muted-foreground hover:text-foreground"
-                            onClick={() => setStatsStrudel(strudel)}>
-                            <BarChart3 className="h-4 w-4" />
-                          </Button>
-                        )}
-                        <Button
-                          size="icon-round-sm"
-                          variant="outline"
-                          className="text-muted-foreground hover:text-foreground"
-                          onClick={() => {
-                            setSelectedStrudel(strudel);
-                            setSettingsOpen(true);
-                          }}>
-                          <Settings className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="icon-round-sm"
-                          variant="outline"
-                          className="text-muted-foreground hover:text-foreground"
-                          onClick={() => setPreviewStrudel(strudel)}>
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="icon-round-sm"
-                          variant="outline"
-                          className="text-muted-foreground hover:text-foreground"
-                          onClick={() => handleOpenStrudel(strudel.id)}>
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="icon-round-sm"
-                          variant="outline"
-                          className="text-destructive hover:text-destructive"
-                          onClick={() => setDeleteStrudel(strudel)}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </>
-                    )
-                  }
-                />
-              ))}
-            </div>
+      {isLoading ? (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+          {[1, 2, 3, 4, 5, 6].map(i => (
+            <Card key={i} className="animate-pulse rounded-md">
+              <CardHeader>
+                <div className="h-4 bg-muted rounded w-3/4" />
+                <div className="h-3 bg-muted rounded w-1/2 mt-2" />
+              </CardHeader>
+              <CardContent>
+                <div className="h-20 bg-muted rounded" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : strudels.length > 0 ? (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+          {strudels.map(strudel => (
+            <StrudelCard
+              key={strudel.id}
+              strudel={strudel}
+              showCodePreview
+              maxTags={4}
+              actions={
+                <>
+                  <Button
+                    size="icon-round-sm"
+                    variant="outline"
+                    className="text-muted-foreground hover:text-foreground"
+                    onClick={() => {
+                      setSelectedStrudel(strudel);
+                      setLocalSettingsOpen(true);
+                    }}>
+                    <Settings className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="icon-round-sm"
+                    variant="outline"
+                    className="text-muted-foreground hover:text-foreground"
+                    onClick={() => setPreviewStrudel(strudel)}>
+                    <Eye className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="icon-round-sm"
+                    variant="outline"
+                    className="text-muted-foreground hover:text-foreground"
+                    onClick={() => handleOpenStrudel(strudel.id)}>
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="icon-round-sm"
+                    variant="outline"
+                    className="text-destructive hover:text-destructive"
+                    onClick={() => setDeleteStrudel(strudel)}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </>
+              }
+            />
+          ))}
+        </div>
+      ) : (
+        <Card className="rounded-lg">
+          <CardContent className="flex flex-col items-center justify-center py-12">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-12 w-12 text-muted-foreground mb-4">
+              <path d="M9 18V5l12-2v13" />
+              <circle cx="6" cy="18" r="3" />
+              <circle cx="18" cy="16" r="3" />
+            </svg>
 
-            <div ref={loadMoreRef} className="flex justify-center pt-8">
-              {isFetchingNextPage && (
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-              )}
-            </div>
-          </>
-        ) : (
-          <Card className="rounded-lg">
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="h-12 w-12 text-muted-foreground mb-4">
-                <path d="M9 18V5l12-2v13" />
-                <circle cx="6" cy="18" r="3" />
-                <circle cx="18" cy="16" r="3" />
-              </svg>
+            <h3 className="text-lg font-medium mb-2">No strudels yet</h3>
 
-              <h3 className="text-lg font-medium mb-2">No strudels yet</h3>
+            <p className="text-muted-foreground text-center mb-4">
+              Create and save strudels in your browser
+            </p>
 
-              <p className="text-muted-foreground text-center mb-4">
-                {isAuthenticated
-                  ? 'Start creating music patterns with AI assistance'
-                  : 'Create and save strudels locally, or sign in to sync across devices'}
-              </p>
+            <Button asChild>
+              <Link href="/">Create your first strudel</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      )}
 
-              <Button asChild>
-                <Link href="/">Create your first strudel</Link>
-              </Button>
-            </CardContent>
-          </Card>
-        )}
+      <LocalStrudelSettingsDialog
+        strudel={selectedStrudel}
+        open={localSettingsOpen}
+        onOpenChange={setLocalSettingsOpen}
+        onSave={refreshLocalStrudels}
+      />
 
-        {/* cloud strudel settings (auth users) */}
-        <StrudelFormDialog
-          strudel={selectedStrudel}
-          open={settingsOpen}
-          onOpenChange={setSettingsOpen}
-          mode="edit"
-        />
+      <StrudelPreviewModal
+        strudel={previewStrudel}
+        open={!!previewStrudel}
+        onOpenChange={open => !open && setPreviewStrudel(null)}
+      />
 
-        {/* local strudel settings (anon users) */}
-        <LocalStrudelSettingsDialog
-          strudel={selectedStrudel}
-          open={localSettingsOpen}
-          onOpenChange={setLocalSettingsOpen}
-          onSave={refreshLocalStrudels}
-        />
-
-        <StrudelStatsDialog
-          strudelId={statsStrudel?.id ?? null}
-          strudelTitle={statsStrudel?.title}
-          open={!!statsStrudel}
-          onOpenChange={open => !open && setStatsStrudel(null)}
-        />
-
-        <StrudelPreviewModal
-          strudel={previewStrudel}
-          open={!!previewStrudel}
-          onOpenChange={open => !open && setPreviewStrudel(null)}
-        />
-
-        <AlertDialog open={!!deleteStrudel} onOpenChange={open => !open && setDeleteStrudel(null)}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete Strudel</AlertDialogTitle>
-            </AlertDialogHeader>
-            <AlertDialogBody>
-              Are you sure you want to delete &ldquo;{deleteStrudel?.title}&rdquo;? This action cannot be undone.
-            </AlertDialogBody>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleConfirmDelete}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                Delete
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </div>
+      <AlertDialog open={!!deleteStrudel} onOpenChange={open => !open && setDeleteStrudel(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Strudel</AlertDialogTitle>
+          </AlertDialogHeader>
+          <AlertDialogBody>
+            Are you sure you want to delete &ldquo;{deleteStrudel?.title}&rdquo;? This action cannot be undone.
+          </AlertDialogBody>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
   );
 }
 

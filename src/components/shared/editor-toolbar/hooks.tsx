@@ -1,18 +1,19 @@
 'use client';
 
 import { useAudioStore } from '@/lib/stores/audio';
-import { useWebSocketStore } from '@/lib/stores/websocket';
+import { useAudioEngineStatus } from '@/lib/hooks/use-audio-engine-status';
 
 export type SaveStatus = 'saved' | 'saving' | 'unsaved';
 
 export function useEditorToolbar() {
   const { isPlaying, isInitialized, isCodeDirty } = useAudioStore();
-  const { status } = useWebSocketStore();
+  const { status, label } = useAudioEngineStatus();
 
   return {
     isPlaying,
     isInitialized,
     isCodeDirty,
-    status,
+    audioEngineStatus: status,
+    audioEngineLabel: label,
   };
 }

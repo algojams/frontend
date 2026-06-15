@@ -1,20 +1,15 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { useAuth } from "./use-auth";
 import { getBYOKApiKey } from "@/components/shared/settings-modal/hooks";
 
 const AI_DISABLED_KEY = "algopatterns_ai_disabled";
 const BYOK_API_KEY = "algopatterns_byok_api_key";
 
-// NOTE: Free AI tier is currently disabled. Users must provide their own API key (BYOK).
-// To re-enable free tier, remove the hasBYOKKey check below.
-const FREE_TIER_ENABLED = false;
-
 function getAnonAIDisabled() {
-  if (typeof window === "undefined") return true; // default disabled on server
+  if (typeof window === "undefined") return true;
   const stored = localStorage.getItem(AI_DISABLED_KEY);
-  if (stored === null) return true; // no preference = default disabled
+  if (stored === null) return true;
   return stored === "true";
 }
 
@@ -32,35 +27,21 @@ function subscribeToAIFeatures(callback: () => void) {
   };
 }
 
-/**
- * hook to check if AI features are enabled.
- * - requires BYOK API key to be configured (free tier disabled)
- * - for authenticated users: also checks user.ai_features_enabled from DB
- * - for anonymous users: also checks localStorage preference
- */
 export function useAIFeaturesEnabled() {
-  const { user, isAuthenticated } = useAuth();
-
-  // Use useSyncExternalStore for localStorage to avoid lint issues
   const anonAIDisabled = useSyncExternalStore(
     subscribeToAIFeatures,
     getAnonAIDisabled,
-    () => false // server snapshot
+    () => false
   );
 
   const byokConfigured = useSyncExternalStore(
     subscribeToAIFeatures,
     hasBYOKKey,
-    () => false // server snapshot
+    () => false
   );
 
-  // BYOK required when free tier is disabled
-  if (!FREE_TIER_ENABLED && !byokConfigured) {
+  if (!byokConfigured) {
     return false;
-  }
-
-  if (isAuthenticated && user) {
-    return user.ai_features_enabled;
   }
 
   return !anonAIDisabled;

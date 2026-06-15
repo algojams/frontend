@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useEditorStore } from '@/lib/stores/editor';
 import { useAudioStore } from '@/lib/stores/audio';
-import { useWebSocketStore } from '@/lib/stores/websocket';
 import { EDITOR } from '@/lib/constants';
 
 // strudel theme colors (matching code-display.tsx)
@@ -647,9 +646,6 @@ export function useStrudelEditor(
 
   const { code, setCode, currentStrudelId } = useEditorStore();
   const { setPlaying, setInitialized, setError } = useAudioStore();
-  const wsStatus = useWebSocketStore(state => state.status);
-  const sessionStateReceived = useWebSocketStore(state => state.sessionStateReceived);
-
 
   // use lazy initial state for URL params (avoids setState in effect)
   const [urlStrudelId] = useState<string | null>(() => {
@@ -1303,12 +1299,7 @@ export function useStrudelEditor(
     // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: init runs once on mount
   }, []);
 
-  const isLoadingStrudel =
-    effectiveStrudelId &&
-    (wsStatus === 'connecting' || (wsStatus === 'connected' && !sessionStateReceived));
-
   return {
     containerRef,
-    isLoadingStrudel,
   };
 }
