@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { useEditorStore } from '@/lib/stores/editor';
 import { useUIStore } from '@/lib/stores/ui';
 import { storage, type GoodVersion } from '@/lib/utils/storage';
+import { stripStrudelHeader } from '@/lib/utils/strudel-header';
 
 type SaveStatus = 'saved' | 'saving' | 'unsaved';
 
@@ -62,7 +63,7 @@ export function useAutosave() {
         if (existingStrudel) {
           storage.setLocalStrudel({
             ...existingStrudel,
-            code,
+            code: stripStrudelHeader(code),
             conversation_history: conversationHistory.map(h => ({
               role: h.role as 'user' | 'assistant',
               content: h.content,
@@ -106,7 +107,7 @@ export function useAutosave() {
       if (existingStrudel) {
         storage.setLocalStrudel({
           ...existingStrudel,
-          code,
+          code: stripStrudelHeader(code),
           conversation_history: conversationHistory.map(h => ({
             role: h.role as 'user' | 'assistant',
             content: h.content,

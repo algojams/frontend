@@ -24,11 +24,11 @@ export function SidebarPanel() {
             ABOUT
           </Link>
           <a
-            href="https://codeberg.org/algopatterns"
+            href="https://github.com/algopatterns/frontend"
             target="_blank"
             rel="noopener noreferrer"
             className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-            CODEBERG
+            GITHUB
           </a>
           <a
             href="https://strudel.cc/workshop/getting-started"

@@ -29,8 +29,7 @@ const AUDIO_ENGINE_CONFIG: Record<
     pulse: true,
   },
   suspended: {
-    className: 'text-yellow-500',
-    pulse: true,
+    className: 'text-amber-500',
   },
   error: {
     className: 'text-red-500',

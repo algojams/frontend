@@ -69,7 +69,7 @@ export function LocalStrudelSettingsDialog({
           </div>
 
           <p className="text-sm text-muted-foreground">
-            This strudel is saved locally in your browser. Sign in to sync across devices and access more features.
+            Saved locally in your browser. Use Share in the editor or shelf to send a link to others.
           </p>
         </div>
 

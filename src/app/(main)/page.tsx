@@ -48,6 +48,7 @@ function HomePageContent() {
     handleRestore,
     handleNewStrudel,
     handleFormat,
+    handleShare,
     isChatPanelOpen,
     toggleChatPanel,
     saveStatus,
@@ -102,10 +103,12 @@ function HomePageContent() {
             onSave={handleSave}
             onRestore={handleRestore}
             onNew={handleNewStrudel}
+            onShare={handleShare}
             onToggleSidebar={handleToggleDesktopSidebar}
             onFormat={handleFormat}
             showSave
             showNew
+            showShare
             isSidebarOpen={sidebarVisible}
             saveStatus={saveStatus}
             hasRestorableVersion={hasRestorableVersion()}

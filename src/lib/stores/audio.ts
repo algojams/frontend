@@ -11,6 +11,7 @@ export interface EditorToast {
 interface AudioState {
   isPlaying: boolean;
   isInitialized: boolean;
+  hasPlayGesture: boolean;
   error: string | null;
   editorToasts: EditorToast[];
   pendingPlaybackAction: PendingPlaybackAction;
@@ -19,6 +20,7 @@ interface AudioState {
 
   setPlaying: (playing: boolean) => void;
   setInitialized: (initialized: boolean) => void;
+  markPlayGesture: () => void;
   setError: (error: string | null) => void;
   addEditorToast: (toast: Omit<EditorToast, 'id'>) => void;
   dismissEditorToast: (id: string) => void;
@@ -32,6 +34,7 @@ interface AudioState {
 const initialState = {
   isPlaying: false,
   isInitialized: false,
+  hasPlayGesture: false,
   error: null,
   editorToasts: [] as EditorToast[],
   pendingPlaybackAction: null as PendingPlaybackAction,
@@ -51,6 +54,7 @@ export const useAudioStore = create<AudioState>((set) => ({
     }
   },
   setInitialized: (isInitialized) => set({ isInitialized }),
+  markPlayGesture: () => set({ hasPlayGesture: true }),
   setError: (error) => {
     if (error) {
       // add error as toast

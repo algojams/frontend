@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useEditorStore } from '@/lib/stores/editor';
 import { useUIStore } from '@/lib/stores/ui';
 import { storage } from '@/lib/utils/storage';
+import { stripStrudelHeader } from '@/lib/utils/strudel-header';
 import type { Strudel, CCSignal, CCLicense } from '@/lib/types/strudel';
 import { SIGNAL_RESTRICTIVENESS, inferSignalFromLicense } from '@/lib/types/strudel';
 
@@ -109,7 +110,7 @@ export function useStrudelForm(
         const localStrudel = {
           id: storage.generateLocalStrudelId(),
           title: formData.title,
-          code,
+          code: stripStrudelHeader(code),
           description: formData.description || '',
           tags: formData.tags,
           is_public: false,
@@ -191,6 +192,7 @@ export function useStrudelForm(
     isCreate,
     isPending,
     parentCCSignal,
+    hasAIAssistance,
     handleSave,
   };
 }

@@ -4,11 +4,11 @@ import Link from 'next/link';
 export const metadata: Metadata = {
   title: 'A Letter from the Creator | Algopatterns',
   description:
-    'Learn about Algopatterns, an open-source collaborative live coding music platform powered by Strudel. Built with responsible AI principles and respect for creator rights.',
+    'Learn about Algopatterns, a browser-based Strudel playground for live code music. Built with responsible AI principles and respect for creator rights.',
   openGraph: {
     title: 'A Letter from the Creator | Algopatterns',
     description:
-      'Learn about Algopatterns, an open-source collaborative live coding music platform built with responsible AI principles.',
+      'Learn about Algopatterns, a browser-based Strudel playground built with responsible AI principles.',
     type: 'website',
   },
 };
@@ -28,7 +28,7 @@ export default function AboutPage() {
 
       <section className="mb-12">
         <p className="text-muted-foreground font-light mb-4">
-          Algopatterns is a collaborative live coding music platform built on{' '}
+          Algopatterns is a browser-based Strudel playground for live coding music, built on{' '}
           <a
             href="https://strudel.cc"
             target="_blank"
@@ -215,11 +215,9 @@ export default function AboutPage() {
               </table>
             </div>
             <p className="text-muted-foreground font-light mt-3">
-              Even though CC signals aren&apos;t currently a widely adopted standard and
-              there is no definite framework to implementing them, on algopatterns CC signals
-              aren&apos;t just suggestions, they&apos;re enforced using custom logic i
-              came up with in the hopes of pioneering/contributing to the mainstream
-              adoption of these signals.
+              CC signals aren&apos;t a widely adopted standard yet, but on Algopatterns they
+              shape how AI assistance behaves in your browser — when you save, share, or fork
+              a pattern.
             </p>
           </div>
 
@@ -249,68 +247,35 @@ export default function AboutPage() {
 
           <div>
             <h3 className="text-lg font-semibold mb-3">
-              <span className="text-purple-600">3.</span> Server-Side Enforcement (Not
-              Just UI)
+              <span className="text-purple-600">3.</span> In-Browser Enforcement
             </h3>
             <p className="text-muted-foreground font-light mb-3">
-              When a user pastes code into the editor, the server:
+              Algopatterns runs entirely in your browser — no account, no server round-trips
+              for your code. Safeguards are applied locally:
             </p>
             <ol className="list-decimal list-inside text-muted-foreground font-light space-y-1 ml-2">
               <li>
-                <strong>Detects the paste</strong> via behavioral analysis (large code
-                deltas)
+                <strong>CC signals on save</strong> — your choice is stored with the
+                strudel and embedded in shared links
               </li>
               <li>
-                <strong>Checks the source</strong> against the database of strudels
+                <strong>Fork restrictions</strong> — AI is blocked when you fork a pattern
+                whose parent opted out
               </li>
               <li>
-                <strong>Validates CC signals</strong> for any matched content
+                <strong>Attribution headers</strong> — title, license, and author travel
+                with saved and shared code as comment headers
               </li>
               <li>
-                <strong>Locks AI features</strong> if the code has a{' '}
-                <code className="text-sm bg-muted px-1.5 py-0.5 rounded">no-ai</code>{' '}
-                signal
+                <strong>BYOK AI</strong> — when you use the Agent, requests go directly from
+                your browser to your chosen provider with your own API key
               </li>
             </ol>
-            <p className="text-muted-foreground font-light mt-3">
-              This happens regardless of what the client reports. Spoofing the UI
-              doesn&apos;t bypass protection (to a reasonable extent). The server
-              validates independently.
-            </p>
           </div>
 
           <div>
             <h3 className="text-lg font-semibold mb-3">
-              <span className="text-amber-600">4.</span> Paste Lock System
-            </h3>
-            <p className="text-muted-foreground font-light mb-3">
-              If you paste code that:
-            </p>
-            <ul className="list-disc list-inside text-muted-foreground font-light space-y-1 ml-2">
-              <li>
-                Matches a public strudel with{' '}
-                <code className="text-sm bg-muted px-1.5 py-0.5 rounded">no-ai</code>{' '}
-                signal, or
-              </li>
-              <li>Comes from an unknown external source</li>
-            </ul>
-            <p className="text-muted-foreground font-light mt-3">
-              AI assistance is either <strong>permanently</strong> or{' '}
-              <strong>temporarily disabled</strong> until you make significant edits (30%+
-              changes via Levenshtein distance) depending on if the strudel is licensed
-              with a CC signal or not.
-            </p>
-            <p className="text-muted-foreground font-light mt-3">
-              This ensures you&apos;ve genuinely engaged with and transformed the code
-              before AI can assist in creating derivative work and also makes sure that
-              you&apos;re not using AI to create derivative work without the
-              creator&apos;s consent.
-            </p>
-          </div>
-
-          <div>
-            <h3 className="text-lg font-semibold mb-3">
-              <span className="text-rose-600">5.</span> No Automatic Code Injection
+              <span className="text-amber-600">4.</span> No Automatic Code Injection
             </h3>
             <p className="text-muted-foreground font-light mb-3">
               When the Agent suggests code, it <strong>never</strong> automatically
@@ -328,36 +293,7 @@ export default function AboutPage() {
 
           <div>
             <h3 className="text-lg font-semibold mb-3">
-              <span className="text-emerald-600">6.</span> Source Attribution in AI
-              Responses
-            </h3>
-            <p className="text-muted-foreground font-light mb-3">
-              Every AI response that draws from the knowledge base includes links to:
-            </p>
-            <ul className="list-disc list-inside text-muted-foreground font-light space-y-1 ml-2">
-              <li>The Strudel documentation sections used</li>
-              <li>Any community strudels that informed the suggestion</li>
-            </ul>
-            <p className="text-muted-foreground font-light mt-3">
-              You always know where the Agent&apos;s knowledge came from.
-            </p>
-          </div>
-
-          <div>
-            <h3 className="text-lg font-semibold mb-3">
-              <span className="text-blue-600">7.</span> Crawler Penalties
-            </h3>
-            <p className="text-muted-foreground font-light">
-              Bots and agents that ignore CC signals and attempt to scrape{' '}
-              <code className="text-sm bg-muted px-1.5 py-0.5 rounded">no-ai</code>{' '}
-              strudels face penalties. Algopatterns actively defends creator preferences
-              against automated circumvention.
-            </p>
-          </div>
-
-          <div>
-            <h3 className="text-lg font-semibold mb-3">
-              <span className="text-purple-600">8.</span> Complete Opt-Out
+              <span className="text-purple-600">5.</span> Complete Opt-Out
             </h3>
             <p className="text-muted-foreground font-light">
               Don&apos;t want AI at all? You can disable all AI features across the entire
@@ -373,9 +309,8 @@ export default function AboutPage() {
         <h2 className="text-2xl font-semibold mb-4">A Note on Imperfection</h2>
         <p className="text-muted-foreground font-light mb-4">
           I want to be honest: these safeguards are not foolproof. Someone determined
-          enough could find ways around them. They could simulate gradual typing instead
-          of pasting. They could memorize code and retype it. They could use external
-          tools to strip metadata before importing.
+          enough could strip headers, bypass fork restrictions by rewriting code manually,
+          or use external tools outside Algopatterns.
         </p>
         <p className="text-muted-foreground font-light mb-4">
           I know this. I built the system anyway.
@@ -505,51 +440,6 @@ export default function AboutPage() {
           Algopatterns, you inherit both of their capabilities and their commitment to staying
           open.
         </p>
-        <p className="text-muted-foreground font-light my-4">
-          Some documentation located in the server repository on Codeberg include:
-        </p>
-        <ul className="list-disc list-inside text-muted-foreground font-light space-y-2 ml-2 mb-6">
-          <li>
-            <a
-              href="https://codeberg.org/algopatterns/server/src/branch/main/docs/system-specs/ENFORCING-CC-SIGNALS.md"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-white hover:underline">
-              Enforcing CC Signals
-            </a>{' '}
-            - Technical details of paste lock detection
-          </li>
-          <li>
-            <a
-              href="https://codeberg.org/algopatterns/server/src/branch/main/docs/system-specs/REDIS_BUFFER_ARCHITECTURE.md"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-white hover:underline">
-              Redis Buffer Architecture
-            </a>{' '}
-            - How real-time state is handled
-          </li>
-          <li>
-            <a
-              href="https://codeberg.org/algopatterns/server/src/branch/main/docs/system-specs/RAG_ARCHITECTURE.md"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-white hover:underline">
-              RAG Architecture
-            </a>{' '}
-            - How AI retrieval works
-          </li>
-          <li>
-            <a
-              href="https://codeberg.org/algopatterns/server/src/branch/main/docs/system-specs/PRODUCT_ARCHITECTURE.md"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-white hover:underline">
-              Product Architecture
-            </a>{' '}
-            - Full system overview
-          </li>
-        </ul>
         <p className="text-muted-foreground font-light">
           I believe the best way to earn trust is to show my work as well as my workflow.
         </p>
@@ -597,27 +487,27 @@ export default function AboutPage() {
             categorized sound groups in the sidebar
           </li>
           <li>
-            <strong className="text-white">Strudel Player</strong> browse and play
-            patterns from the community
+            <strong className="text-white">Strudel Player</strong> — browse and play
+            patterns from the Strudel community site
           </li>
           <li>
             <strong className="text-white">Full Strudel support</strong> with the complete
             pattern language in your browser
           </li>
           <li>
-            <strong className="text-white">Real-time collaboration</strong> for raving
-            with friends in shared sessions
+            <strong className="text-white">Local shelf</strong> — save strudels in your
+            browser with optional CC license and AI signals
           </li>
           <li>
-            <strong className="text-white">Save, share, and fork</strong> patterns from
-            the community
+            <strong className="text-white">Share and fork</strong> — copy a compressed link
+            or fork from your shelf; attribution travels in code headers
           </li>
           <li>
             <strong className="text-white">Extensive sample library</strong> including
             drum machines, synths, and soundfonts
           </li>
           <li>
-            <strong className="text-white">AI assistance</strong> (when permitted) for
+            <strong className="text-white">AI assistance</strong> (BYOK, when permitted) for
             exploring new patterns
           </li>
         </ul>
@@ -649,11 +539,11 @@ export default function AboutPage() {
           <p className="text-muted-foreground font-light">
             <span className="block md:inline">Want to dive into the code or contribute?</span>{' '}
             <a
-              href="https://codeberg.org/algopatterns"
+              href="https://github.com/algopatterns/frontend"
               target="_blank"
               rel="noopener noreferrer"
               className="text-violet-400 hover:text-violet-300 hover:underline">
-              View on Codeberg →
+              View on GitHub →
             </a>
           </p>
         </div>

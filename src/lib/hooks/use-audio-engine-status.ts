@@ -18,18 +18,18 @@ function subscribeToAudioEngine(callback: () => void) {
 }
 
 function getAudioEngineStatus(): AudioEngineStatus {
-  const { isPlaying, error, isInitialized } = useAudioStore.getState();
+  const { isPlaying, error, isInitialized, hasPlayGesture } = useAudioStore.getState();
 
   if (error) return 'error';
   if (isPlaying) return 'playing';
-  if (isInitialized && isAudioContextSuspended()) return 'suspended';
+  if (isInitialized && hasPlayGesture && isAudioContextSuspended()) return 'suspended';
   return 'ready';
 }
 
 const AUDIO_ENGINE_LABELS: Record<AudioEngineStatus, string> = {
   ready: 'Audio ready',
   playing: 'Playing',
-  suspended: 'Click Play to enable audio',
+  suspended: 'Audio blocked — click Play again',
   error: 'Pattern error',
 };
 

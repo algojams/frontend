@@ -489,6 +489,7 @@ export async function resumeAudioContext(): Promise<boolean> {
 }
 
 export async function evaluateStrudel() {
+  useAudioStore.getState().markPlayGesture();
   await resumeAudioContext();
 
   if (!strudelMirrorInstance) {

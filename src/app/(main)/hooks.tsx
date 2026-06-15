@@ -6,10 +6,19 @@ import { toast } from 'sonner';
 import { useStrudelAudio } from '@/lib/hooks/use-strudel-audio';
 import { useAutosave } from '@/lib/hooks/use-autosave';
 import { useAgentGenerate } from '@/lib/hooks/use-agent';
+import { useShareStrudel } from '@/lib/hooks/use-share-strudel';
 import { useUIStore } from '@/lib/stores/ui';
 import { useEditorStore } from '@/lib/stores/editor';
 import { storage } from '@/lib/utils/storage';
 import { formatCode } from '@/lib/utils/format';
+import type { CCLicense } from '@/lib/types/strudel';
+import {
+  decodeSharePayload,
+  getShareEncodedFromHash,
+  hasShareHash,
+} from '@/lib/utils/share-url';
+import { withStrudelHeader } from '@/lib/utils/strudel-header';
+import { getAnonDisplayName } from '@/components/shared/settings-modal/hooks';
 
 interface UseEditorOptions {
   strudelId?: string | null;
@@ -19,6 +28,7 @@ interface UseEditorOptions {
 export const useEditor = ({ strudelId, forkStrudelId }: UseEditorOptions = {}) => {
   const router = useRouter();
   const agentGenerate = useAgentGenerate();
+  const { copyShareLink } = useShareStrudel();
   const { evaluate, stop } = useStrudelAudio();
   const { saveStatus, handleSave, handleRestore, hasRestorableVersion } = useAutosave();
   const { isChatPanelOpen, toggleChatPanel, setNewStrudelDialogOpen } = useUIStore();
@@ -30,6 +40,8 @@ export const useEditor = ({ strudelId, forkStrudelId }: UseEditorOptions = {}) =
     setForkedFromId,
     setParentCCSignal,
     currentStrudelTitle,
+    currentStrudelId,
+    parentCCSignal,
     markSaved,
     setConversationHistory,
   } = useEditorStore();
@@ -47,6 +59,7 @@ export const useEditor = ({ strudelId, forkStrudelId }: UseEditorOptions = {}) =
 
   const loadedStrudelIdRef = useRef<string | null>(null);
   const forkedStrudelIdRef = useRef<string | null>(null);
+  const loadedShareHashRef = useRef<string | null>(null);
   const previousStrudelIdRef = useRef<string | null | undefined>(undefined);
 
   useEffect(() => {
@@ -65,7 +78,7 @@ export const useEditor = ({ strudelId, forkStrudelId }: UseEditorOptions = {}) =
   }, [strudelId, setConversationHistory]);
 
   useEffect(() => {
-    if (strudelId || forkStrudelId) {
+    if (strudelId || forkStrudelId || hasShareHash()) {
       return;
     }
 
@@ -74,6 +87,56 @@ export const useEditor = ({ strudelId, forkStrudelId }: UseEditorOptions = {}) =
       router.replace(`/?id=${storedStrudelId}`, { scroll: false });
     }
   }, [strudelId, forkStrudelId, router]);
+
+  useEffect(() => {
+    if (strudelId || forkStrudelId) {
+      return;
+    }
+
+    const encoded = getShareEncodedFromHash();
+    if (!encoded) {
+      loadedShareHashRef.current = null;
+      return;
+    }
+
+    if (loadedShareHashRef.current === encoded) {
+      return;
+    }
+
+    const payload = decodeSharePayload(encoded);
+    if (!payload) {
+      toast.error('Invalid or corrupted share link');
+      return;
+    }
+
+    loadedShareHashRef.current = encoded;
+    storage.clearCurrentStrudelId();
+    storage.clearCurrentDraftId();
+    setCurrentStrudel(null, payload.t ?? null);
+    setCurrentDraftId(null);
+    setForkedFromId(null);
+    setParentCCSignal(payload.p ?? null);
+    setCode(
+      withStrudelHeader(payload.c, {
+        title: payload.t,
+        license: payload.l,
+        author: payload.a,
+      }),
+      true
+    );
+    setConversationHistory([]);
+    markSaved();
+  }, [
+    strudelId,
+    forkStrudelId,
+    setCode,
+    setConversationHistory,
+    setCurrentStrudel,
+    setCurrentDraftId,
+    setForkedFromId,
+    setParentCCSignal,
+    markSaved,
+  ]);
 
   useEffect(() => {
     if (!strudelId) {
@@ -99,7 +162,14 @@ export const useEditor = ({ strudelId, forkStrudelId }: UseEditorOptions = {}) =
     }
 
     loadedStrudelIdRef.current = strudelId;
-    setCode(localStrudel.code, true);
+    setCode(
+      withStrudelHeader(localStrudel.code, {
+        title: localStrudel.title,
+        license: localStrudel.license,
+        author: getAnonDisplayName(),
+      }),
+      true
+    );
     setConversationHistory(localStrudel.conversation_history || []);
     setCurrentStrudel(localStrudel.id, localStrudel.title);
 
@@ -144,12 +214,23 @@ export const useEditor = ({ strudelId, forkStrudelId }: UseEditorOptions = {}) =
     setCurrentDraftId(forkDraftId);
     setForkedFromId(forkStrudelId);
     setParentCCSignal(source.cc_signal ?? null);
-    setCode(source.code, true);
+    setCode(
+      withStrudelHeader(source.code, {
+        title: source.title,
+        license: source.license,
+        author: getAnonDisplayName(),
+      }),
+      true
+    );
     setConversationHistory([]);
 
     storage.setDraft({
       id: forkDraftId,
-      code: source.code,
+      code: withStrudelHeader(source.code, {
+        title: source.title,
+        license: source.license,
+        author: getAnonDisplayName(),
+      }),
       conversationHistory: [],
       updatedAt: Date.now(),
       title: `Fork of ${source.title}`,
@@ -215,6 +296,25 @@ export const useEditor = ({ strudelId, forkStrudelId }: UseEditorOptions = {}) =
     }
   }, [code, isFormatting, setCode]);
 
+  const handleShare = useCallback(() => {
+    let ccSignal = parentCCSignal;
+    let license: CCLicense | null | undefined;
+
+    if (currentStrudelId) {
+      const localStrudel = storage.getLocalStrudel(currentStrudelId);
+      ccSignal = localStrudel?.cc_signal ?? localStrudel?.parent_cc_signal ?? parentCCSignal;
+      license = localStrudel?.license;
+    }
+
+    void copyShareLink({
+      code,
+      title: currentStrudelTitle,
+      license,
+      author: getAnonDisplayName() || undefined,
+      ccSignal,
+    });
+  }, [code, copyShareLink, currentStrudelId, currentStrudelTitle, parentCCSignal]);
+
   return {
     handleCodeChange,
     handlePlay,
@@ -225,6 +325,7 @@ export const useEditor = ({ strudelId, forkStrudelId }: UseEditorOptions = {}) =
     handleRestore,
     handleNewStrudel,
     handleFormat,
+    handleShare,
     isChatPanelOpen,
     toggleChatPanel,
     saveStatus,

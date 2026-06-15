@@ -2,16 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { FileText, Settings } from 'lucide-react';
+import { FileText, Menu, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { UserAvatar } from '@/components/shared/user-avatar';
 import { useUIStore } from '@/lib/stores/ui';
 
 export function Header() {
@@ -42,20 +40,15 @@ export function Header() {
         <div className="ml-auto flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                <UserAvatar size="sm" />
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                aria-label="Open menu">
+                <Menu className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end" forceMount>
-              <div className="flex items-center justify-start gap-2 p-2">
-                <div className="flex flex-col space-y-1 leading-none">
-                  <p className="font-medium text-muted-foreground">Local mode</p>
-                  <p className="text-xs text-muted-foreground">
-                    Patterns saved in your browser
-                  </p>
-                </div>
-              </div>
-              <DropdownMenuSeparator />
+            <DropdownMenuContent className="w-48" align="end">
               <DropdownMenuItem
                 onClick={() => setDraftsModalOpen(true)}
                 className="cursor-pointer">

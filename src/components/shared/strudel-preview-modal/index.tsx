@@ -6,6 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Button } from '@/components/ui/button';
 import {
   GitFork,
+  Share2,
   BotMessageSquare,
   Play,
   Pause,
@@ -87,7 +88,7 @@ export function StrudelPreviewModal({
   open,
   onOpenChange,
 }: StrudelPreviewModalProps) {
-  const { error, handleErrorChange, handleFork } = useStrudelPreviewModal(
+  const { error, handleErrorChange, handleFork, handleShare } = useStrudelPreviewModal(
     strudel,
     onOpenChange
   );
@@ -110,7 +111,7 @@ export function StrudelPreviewModal({
         <DialogHeader className="flex flex-col gap-4 md:gap-6">
           <DialogTitle className="flex flex-col md:flex-row md:items-center items-start gap-1 md:gap-2 text-lg md:text-xl leading-tight pr-8">
             <span className="truncate">{strudel.title}</span>
-            {strudel.author_name && (
+            {strudel.author_name && strudel.author_name !== 'You' && (
               <span className="text-xs md:text-sm font-normal text-muted-foreground">
                 by {strudel.author_name}
               </span>
@@ -257,10 +258,16 @@ export function StrudelPreviewModal({
             )}
           </Button>
 
-          <Button onClick={handleFork}>
-            <GitFork className="h-4 w-4 mr-2" />
-            Fork
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={handleShare}>
+              <Share2 className="h-4 w-4 mr-2" />
+              Share
+            </Button>
+            <Button onClick={handleFork}>
+              <GitFork className="h-4 w-4 mr-2" />
+              Fork
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

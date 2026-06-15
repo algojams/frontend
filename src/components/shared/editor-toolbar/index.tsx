@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { Play, Square, Plus, RefreshCw, RotateCcw, PanelRight, WrapText } from 'lucide-react';
+import { Play, Square, Plus, RefreshCw, RotateCcw, PanelRight, Share2, WrapText } from 'lucide-react';
 import { useEditorToolbar, type SaveStatus } from './hooks';
 import { SaveIndicator, AudioEngineIndicator } from './indicators';
 
@@ -14,10 +14,12 @@ interface EditorToolbarProps {
   onSave?: () => void;
   onRestore?: () => void;
   onNew?: () => void;
+  onShare?: () => void;
   onToggleSidebar?: () => void;
   onFormat?: () => void;
   showSave?: boolean;
   showNew?: boolean;
+  showShare?: boolean;
   isSidebarOpen?: boolean;
   saveStatus?: SaveStatus;
   hasRestorableVersion?: boolean;
@@ -31,10 +33,12 @@ export function EditorToolbar({
   onSave,
   onRestore,
   onNew,
+  onShare,
   onToggleSidebar,
   onFormat,
   showSave = false,
   showNew = false,
+  showShare = true,
   isSidebarOpen = true,
   saveStatus = 'saved',
   hasRestorableVersion = false,
@@ -44,8 +48,8 @@ export function EditorToolbar({
     useEditorToolbar();
 
   return (
-    <div className="flex items-center gap-2 p-2 bg-background h-12">
-      <div className="flex items-center gap-1">
+    <div className="flex items-center gap-2 p-2 bg-background h-12 min-w-0">
+      <div className="flex items-center gap-1 shrink-0">
         <Button
           size="sm"
           variant={isPlaying ? 'outline' : 'default'}
@@ -83,16 +87,31 @@ export function EditorToolbar({
             <TooltipContent>Format code (Alt+Shift+F)</TooltipContent>
           </Tooltip>
         )}
+        {showShare && onShare && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={onShare}
+                className="rounded-sm aspect-square px-0">
+                <Share2 className="h-3 w-3" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Copy share link</TooltipContent>
+          </Tooltip>
+        )}
       </div>
 
-      <Separator orientation="vertical" className="h-6" />
+      <Separator orientation="vertical" className="h-6 shrink-0" />
 
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <AudioEngineIndicator status={audioEngineStatus} label={audioEngineLabel} />
       </div>
 
-      <div className="flex-1" />
+      <div className="flex-1 min-w-0" />
 
+      <div className="flex items-center gap-2 shrink-0">
       {showSave && hasRestorableVersion && onRestore && (
         <Tooltip>
           <TooltipTrigger asChild>
@@ -157,6 +176,7 @@ export function EditorToolbar({
           <TooltipContent>{isSidebarOpen ? 'Hide sidebar' : 'Show sidebar'}</TooltipContent>
         </Tooltip>
       )}
+      </div>
     </div>
   );
 }
