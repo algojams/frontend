@@ -3,7 +3,6 @@
 import type { ReactNode } from "react";
 import { ThemeProvider } from "next-themes";
 import { QueryProvider } from "./query-provider";
-import { AuthHydration } from "./auth-hydration";
 import { Toaster } from "@/components/ui/sonner";
 import { LoginModal } from "@/components/shared/login-modal";
 import { LogoutConfirmDialog } from "@/components/shared/logout-confirm-dialog";
@@ -25,19 +24,17 @@ export function Providers({ children }: { children: ReactNode }) {
       disableTransitionOnChange
     >
       <QueryProvider>
-        <AuthHydration>
-          {children}
-          <LoginModal />
-          <LogoutConfirmDialog />
-          <NewStrudelDialog />
-          <SaveStrudelDialog />
-          <InviteDialog />
-          <ForkConfirmDialog />
-          <OpenStrudelConfirmDialog />
-          <DraftsModal />
-          <SettingsModal />
-          <Toaster />
-        </AuthHydration>
+        {children}
+        <LoginModal />
+        <LogoutConfirmDialog />
+        <NewStrudelDialog />
+        <SaveStrudelDialog />
+        <InviteDialog />
+        <ForkConfirmDialog />
+        <OpenStrudelConfirmDialog />
+        <DraftsModal />
+        <SettingsModal />
+        <Toaster />
       </QueryProvider>
     </ThemeProvider>
   );
